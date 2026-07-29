@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Archery Duel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --field-dark:#143020; --field:#1c4a2e; --parchment:#efe6cc; --ink:#22201a; --ink-soft:#5b5445;
+    --gold:#f6c945; --shadow:0 10px 30px rgba(0,0,0,.28);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; min-height:100vh; font-family:"Inter",system-ui,sans-serif; color:var(--parchment);
+    background:radial-gradient(120% 80% at 50% -10%,#2b6440 0%,var(--field) 45%,var(--field-dark) 100%);
+    display:flex; justify-content:center; padding:22px 14px 40px;
+  }
+  .wrap{width:100%; max-width:940px}
+
+  header.title{text-align:center; margin-bottom:14px}
+  header.title h1{font-family:"Bebas Neue",sans-serif; font-size:clamp(38px,8vw,64px); letter-spacing:3px; margin:0; line-height:.9; color:var(--parchment); text-shadow:0 2px 0 rgba(0,0,0,.25)}
+  header.title .sub{font-family:"Oswald",sans-serif; font-weight:500; letter-spacing:3px; text-transform:uppercase; font-size:12px; color:var(--gold); margin-top:2px}
+
+  .statusbar{
+    display:flex; align-items:center; justify-content:center; gap:18px; flex-wrap:wrap;
+    background:rgba(0,0,0,.18); border-radius:12px; padding:8px 16px; margin-bottom:12px;
+  }
+  .statusbar .round{font-family:"Oswald",sans-serif; text-transform:uppercase; letter-spacing:1.5px; font-size:12px; color:var(--gold)}
+  .statusbar .turn{font-family:"Bebas Neue",sans-serif; font-size:24px; letter-spacing:1px; text-shadow:0 1px 2px rgba(0,0,0,.4)}
+  .statusbar .wind{font-family:"Oswald",sans-serif; font-size:13px}
+  .statusbar .wind b{color:var(--gold); font-weight:600}
+  .pips{display:flex; gap:5px}
+  .pips i{width:20px; height:5px; border-radius:3px; background:rgba(239,230,204,.28); display:block}
+  .pips i.on{background:var(--gold)}
+
+  .players{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; margin-bottom:12px}
+  .player{
+    background:var(--parchment); color:var(--ink); border-radius:14px; padding:10px 14px; box-shadow:var(--shadow);
+    border:2px solid transparent; transition:transform .15s ease, border-color .15s ease, box-shadow .15s ease;
+  }
+  .player .who{font-family:"Oswald",sans-serif; font-weight:600; text-transform:uppercase; letter-spacing:1px; font-size:13px; display:flex; align-items:center; gap:8px}
+  .player .dot{width:13px; height:13px; border-radius:50%; display:inline-block; border:1px solid rgba(0,0,0,.3)}
+  .player .score{font-family:"Bebas Neue",sans-serif; font-size:46px; line-height:.95; letter-spacing:1px}
+  .player .shots{font-family:"Oswald",sans-serif; font-size:11px; color:var(--ink-soft); letter-spacing:.5px; min-height:15px}
+  .player.active{border-color:var(--gold); transform:translateY(-2px); box-shadow:0 12px 28px rgba(0,0,0,.32),0 0 0 4px rgba(246,201,69,.25)}
+
+  .stage{position:relative; border-radius:16px; overflow:hidden; box-shadow:var(--shadow); background:#bfe3f2; line-height:0}
+  canvas{width:100%; height:auto; display:block; touch-action:none; cursor:crosshair}
+
+  .toast{
+    position:absolute; top:14px; left:50%; transform:translateX(-50%) translateY(-8px);
+    background:rgba(20,20,18,.82); color:#fff; font-family:"Oswald",sans-serif; letter-spacing:1px;
+    padding:8px 18px; border-radius:999px; font-size:15px; opacity:0; pointer-events:none;
+    transition:opacity .2s ease, transform .2s ease; white-space:nowrap;
+  }
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0)}
+  .toast .pts{color:var(--gold); font-weight:600}
+
+  .foot{display:flex; justify-content:space-between; align-items:center; gap:12px; margin-top:14px; flex-wrap:wrap}
+  .hint{font-family:"Oswald",sans-serif; font-size:13px; letter-spacing:.5px; color:rgba(239,230,204,.85); max-width:560px}
+  .hint b{color:var(--gold)}
+  button.newgame{
+    font-family:"Oswald",sans-serif; text-transform:uppercase; letter-spacing:1.5px; font-weight:600; font-size:13px;
+    color:var(--ink); background:var(--gold); border:none; padding:11px 22px; border-radius:10px; cursor:pointer;
+    box-shadow:0 4px 0 #c79a1e; transition:transform .08s ease, box-shadow .08s ease;
+  }
+  button.newgame:hover{transform:translateY(-1px)}
+  button.newgame:active{transform:translateY(2px); box-shadow:0 2px 0 #c79a1e}
+  button.newgame:focus-visible{outline:3px solid #fff; outline-offset:2px}
+
+  .overlay{position:absolute; inset:0; background:rgba(15,25,18,.85); display:none; align-items:center; justify-content:center; flex-direction:column; text-align:center; color:#fff; padding:20px}
+  .overlay.show{display:flex}
+  .overlay h2{font-family:"Bebas Neue",sans-serif; font-size:clamp(34px,7vw,58px); margin:0 0 16px; letter-spacing:2px; line-height:1.05}
+  .overlay .blurb{font-family:"Oswald",sans-serif; font-size:16px; letter-spacing:1px; line-height:1.45; margin-bottom:14px; color:rgba(255,255,255,.9)}
+  .overlay .final{font-family:"Oswald",sans-serif; font-size:16px; letter-spacing:1px; margin-bottom:20px}
+  .diffmeter{display:flex; gap:8px; margin:6px 0 18px}
+  .diffmeter span{width:46px; height:8px; border-radius:4px; background:rgba(255,255,255,.22)}
+  .diffmeter span.on{background:var(--gold)}
+
+  /* Setup screen */
+  .overlay.setup{overflow-y:auto; justify-content:flex-start; padding:22px 16px}
+  .setup-inner{width:100%; max-width:520px; margin:auto}
+  .setlabel{font-family:"Oswald",sans-serif; text-transform:uppercase; letter-spacing:1.5px; font-size:12px; color:var(--gold); margin-bottom:8px; text-align:left}
+  .hintsm{color:rgba(255,255,255,.6); text-transform:none; letter-spacing:.5px}
+  .setup-sec{margin-bottom:18px; text-align:left}
+  .count{display:flex; gap:8px}
+  .count button{flex:1; font-family:"Bebas Neue",sans-serif; font-size:26px; padding:6px 0; border-radius:10px; border:2px solid rgba(255,255,255,.25); background:rgba(255,255,255,.06); color:#fff; cursor:pointer}
+  .count button.on{border-color:var(--gold); background:rgba(246,201,69,.18); color:var(--gold)}
+  .roster{display:flex; flex-direction:column; gap:8px; margin-bottom:12px}
+  .prow{display:flex; align-items:center; gap:10px; padding:6px 8px; border-radius:10px; background:rgba(255,255,255,.08); border:2px solid transparent}
+  .prow.sel{border-color:var(--gold)}
+  .pdot{width:22px; height:22px; border-radius:50%; border:1px solid rgba(0,0,0,.4); cursor:pointer; padding:0; flex:0 0 auto}
+  .pname{flex:1; min-width:0; background:rgba(0,0,0,.25); border:1px solid rgba(255,255,255,.18); color:#fff; font-family:"Oswald",sans-serif; font-size:14px; letter-spacing:.5px; padding:7px 10px; border-radius:8px}
+  .pname:focus{outline:2px solid var(--gold); outline-offset:0}
+  .palette{display:grid; grid-template-columns:repeat(14,1fr); gap:4px}
+  .palette button{aspect-ratio:1; border:1px solid rgba(0,0,0,.35); border-radius:4px; cursor:pointer; padding:0; transition:transform .08s ease}
+  .palette button:hover{transform:scale(1.15)}
+  .palette button.sel{outline:2px solid var(--gold); outline-offset:1px}
+
+  @media (max-width:620px){
+    .players{grid-template-columns:repeat(2,1fr)}
+    .player .score{font-size:38px}
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="title">
+      <h1>Archery Duel</h1>
+      <div class="sub">1–4 players · 7 levels · rising difficulty</div>
+    </header>
+
+    <div class="statusbar">
+      <div class="round" id="roundLabel">Set up the match</div>
+      <div class="turn" id="turnLabel">Choose players &amp; colors</div>
+      <div class="wind" id="windLabel">Wind: <b>—</b></div>
+      <div class="pips" id="pips"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    </div>
+
+    <div class="players" id="players"></div>
+
+    <div class="stage">
+      <canvas id="game" width="900" height="520"></canvas>
+      <div class="toast" id="toast"></div>
+
+      <!-- SETUP -->
+      <div class="overlay setup show" id="setupOverlay">
+        <div class="setup-inner">
+          <h2>Set up the match</h2>
+          <div class="setup-sec">
+            <div class="setlabel">How many players?</div>
+            <div class="count" id="countBtns"></div>
+          </div>
+          <div class="setup-sec">
+            <div class="setlabel">Players <span class="hintsm">— type a name, then pick a color</span></div>
+            <div class="roster" id="chips"></div>
+            <div class="palette" id="palette"></div>
+          </div>
+          <button class="newgame" id="startBtn" style="width:100%">Start match</button>
+        </div>
+      </div>
+
+      <!-- LEVEL INTRO -->
+      <div class="overlay" id="levelOverlay">
+        <h2 id="lvTitle">Level 1</h2>
+        <div class="blurb" id="lvBlurb"></div>
+        <div class="diffmeter" id="lvDiff"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+        <button class="newgame" id="levelBtn">Begin level</button>
+      </div>
+
+      <!-- WINNER -->
+      <div class="overlay" id="overlay">
+        <h2 id="winTitle">Player 1 Wins!</h2>
+        <div class="final" id="winFinal"></div>
+        <button class="newgame" id="overlayBtn">Play again</button>
+      </div>
+    </div>
+
+    <div class="foot">
+      <div class="hint">
+        <b>Aim:</b> press near the archer, drag back for power &amp; angle, release. The dotted arc ignores <b>wind</b> — read the flag. Nail the inner gold for a <b>15-pt</b> bonus; levels get smaller, farther, then moving.
+      </div>
+      <button class="newgame" id="resetBtn">New game</button>
+    </div>
+  </div>
+
+<script>
+(function(){
+  "use strict";
+  const canvas=document.getElementById("game"), ctx=canvas.getContext("2d");
+  const W=canvas.width, H=canvas.height;
+
+  const GROUND=450, ANCHOR={x:115,y:360};
+  const GRAVITY=0.4, POWER_SCALE=0.13, MAX_SPEED=23, MIN_SPEED=4, ROUNDS_PER_LEVEL=3;
+
+  const LEVELS=[
+    {name:"Level 1 · Range Day",   R:100, x:735, cy:255, windMax:0.12, move:0,  moveSpeed:0,      blurb:"Wide target, close range, gentle breeze"},
+    {name:"Level 2 · Crosswind",   R:78,  x:785, cy:245, windMax:0.26, move:0,  moveSpeed:0,      blurb:"Smaller target, farther out, stronger wind"},
+    {name:"Level 3 · Moving Mark", R:58,  x:825, cy:240, windMax:0.36, move:62, moveSpeed:0.0024, blurb:"Small, distant, bobbing target · heavy wind"},
+    {name:"Level 4 · Twin Bobbers", windMax:0.20, blurb:"Two bobbing targets — back pays full, front only half",
+     targets:[ {R:64,x:655,cy:245,move:52,moveSpeed:0.0022,mult:0.5},
+               {R:64,x:825,cy:250,move:52,moveSpeed:0.0028,mult:1} ]},
+    {name:"Level 5 · Fool's Gold", windMax:0.24, randomSpeed:true, blurb:"Five bobbing marks — only the gold pays, yellows cost you half",
+     targets:[ {R:38,x:560,cy:180,move:38,moveSpeed:0.002,mult:-0.5,decoy:true},
+               {R:38,x:625,cy:265,move:38,moveSpeed:0.002,mult:-0.5,decoy:true},
+               {R:38,x:690,cy:205,move:38,moveSpeed:0.002,mult:-0.5,decoy:true},
+               {R:38,x:755,cy:288,move:38,moveSpeed:0.002,hmove:48,hspeed:0.0013,mult:1,gold:true},
+               {R:38,x:833,cy:230,move:38,moveSpeed:0.002,mult:-0.5,decoy:true} ]},
+    {name:"Level 6 · Half Measures", windMax:0.30, blurb:"Two half-size bobbers — hit gold, the other costs you half",
+     targets:[ {R:50,x:680,cy:215,move:48,moveSpeed:0.0026,mult:-0.5,decoy:true},
+               {R:50,x:810,cy:262,move:48,moveSpeed:0.0021,hmove:24,hspeed:0.0016,mult:1,gold:true} ]},
+    {name:"Level 7 · Wandering Mark", windMax:0.34, relocate:true, blurb:"It starts somewhere new — and moves after every hit",
+     targets:[ {R:58,x:730,cy:230,move:0,moveSpeed:0,mult:1} ]},
+  ];
+  const RINGS=[{max:0.09,pts:15},{max:0.20,pts:10},{max:0.40,pts:8},{max:0.60,pts:6},{max:0.80,pts:4},{max:1.00,pts:2}];
+
+  // Classic MS Paint 28-color palette
+  const PALETTE=[
+    "#000000","#808080","#800000","#808000","#008000","#008080","#000080","#800080","#808040","#004040","#0080FF","#004080","#8000FF","#804000",
+    "#FFFFFF","#C0C0C0","#FF0000","#FFFF00","#00FF00","#00FFFF","#0000FF","#FF00FF","#FFFF80","#00FF80","#80FFFF","#8080FF","#FF0080","#FF8040"
+  ];
+
+  const setup={ count:2, selected:0, colors:["#8000FF","#FF8040","#00FF80","#0080FF"], names:["Player 1","Player 2","Player 3","Player 4"] };
+
+  let state, introTimer=null;
+  const L=()=>LEVELS[state.level-1];
+  const tX=()=>L().x, tR=()=>L().R;
+  const col=p=>state.colors[p-1];
+  const nameOf=p=>(state.names&&state.names[p-1])||("Player "+p);
+  function tCY(){ const c=L(); return c.move? c.cy+c.move*Math.sin(performance.now()*c.moveSpeed): c.cy; }
+  // --- Multi-target helpers (levels 4+). A level's own cfg doubles as a single target. ---
+  const levelTargets=()=>{ const c=L(); return (c.targets||[c]).slice().sort((a,b)=>a.x-b.x); };
+  function targetCY(t){ return t.move? t.cy+t.move*Math.sin(performance.now()*t.moveSpeed+(t.phase||0)) : t.cy; }
+  function targetX(t){ return t.hmove? t.x+t.hmove*Math.sin(performance.now()*t.hspeed+(t.phase||0)*0.7) : t.x; }
+  function scoreForT(dist,t){ const r=dist/t.R; for(const ring of RINGS) if(r<=ring.max) return ring.pts; return 0; }
+  function initLevelTargets(){
+    const c=L(); if(!c.targets) return;
+    for(const t of c.targets){
+      t.phase=Math.random()*Math.PI*2;                          // de-synced bobbing
+      if(c.randomSpeed) t.moveSpeed=0.0016+Math.random()*0.0024;// random but readable speeds
+    }
+    if(c.relocate) relocateTarget();
+  }
+  function relocateTarget(){
+    const t=L().targets[0];
+    t.x=600+Math.random()*230;                     // always within the anchor's reach
+    t.cy=170+Math.random()*140;
+    state.stuck=state.stuck.filter(s=>!s.target);  // pins from the old spot vanish with it
+  }
+
+  // ---------- SETUP UI ----------
+  function buildSetupUI(){
+    const cb=document.getElementById("countBtns"); cb.innerHTML="";
+    for(let n=1;n<=4;n++){
+      const b=document.createElement("button"); b.textContent=n;
+      b.addEventListener("click",()=>{ setup.count=n; if(setup.selected>=n) setup.selected=n-1; refreshCount(); refreshChips(); });
+      cb.appendChild(b);
+    }
+    const pal=document.getElementById("palette"); pal.innerHTML="";
+    PALETTE.forEach(hex=>{
+      const b=document.createElement("button"); b.style.background=hex; b.title=hex; b.dataset.hex=hex;
+      b.addEventListener("click",()=>{
+        setup.colors[setup.selected]=hex;
+        setup.selected=(setup.selected+1)%setup.count;
+        refreshChips(); refreshPaletteSel();
+      });
+      pal.appendChild(b);
+    });
+    refreshCount(); refreshChips(); refreshPaletteSel();
+  }
+  function refreshCount(){
+    document.querySelectorAll("#countBtns button").forEach((b,i)=>b.classList.toggle("on",i+1===setup.count));
+  }
+  function refreshChips(){
+    const c=document.getElementById("chips"); c.innerHTML="";
+    for(let i=0;i<setup.count;i++){
+      const row=document.createElement("div"); row.className="prow"+(i===setup.selected?" sel":"");
+      const dot=document.createElement("button"); dot.className="pdot"; dot.style.background=setup.colors[i]; dot.title="Select this player, then pick a paint color";
+      dot.addEventListener("click",()=>{ setup.selected=i; refreshChips(); });
+      const inp=document.createElement("input"); inp.className="pname"; inp.type="text"; inp.maxLength=12;
+      inp.value=setup.names[i]; inp.placeholder="Player "+(i+1);
+      inp.addEventListener("focus",()=>{
+        setup.selected=i;
+        document.querySelectorAll("#chips .prow").forEach((r,j)=>r.classList.toggle("sel",j===i));
+        refreshPaletteSel();
+      });
+      inp.addEventListener("input",()=>{ setup.names[i]=inp.value; });
+      row.appendChild(dot); row.appendChild(inp); c.appendChild(row);
+    }
+    refreshPaletteSel();
+  }
+  function refreshPaletteSel(){
+    const cur=setup.colors[setup.selected];
+    document.querySelectorAll("#palette button").forEach(b=>b.classList.toggle("sel", b.dataset.hex.toUpperCase()===cur.toUpperCase()));
+  }
+
+  // ---------- GAME LIFECYCLE ----------
+  function newGame(){
+    state={ numPlayers:setup.count, colors:setup.colors.slice(0,setup.count),
+            names:setup.names.slice(0,setup.count),
+            scores:{}, shots:{}, level:1, round:1, player:1, stuck:[], wind:0,
+            phase:"setup", aiming:false, pull:null, arrow:null };
+    for(let p=1;p<=4;p++){ state.scores[p]=0; state.shots[p]=[]; }
+    newWind();
+    document.getElementById("players").innerHTML="";
+    document.getElementById("overlay").classList.remove("show");
+    document.getElementById("levelOverlay").classList.remove("show");
+    document.getElementById("setupOverlay").classList.add("show");
+    refreshCount(); refreshChips();
+    updateUI();
+  }
+  function startMatch(){
+    const n=setup.count;
+    state.numPlayers=n; state.colors=setup.colors.slice(0,n);
+    state.names=setup.names.slice(0,n).map((nm,i)=>(nm&&nm.trim())?nm.trim():("Player "+(i+1)));
+    state.scores={}; state.shots={};
+    for(let p=1;p<=n;p++){ state.scores[p]=0; state.shots[p]=[]; }
+    state.level=1; state.player=1; state.stuck=[]; state.arrow=null;
+    buildPlayers(n);
+    document.getElementById("setupOverlay").classList.remove("show");
+    startLevel();
+  }
+  function buildPlayers(n){
+    const box=document.getElementById("players"); box.innerHTML="";
+    for(let p=1;p<=n;p++){
+      const card=document.createElement("div"); card.className="player"; card.dataset.p=p;
+      card.innerHTML=`<div class="who"><span class="dot" style="background:${col(p)}"></span><span class="pn"></span></div>
+                      <div class="score">0</div><div class="shots">—</div>`;
+      card.querySelector(".pn").textContent=nameOf(p);
+      box.appendChild(card);
+    }
+  }
+  function startLevel(){
+    state.round=1; state.player=1; state.stuck=[]; newWind(); initLevelTargets(); showLevelIntro(); updateUI();
+  }
+  function newWind(){ state.wind=(Math.random()*2-1)*L().windMax; }
+
+  function showLevelIntro(){
+    state.phase="intro"; const cfg=L();
+    document.getElementById("lvTitle").textContent=cfg.name;
+    document.getElementById("lvBlurb").textContent=cfg.blurb;
+    document.querySelectorAll("#lvDiff span").forEach((b,i)=>b.classList.toggle("on",i<state.level));
+    document.getElementById("levelOverlay").classList.add("show");
+    clearTimeout(introTimer); introTimer=setTimeout(beginLevel,2400);
+  }
+  function beginLevel(){
+    if(state.phase!=="intro") return;
+    clearTimeout(introTimer);
+    document.getElementById("levelOverlay").classList.remove("show");
+    state.phase="aim"; updateUI();
+  }
+
+  // ---------- AIMING / FIRING ----------
+  function launchVelocity(pull){
+    let vx=(ANCHOR.x-pull.x)*POWER_SCALE, vy=(ANCHOR.y-pull.y)*POWER_SCALE;
+    const mag=Math.hypot(vx,vy);
+    if(mag>MAX_SPEED){ const s=MAX_SPEED/mag; vx*=s; vy*=s; }
+    return {vx,vy,mag:Math.min(mag,MAX_SPEED)};
+  }
+  function toCanvas(e){ const r=canvas.getBoundingClientRect();
+    return {x:(e.clientX-r.left)*(canvas.width/r.width), y:(e.clientY-r.top)*(canvas.height/r.height)}; }
+  canvas.addEventListener("pointerdown",e=>{ if(state.phase!=="aim")return; state.aiming=true; state.pull=toCanvas(e); canvas.setPointerCapture(e.pointerId); });
+  canvas.addEventListener("pointermove",e=>{ if(state.aiming) state.pull=toCanvas(e); });
+  canvas.addEventListener("pointerup",()=>{ if(!state.aiming)return; state.aiming=false;
+    const v=launchVelocity(state.pull); state.pull=null; if(v.mag<MIN_SPEED||v.vx<0.6)return; fire(v); });
+  canvas.addEventListener("pointercancel",()=>{ state.aiming=false; state.pull=null; });
+  function fire(v){ state.phase="fly"; state.arrow={x:ANCHOR.x,y:ANCHOR.y,vx:v.vx,vy:v.vy,px:ANCHOR.x,py:ANCHOR.y}; }
+
+  // ---------- PHYSICS ----------
+  function step(){
+    const a=state.arrow; a.px=a.x; a.py=a.y;
+    a.x+=a.vx; a.y+=a.vy; a.vy+=GRAVITY; a.vx+=state.wind;
+    const ts=levelTargets(), lastT=ts[ts.length-1];
+    for(const t of ts){
+      const tx=targetX(t);
+      if(a.x>=tx && a.px<tx){
+        const f=(tx-a.px)/(a.x-a.px), hy=a.py+f*(a.y-a.py), cy=targetCY(t), dist=Math.abs(hy-cy), angle=Math.atan2(a.vy,a.vx);
+        if(dist<=t.R){
+          const pts=Math.round(scoreForT(dist,t)*(t.mult??1));
+          resolve(pts,{dy:hy-cy,angle,hit:true,t},
+                  pts<0? `<span class="pts">−${Math.abs(pts)}</span> Wrong target!` : null);
+          return;
+        }
+        if(t===lastT){ resolve(0,null,"Missed the target!"); return; }
+      }
+    }
+    if(a.y>=GROUND){ state.stuck.push({x:a.x,y:GROUND,angle:Math.atan2(a.vy,a.vx),player:state.player,ground:true}); resolve(0,null,"Fell short!"); return; }
+    if(a.x>W+60||a.y<-260) resolve(0,null,"Way off!");
+  }
+  function scoreFor(dist){ const r=dist/tR(); for(const ring of RINGS) if(r<=ring.max) return ring.pts; return 0; }
+  function resolve(points,stick,missMsg){
+    if(stick&&stick.hit) state.stuck.push({dy:stick.dy,angle:stick.angle,player:state.player,target:true,tRef:stick.t||L()});
+    if(L().relocate && points>0 && stick && stick.hit) state.pendingRelocate=true;
+    state.scores[state.player]+=points; state.shots[state.player].push(points);
+    state.arrow=null; state.phase="resolve"; updateUI();
+    showToast(points>0? `<span class="pts">+${points}</span> ${ringName(points)}` : (missMsg||"Miss"));
+    setTimeout(nextTurn,1150);
+  }
+  function ringName(p){ return p>=15?"Dead center! ×":p>=10?"Bullseye!":p>=8?"Red ring":p>=6?"Blue ring":p>=4?"Black ring":"White ring"; }
+
+  function nextTurn(){
+    if(state.pendingRelocate){ relocateTarget(); state.pendingRelocate=false; }
+    if(state.player<state.numPlayers){ state.player++; }
+    else{
+      state.round++;
+      if(state.round>ROUNDS_PER_LEVEL){
+        state.level++;
+        if(state.level>LEVELS.length){ endGame(); return; }
+        startLevel(); return;
+      }
+      state.player=1; newWind();
+    }
+    state.phase="aim"; hideToast(); updateUI();
+  }
+
+  function endGame(){
+    state.phase="over";
+    const n=state.numPlayers, totals=[];
+    for(let p=1;p<=n;p++) totals.push({p,s:state.scores[p]});
+    const max=Math.max(...totals.map(t=>t.s));
+    const winners=totals.filter(t=>t.s===max).map(t=>t.p);
+    const title=document.getElementById("winTitle"), final=document.getElementById("winFinal");
+    if(n===1){
+      title.textContent=rating(max); title.style.color=col(1);
+      final.textContent=`${nameOf(1)} — ${max} / ${15*ROUNDS_PER_LEVEL*LEVELS.length}`;
+    } else if(winners.length===1){
+      title.textContent=`${nameOf(winners[0])} wins!`; title.style.color=col(winners[0]);
+      final.textContent=totals.map(t=>`${nameOf(t.p)}: ${t.s}`).join("   ·   ");
+    } else {
+      title.textContent=`Tie: ${winners.map(nameOf).join(" & ")}`; title.style.color="#fff";
+      final.textContent=totals.map(t=>`${nameOf(t.p)}: ${t.s}`).join("   ·   ");
+    }
+    document.getElementById("overlay").classList.add("show");
+    updateUI();
+  }
+  function rating(s){ return s>=250?"Master Archer":s>=180?"Sharpshooter":s>=110?"Marksman":s>=45?"Novice":"Keep practicing"; }
+
+  // ---------- UI ----------
+  function updateUI(){
+    document.querySelectorAll("#players .player").forEach(card=>{
+      const p=+card.dataset.p;
+      card.querySelector(".score").textContent=state.scores[p]??0;
+      card.querySelector(".shots").textContent=shotStr(state.shots[p]||[]);
+      card.querySelector(".dot").style.background=col(p);
+      card.classList.toggle("active", state.phase==="aim" && state.player===p);
+    });
+    const rl=document.getElementById("roundLabel"), tl=document.getElementById("turnLabel");
+    if(state.phase==="setup"){ rl.textContent="Set up the match"; tl.textContent="Choose players & colors"; tl.style.color="#fff"; }
+    else{
+      rl.textContent=`Level ${Math.min(state.level,LEVELS.length)} · Round ${Math.min(state.round,ROUNDS_PER_LEVEL)}/${ROUNDS_PER_LEVEL}`;
+      if(state.phase==="over"){ tl.textContent="Match complete"; tl.style.color="#fff"; }
+      else if(state.phase==="intro"){ tl.textContent="Get ready…"; tl.style.color="#fff"; }
+      else{ tl.textContent=`${nameOf(state.player)} to shoot`; tl.style.color=col(state.player); }
+    }
+    const abs=Math.abs(state.wind), arrow=state.wind<-0.01?"←":state.wind>0.01?"→":"•";
+    document.getElementById("windLabel").innerHTML=`Wind: <b>${state.phase==="setup"?"—":(abs<0.02?"calm":arrow+" "+(abs*55).toFixed(1))}</b>`;
+    document.querySelectorAll("#pips i").forEach((el,i)=>el.classList.toggle("on", state.phase!=="setup" && i<state.level));
+  }
+  function shotStr(a){ return a.length? a.join(" · ") : "—"; }
+
+  const toastEl=document.getElementById("toast");
+  function showToast(h){ toastEl.innerHTML=h; toastEl.classList.add("show"); }
+  function hideToast(){ toastEl.classList.remove("show"); }
+
+  document.getElementById("resetBtn").addEventListener("click",newGame);
+  document.getElementById("overlayBtn").addEventListener("click",newGame);
+  document.getElementById("levelBtn").addEventListener("click",beginLevel);
+  document.getElementById("startBtn").addEventListener("click",startMatch);
+
+  // ---------- RENDER ----------
+  function drawBackground(){
+    const sky=ctx.createLinearGradient(0,0,0,GROUND); sky.addColorStop(0,"#8fd0ec"); sky.addColorStop(1,"#d8f0f7");
+    ctx.fillStyle=sky; ctx.fillRect(0,0,W,GROUND);
+    ctx.fillStyle="rgba(255,247,214,.9)"; ctx.beginPath(); ctx.arc(160,80,34,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle="rgba(255,247,214,.35)"; ctx.beginPath(); ctx.arc(160,80,52,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle="#7fb97f"; hill(0,GROUND,260,70); hill(240,GROUND,340,95); hill(560,GROUND,360,60);
+    const grass=ctx.createLinearGradient(0,GROUND,0,H); grass.addColorStop(0,"#3f8c4f"); grass.addColorStop(1,"#2c6b39");
+    ctx.fillStyle=grass; ctx.fillRect(0,GROUND,W,H-GROUND);
+    ctx.strokeStyle="rgba(255,255,255,.35)"; ctx.lineWidth=3; ctx.setLineDash([10,10]);
+    ctx.beginPath(); ctx.moveTo(ANCHOR.x-30,GROUND+22); ctx.lineTo(ANCHOR.x+60,GROUND+22); ctx.stroke(); ctx.setLineDash([]);
+  }
+  function hill(x,base,w,h){ ctx.beginPath(); ctx.moveTo(x,base); ctx.quadraticCurveTo(x+w/2,base-h,x+w,base); ctx.fill(); }
+
+  function drawWindFlag(){
+    const fx=595, top=250; ctx.strokeStyle="#5b4a33"; ctx.lineWidth=4;
+    ctx.beginPath(); ctx.moveTo(fx,GROUND); ctx.lineTo(fx,top); ctx.stroke();
+    const dir=state.wind>=0?1:-1, span=30+Math.min(Math.abs(state.wind)*110,30);
+    ctx.fillStyle="rgba(216,56,47,.92)"; ctx.beginPath(); ctx.moveTo(fx,top); ctx.lineTo(fx+dir*span,top+8); ctx.lineTo(fx,top+20); ctx.closePath(); ctx.fill();
+  }
+  function drawTarget(){ for(const t of levelTargets()) drawOneTarget(t); }
+  function drawOneTarget(t){
+    const x=targetX(t), cy=targetCY(t), R=t.R;
+    ctx.strokeStyle="#6b4f2e"; ctx.lineWidth=8;
+    ctx.beginPath(); ctx.moveTo(x-6,cy+R-6); ctx.lineTo(x-34,GROUND); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x+6,cy+R-6); ctx.lineTo(x+34,GROUND); ctx.stroke();
+    ctx.fillStyle="#c9b184"; ctx.beginPath(); ctx.arc(x,cy,R+8,0,Math.PI*2); ctx.fill();
+    const bands=t.decoy
+      ? [{r:R,c:"#f7edb0"},{r:R*0.80,c:"#f2dd6e"},{r:R*0.60,c:"#eccd4a"},{r:R*0.40,c:"#dfb92f"},{r:R*0.20,c:"#caa41f"}]
+      : [{r:R,c:"#f3efe4"},{r:R*0.80,c:"#1c1c1c"},{r:R*0.60,c:"#2f8fd0"},{r:R*0.40,c:"#d8382f"},{r:R*0.20,c:"#f6c945"}];
+    for(const b of bands){ ctx.fillStyle=b.c; ctx.beginPath(); ctx.arc(x,cy,b.r,0,Math.PI*2); ctx.fill(); }
+    ctx.strokeStyle="rgba(0,0,0,.18)"; ctx.lineWidth=1; for(const b of bands){ ctx.beginPath(); ctx.arc(x,cy,b.r,0,Math.PI*2); ctx.stroke(); }
+    // inner bonus center — 15 pts (the "X ring")
+    const br=R*0.09;
+    ctx.fillStyle="#ffe27a"; ctx.beginPath(); ctx.arc(x,cy,br,0,Math.PI*2); ctx.fill();
+    ctx.strokeStyle="rgba(120,80,0,.75)"; ctx.lineWidth=1.5; ctx.beginPath(); ctx.arc(x,cy,br,0,Math.PI*2); ctx.stroke();
+    ctx.fillStyle="rgba(0,0,0,.5)"; ctx.beginPath(); ctx.arc(x,cy,2.5,0,Math.PI*2); ctx.fill();
+    if(t.gold){ ctx.strokeStyle="#f6c945"; ctx.lineWidth=5; ctx.beginPath(); ctx.arc(x,cy,R+12,0,Math.PI*2); ctx.stroke(); }
+    if((t.mult??1)!==1){
+      ctx.fillStyle="rgba(20,20,18,.75)"; roundRect(x-24,cy-R-30,48,18,5); ctx.fill();
+      ctx.fillStyle=t.mult>0? "#fff" : "#ffd166"; ctx.font="600 12px Oswald, sans-serif";
+      ctx.textAlign="center"; ctx.textBaseline="middle";
+      ctx.fillText(t.mult>0? "½ PTS" : "−½", x, cy-R-21);
+      ctx.textAlign="left"; ctx.textBaseline="alphabetic";
+    }
+  }
+  function drawArrowShape(x,y,angle,color,len){
+    ctx.save(); ctx.translate(x,y); ctx.rotate(angle);
+    ctx.strokeStyle="#5a4326"; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(-len,0); ctx.lineTo(0,0); ctx.stroke();
+    ctx.fillStyle="#3a3a3a"; ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(-9,-4); ctx.lineTo(-9,4); ctx.closePath(); ctx.fill();
+    ctx.fillStyle=color; ctx.beginPath(); ctx.moveTo(-len,0); ctx.lineTo(-len+12,-6); ctx.lineTo(-len+6,0); ctx.lineTo(-len+12,6); ctx.closePath(); ctx.fill();
+    ctx.restore();
+  }
+  function drawStuck(){
+    for(const s of state.stuck){
+      if(s.target){ const t=s.tRef||L(); drawArrowShape(targetX(t),targetCY(t)+s.dy,s.angle,col(s.player),26); }
+      else drawArrowShape(s.x,s.y,s.angle,col(s.player),26);
+    }
+  }
+  function drawArcher(){
+    if(state.phase==="setup") return;
+    const c=col(state.player), bx=ANCHOR.x, feet=GROUND;
+    let pullDX=0,pullDY=0,drawn=0,aimAngle=0;
+    if(state.aiming&&state.pull){ const v=launchVelocity(state.pull); aimAngle=Math.atan2(v.vy,v.vx);
+      drawn=Math.min(v.mag/MAX_SPEED,1); pullDX=-Math.cos(aimAngle)*drawn*22; pullDY=-Math.sin(aimAngle)*drawn*22; }
+    ctx.lineCap="round";
+    ctx.strokeStyle="#2b2b2b"; ctx.lineWidth=5;
+    ctx.beginPath(); ctx.moveTo(bx-6,feet); ctx.lineTo(bx,ANCHOR.y+8); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(bx+10,feet); ctx.lineTo(bx,ANCHOR.y+8); ctx.stroke();
+    ctx.strokeStyle="#1e1e1e"; ctx.lineWidth=12; ctx.beginPath(); ctx.moveTo(bx,ANCHOR.y+8); ctx.lineTo(bx-2,ANCHOR.y-20); ctx.stroke();
+    ctx.strokeStyle=c; ctx.lineWidth=8; ctx.beginPath(); ctx.moveTo(bx,ANCHOR.y+8); ctx.lineTo(bx-2,ANCHOR.y-20); ctx.stroke();
+    ctx.fillStyle="#e9c39a"; ctx.beginPath(); ctx.arc(bx-2,ANCHOR.y-32,9,0,Math.PI*2); ctx.fill();
+    ctx.strokeStyle=c; ctx.lineWidth=3; ctx.beginPath(); ctx.arc(bx-2,ANCHOR.y-34,9,Math.PI*0.15,Math.PI*0.85); ctx.stroke();
+    ctx.strokeStyle="#2b2b2b"; ctx.lineWidth=5; ctx.beginPath(); ctx.moveTo(bx-2,ANCHOR.y-14); ctx.lineTo(bx+22,ANCHOR.y-6); ctx.stroke();
+    const gripX=bx+24, gripY=ANCHOR.y-6, flex=8+drawn*8;
+    ctx.strokeStyle="#1e1e1e"; ctx.lineWidth=6; ctx.beginPath(); ctx.moveTo(gripX,gripY-32); ctx.quadraticCurveTo(gripX+flex,gripY,gripX,gripY+32); ctx.stroke();
+    ctx.strokeStyle=c; ctx.lineWidth=4; ctx.beginPath(); ctx.moveTo(gripX,gripY-32); ctx.quadraticCurveTo(gripX+flex,gripY,gripX,gripY+32); ctx.stroke();
+    ctx.strokeStyle="rgba(255,255,255,.85)"; ctx.lineWidth=1.5;
+    const nockX=gripX+4+pullDX, nockY=gripY+pullDY;
+    ctx.beginPath(); ctx.moveTo(gripX,gripY-32); ctx.lineTo(nockX,nockY); ctx.lineTo(gripX,gripY+32); ctx.stroke();
+    if(state.aiming&&state.pull) drawArrowShape(nockX+20,nockY,aimAngle,c,24);
+  }
+  function drawAimPreview(){
+    if(!(state.aiming&&state.pull))return;
+    const v=launchVelocity(state.pull); if(v.mag<MIN_SPEED||v.vx<0.6)return;
+    let x=ANCHOR.x,y=ANCHOR.y,vx=v.vx,vy=v.vy; ctx.fillStyle="rgba(255,255,255,.85)";
+    for(let i=0;i<220;i++){ x+=vx; y+=vy; vy+=GRAVITY; if(i%5===0){ ctx.beginPath(); ctx.arc(x,y,2.2,0,Math.PI*2); ctx.fill(); } if(x>W||y>GROUND)break; }
+    const pct=Math.round(v.mag/MAX_SPEED*100), ang=Math.round(Math.atan2(-v.vy,v.vx)*180/Math.PI);
+    ctx.fillStyle="rgba(20,20,18,.75)"; roundRect(ANCHOR.x-40,ANCHOR.y-92,150,26,6); ctx.fill();
+    ctx.fillStyle="#fff"; ctx.font="600 13px Oswald, sans-serif"; ctx.textBaseline="middle";
+    ctx.fillText(`Power ${pct}%   Angle ${ang}°`,ANCHOR.x-32,ANCHOR.y-79);
+  }
+  function roundRect(x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+  function drawFlying(){ if(!state.arrow)return; const a=state.arrow; drawArrowShape(a.x,a.y,Math.atan2(a.vy,a.vx),col(state.player),26); }
+
+  function render(){
+    ctx.clearRect(0,0,W,H);
+    drawBackground(); drawWindFlag(); drawTarget(); drawStuck(); drawArcher(); drawAimPreview(); drawFlying();
+  }
+  function loop(){ if(state.phase==="fly"&&state.arrow) step(); render(); requestAnimationFrame(loop); }
+
+  // ---------- INIT ----------
+  buildSetupUI();
+  newGame();
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
