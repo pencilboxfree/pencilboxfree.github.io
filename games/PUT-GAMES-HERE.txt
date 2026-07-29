@@ -1,0 +1,1 @@
+Drop your game HTML files in this folder: archery-duel.html, skater-pro.html, rocker-platformer.html
