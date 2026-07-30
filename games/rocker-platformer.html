@@ -251,9 +251,11 @@ const PLATFORMS = [
   { x:0,   y:GROUND_TOP, w:VW, h:22 },              // ground
   { x:96,  y:GROUND_TOP-58, w:76, h:6 },            // reachable dodge platform
   { x:300, y:GROUND_TOP-58, w:76, h:6 },            // reachable dodge platform
-  { x:VW-96, y:56, w:96, h:6 },                     // high spawn ledge (unreachable)
+  { x:VW-96, y:56, w:96, h:6 },                     // high spawn ledge, right (unreachable)
+  { x:0,     y:56, w:96, h:6 },                     // high spawn ledge, left (unreachable)
 ];
-const LEDGE = PLATFORMS[3];
+const LEDGE = PLATFORMS[3];        // right spawn ledge
+const LEDGE_L = PLATFORMS[4];      // left spawn ledge
 
 // Generic gravity + one-way platform landing for any entity with x,y,w,h,vy.
 function stepPhysics(e){
@@ -275,13 +277,17 @@ function makePlayer(){
 }
 function makeEnemy(type){
   const zombie = type === "zombie";
-  return { kind:"enemy", type, x:LEDGE.x + LEDGE.w - 18, y:LEDGE.y - 16, w:14, h:16, vx:0, vy:0, dir:-1,
+  const w = zombie ? 21 : 14, h = zombie ? 24 : 16;        // zombies 1.5x mummy size
+  const side = coin() ? 1 : -1;                            // 1 = left ledge, -1 = right ledge
+  const x = side < 0 ? LEDGE.x + LEDGE.w - w - 4 : LEDGE_L.x + 4;
+  return { kind:"enemy", type, x, y:LEDGE.y - h, w, h, vx:0, vy:0, dir:side, side,
+           speed: rnd(0.35, 0.8) + game.level*0.05,        // independent random chase speed
            hp: zombie ? 2 : 1, pts: zombie ? 3 : 1, phase:"ledge", grounded:false,
            atkTimer: rnd(1.0,2.2)/enemyFireFactor(), flash:0, stun:0 };
 }
 function makeBoss(levelIdx){
   const L = LEVELS[levelIdx];
-  return { kind:"boss", level:levelIdx, name:L.boss, x:VW-70, y:GROUND_TOP-90, w:30, h:26, vx:0.6, vy:0,
+  return { kind:"boss", level:levelIdx, name:L.boss, x:VW-70, y:GROUND_TOP-90, w:30, h:26, vx:0.6, vy:0, dir:-1,
            hp:L.hp, maxHp:L.hp, atk:L.atk, rate:L.rate, atkTimer:1.2, bob:0, flash:0,
            swoop:0, swoopCd:rnd(3,5), burst:0 };
 }
@@ -337,9 +343,9 @@ function spawnLogic(){
 function updateEnemy(e){
   const p = game.player;
   if (e.flash > 0) e.flash--;
-  if (e.phase === "ledge"){                 // walk to the left edge of the ledge, then drop
-    e.x -= 0.9;
-    if (e.x <= LEDGE.x - 2) e.phase = "fall";
+  if (e.phase === "ledge"){                 // walk to the inner edge of the spawn ledge, then drop
+    e.x += e.side * 0.9;
+    if (e.side < 0 ? e.x <= LEDGE.x - 2 : e.x + e.w >= LEDGE_L.x + LEDGE_L.w + 2) e.phase = "fall";
     e.y = LEDGE.y - e.h;
   } else {
     if (e.phase === "fall"){ stepPhysics(e); if (e.grounded) e.phase = "chase"; }
@@ -348,7 +354,7 @@ function updateEnemy(e){
       if (e.stun > 0){ e.stun--; }                  // knocked back: briefly can't advance/attack
       else {
         e.dir = p.x < e.x ? -1 : 1;
-        e.x += e.dir * (0.55 + game.level*0.05);
+        e.x += e.dir * e.speed;
         e.atkTimer -= 1/60;
         if (e.atkTimer <= 0 && e.x < VW && e.x > -10){
           const kind = e.type === "zombie" ? "brain" : "tp";
@@ -367,6 +373,7 @@ function updateBoss(b){
   const p = game.player, L = LEVELS[b.level];
   if (b.flash > 0) b.flash--;
   b.bob += 0.05;
+  b.dir = (p.x + p.w/2) < (b.x + b.w/2) ? -1 : 1;   // always face the player (instant flip, all states)
   // Hover/patrol across the right half; owl also swoops toward the player.
   b.x += b.vx;
   if (b.x < VW*0.42 || b.x > VW - b.w - 4) b.vx *= -1;
@@ -383,7 +390,7 @@ function updateBoss(b){
   if (b.atkTimer <= 0){
     const cx = b.x + b.w/2, cy = b.y + b.h;
     if (b.atk === "carrots"){                  // L1: 2 carrots / 2s
-      for (let i=0;i<2;i++){ const a = i? -0.6 : 0.6; game.shots.push(makeProjectile(cx, cy, -2.2, a, "carrot", 1)); }
+      for (let i=0;i<2;i++){ const a = i? -0.6 : 0.6; game.shots.push(makeProjectile(cx, cy, 2.2*b.dir, a, "carrot", 1)); }
       b.atkTimer = b.rate;
     } else if (b.atk === "poison"){            // L2: 3-shot poison burst, then a ~2s safe pause
       if (b.burst <= 0) b.burst = 3;           // start a new burst
@@ -396,7 +403,7 @@ function updateBoss(b){
       game.shots.push(makeProjectile(cx, cy, rnd(-1,1), 1.4, "egg", 1));
       b.atkTimer = b.rate*0.8;
     } else {                                   // L4: frequent lasers
-      game.shots.push(makeProjectile(b.x, b.y+b.h/2, -3.4, 0, "laser", 1));
+      game.shots.push(makeProjectile(b.dir>0 ? b.x+b.w : b.x-6, b.y+b.h/2, 3.4*b.dir, 0, "laser", 1));
       b.atkTimer = b.rate*0.6;
     }
   }
@@ -591,7 +598,7 @@ function drawWorld(){
   // platforms
   for (const pl of PLATFORMS){
     if (pl===PLATFORMS[0]){ R(0,pl.y,VW,pl.h,"#20182f"); R(0,pl.y,VW,3,"#3a2d55"); }
-    else if (pl===LEDGE){ R(pl.x,pl.y,pl.w,pl.h,"#4a3a2a"); R(pl.x,pl.y,pl.w,2,"#6b573c"); }
+    else if (pl===LEDGE || pl===LEDGE_L){ R(pl.x,pl.y,pl.w,pl.h,"#4a3a2a"); R(pl.x,pl.y,pl.w,2,"#6b573c"); }
     else { R(pl.x,pl.y,pl.w,pl.h,"#37507a"); R(pl.x,pl.y,pl.w,2,"#5f7fbf"); }
   }
 }
@@ -616,19 +623,22 @@ function drawEnemy(e){
   const x=e.x|0, y=e.y|0, hit = e.flash>0;
   if (e.type==="mummy"){ R(x+2,y,10,14, hit?"#fff":"#dcdccb"); R(x+2,y+4,10,2,"#b9b9a6"); R(x+2,y+9,10,2,"#b9b9a6");
     R(x+4,y+3,2,2,"#333"); R(x+8,y+3,2,2,"#333"); }
-  else { R(x+2,y,10,14, hit?"#fff":"#5fae5f"); R(x+3,y+3,2,2,"#123"); R(x+7,y+3,2,2,"#123"); R(x+3,y+8,6,1,"#1c3a1c");
-    R(x+1,y+6,2,5,"#4d924d"); R(x+11,y+6,2,5,"#4d924d"); }
-  if (e.type==="zombie" && e.hp>=2) R(x+2,y-2,10,1,"#8f8"); // full-hp tick
+  else { R(x+3,y,15,21, hit?"#fff":"#5fae5f"); R(x+5,y+5,3,3,"#123"); R(x+11,y+5,3,3,"#123"); R(x+5,y+12,9,2,"#1c3a1c");
+    R(x+1,y+9,3,8,"#4d924d"); R(x+17,y+9,3,8,"#4d924d"); }         // zombie drawn 1.5x mummy scale
+  if (e.type==="zombie" && e.hp>=2) R(x+3,y-2,15,1,"#8f8"); // full-hp tick
 }
 function drawBoss(b){
   const x=b.x|0, y=b.y|0, hit=b.flash>0;
   const base = hit ? "#fff" : ["#e9e9e9","#d9c27a","#8a5a2b","#3a3050"][b.level];
+  const flip = b.dir > 0;                                  // art faces left; mirror when facing right
+  if (flip){ ctx.save(); ctx.translate(x*2 + b.w, 0); ctx.scale(-1, 1); }
   R(x,y,b.w,b.h,base);
   if (b.level===0){ R(x+4,y-8,5,9,base); R(x+b.w-9,y-8,5,9,base); R(x+6,y+8,4,4,"#e33"); R(x+b.w-10,y+8,4,4,"#e33"); } // bunny ears + eyes
   if (b.level===1){ R(x,y+b.h,6,6,base); R(x-6,y+b.h,6,6,base); R(x+6,y+7,5,5,"#333"); R(x+b.w-11,y+7,5,5,"#333"); }   // snake tail
   if (b.level===2){ R(x+3,y+6,7,7,"#ffcf4a"); R(x+b.w-10,y+6,7,7,"#ffcf4a"); R(x+5,y+8,3,3,"#111"); R(x+b.w-8,y+8,3,3,"#111"); R(x+b.w/2-2,y+13,4,4,"#ff8a3d"); } // owl eyes+beak
   if (b.level===3){ R(x+5,y+7,6,4,"#ff3b6b"); R(x+b.w-11,y+7,6,4,"#ff3b6b"); R(x+2,y-4,b.w-4,3,"#6a5aa0"); }           // overlord visor
-  // health bar
+  if (flip) ctx.restore();
+  // health bar (never mirrored)
   R(x-2, y-8, b.w+4, 4, "#331"); R(x-2, y-8, (b.w+4)*(b.hp/b.maxHp), 4, "#ff4d6a");
 }
 function drawShot(s){
