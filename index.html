@@ -78,6 +78,7 @@
   .cab.c1:hover, .cab.c1:focus-visible { border-color: var(--pink);  box-shadow: 0 8px 0 rgba(0,0,0,0.35), 0 0 26px rgba(255,93,143,0.4); }
   .cab.c2:hover, .cab.c2:focus-visible { border-color: var(--cyan);  box-shadow: 0 8px 0 rgba(0,0,0,0.35), 0 0 26px rgba(63,210,255,0.4); }
   .cab.c3:hover, .cab.c3:focus-visible { border-color: var(--green); box-shadow: 0 8px 0 rgba(0,0,0,0.35), 0 0 26px rgba(93,255,143,0.4); }
+  .cab.c4:hover, .cab.c4:focus-visible { border-color: var(--yellow); box-shadow: 0 8px 0 rgba(0,0,0,0.35), 0 0 26px rgba(255,210,63,0.4); }
   .screen {
     height: 130px;
     border: 3px solid #000;
@@ -92,6 +93,7 @@
   .c1 .screen { background: linear-gradient(160deg, #4a1f36, #7a2f4f); }
   .c2 .screen { background: linear-gradient(160deg, #123a52, #1f6b8f); }
   .c3 .screen { background: linear-gradient(160deg, #1f4a2a, #2f7a44); }
+  .c4 .screen { background: linear-gradient(160deg, #5a4a12, #8f7a1f); }
   .cab h2 {
     font-size: 1.15rem;
     text-transform: uppercase;
@@ -101,6 +103,7 @@
   .c1 h2 { color: var(--pink); }
   .c2 h2 { color: var(--cyan); }
   .c3 h2 { color: var(--green); }
+  .c4 h2 { color: var(--yellow); }
   .cab p { color: var(--dim); font-size: 0.88rem; line-height: 1.5; }
   .players {
     display: inline-block;
@@ -140,6 +143,13 @@
       <div class="screen" aria-hidden="true">🎸</div>
       <h2>Rock N' Roll Rumble</h2>
       <p>Rock-themed action platformer. Battle mummies, zombies, and four unique bosses across four levels — with an original chiptune soundtrack.</p>
+      <span class="players">1 Player</span>
+    </a>
+
+    <a class="cab c4" href="games/whac-a-bunny.html">
+      <div class="screen" aria-hidden="true">🐰</div>
+      <h2>Whac-A-Bunny</h2>
+      <p>Bonk the bunnies before they dive back into their burrows! Grab the hammer and score as many hits as you can in 60 seconds.</p>
       <span class="players">1 Player</span>
     </a>
   </main>
