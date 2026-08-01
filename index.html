@@ -11,7 +11,7 @@
 <!-- social sharing -->
 <meta property="og:type" content="website">
 <meta property="og:title" content="Pencilbox Games">
-<meta property="og:description" content="Five free browser games. No downloads, no ads, no sign-up.">
+<meta property="og:description" content="Six free browser games. No downloads, no ads, no sign-up.">
 <meta name="twitter:card" content="summary">
 
 <!-- inline favicon: no extra request, no 404 -->
@@ -30,6 +30,7 @@
     --cyan: #3fd2ff;
     --green: #5dff8f;
     --orange: #ff9b47;
+    --violet: #b57bff;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
@@ -110,6 +111,7 @@
   .cab.c3:hover { border-color: var(--green);  box-shadow: 0 8px 0 rgba(0,0,0,0.35), 0 0 26px rgba(93,255,143,0.4); }
   .cab.c4:hover { border-color: var(--yellow); box-shadow: 0 8px 0 rgba(0,0,0,0.35), 0 0 26px rgba(255,210,63,0.4); }
   .cab.c5:hover { border-color: var(--orange); box-shadow: 0 8px 0 rgba(0,0,0,0.35), 0 0 26px rgba(255,155,71,0.4); }
+  .cab.c6:hover { border-color: var(--violet); box-shadow: 0 8px 0 rgba(0,0,0,0.35), 0 0 26px rgba(181,123,255,0.4); }
 
   .screen {
     /* fixed ratio instead of fixed height: no letterboxing at any width */
@@ -129,6 +131,7 @@
   .c3 .screen { background: linear-gradient(160deg, #1f4a2a, #2f7a44); }
   .c4 .screen { background: linear-gradient(160deg, #5a4a12, #8f7a1f); }
   .c5 .screen { background: linear-gradient(160deg, #52260f, #8f4a1f); }
+  .c6 .screen { background: linear-gradient(160deg, #3a2154, #63389c); }
 
   .cab h2 {
     font-size: clamp(1rem, 2.6vw, 1.15rem);
@@ -145,6 +148,7 @@
   .c3 h2 { color: var(--green); }
   .c4 h2 { color: var(--yellow); }
   .c5 h2 { color: var(--orange); }
+  .c6 h2 { color: var(--violet); }
 
   .cab p {
     color: var(--dim);
@@ -193,7 +197,7 @@
 
   <!--
     ADDING A GAME: drop the .html file in games/, then copy one block below.
-    Change the cN class (c1–c5 set the colour), the href, emoji, title, blurb and badge.
+    Change the cN class (c1–c6 set the colour), the href, emoji, title, blurb and badge.
   -->
   <main aria-label="Game selection">
     <a class="cab c5" href="games/mafia-grand-prix.html">
@@ -228,6 +232,13 @@
       <div class="screen" aria-hidden="true">🐰</div>
       <h2>Whac-A-Bunny</h2>
       <p>Bonk the bunnies before they dive back into their burrows! Grab the hammer and score as many hits as you can in 60 seconds.</p>
+      <span class="players">1 Player</span>
+    </a>
+
+    <a class="cab c6" href="games/stickman-swing-parkour.html">
+      <div class="screen" aria-hidden="true">🪢</div>
+      <h2>Stickman Swing Parkour</h2>
+      <p>Grapple, swing and leap your way to the flag. Build momentum to clear the big gaps, hit the checkpoints, and chase your best time.</p>
       <span class="players">1 Player</span>
     </a>
   </main>
