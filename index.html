@@ -11,7 +11,7 @@
 <!-- social sharing -->
 <meta property="og:type" content="website">
 <meta property="og:title" content="Pencilbox Games">
-<meta property="og:description" content="Six free browser games. No downloads, no ads, no sign-up.">
+<meta property="og:description" content="Seven free browser games. No downloads, no ads, no sign-up.">
 <meta name="twitter:card" content="summary">
 
 <!-- inline favicon: no extra request, no 404 -->
@@ -31,6 +31,7 @@
     --green: #5dff8f;
     --orange: #ff9b47;
     --violet: #b57bff;
+    --gold: #e0b862;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
@@ -112,6 +113,7 @@
   .cab.c4:hover { border-color: var(--yellow); box-shadow: 0 8px 0 rgba(0,0,0,0.35), 0 0 26px rgba(255,210,63,0.4); }
   .cab.c5:hover { border-color: var(--orange); box-shadow: 0 8px 0 rgba(0,0,0,0.35), 0 0 26px rgba(255,155,71,0.4); }
   .cab.c6:hover { border-color: var(--violet); box-shadow: 0 8px 0 rgba(0,0,0,0.35), 0 0 26px rgba(181,123,255,0.4); }
+  .cab.c7:hover { border-color: var(--gold);   box-shadow: 0 8px 0 rgba(0,0,0,0.35), 0 0 26px rgba(224,184,98,0.4); }
 
   .screen {
     /* fixed ratio instead of fixed height: no letterboxing at any width */
@@ -132,6 +134,7 @@
   .c4 .screen { background: linear-gradient(160deg, #5a4a12, #8f7a1f); }
   .c5 .screen { background: linear-gradient(160deg, #52260f, #8f4a1f); }
   .c6 .screen { background: linear-gradient(160deg, #3a2154, #63389c); }
+  .c7 .screen { background: linear-gradient(160deg, #1c2434, #5a3a22); }
 
   .cab h2 {
     font-size: clamp(1rem, 2.6vw, 1.15rem);
@@ -149,6 +152,7 @@
   .c4 h2 { color: var(--yellow); }
   .c5 h2 { color: var(--orange); }
   .c6 h2 { color: var(--violet); }
+  .c7 h2 { color: var(--gold); }
 
   .cab p {
     color: var(--dim);
@@ -197,7 +201,7 @@
 
   <!--
     ADDING A GAME: drop the .html file in games/, then copy one block below.
-    Change the cN class (c1–c6 set the colour), the href, emoji, title, blurb and badge.
+    Change the cN class (c1–c7 set the colour), the href, emoji, title, blurb and badge.
   -->
   <main aria-label="Game selection">
     <a class="cab c5" href="games/mafia-grand-prix.html">
@@ -241,11 +245,18 @@
       <p>Grapple, swing and leap your way to the flag. Build momentum to clear the big gaps, hit the checkpoints, and chase your best time.</p>
       <span class="players">1 Player</span>
     </a>
+
+    <a class="cab c7" href="games/lost-sword-of-the-gods.html">
+      <div class="screen" aria-hidden="true">⚔️</div>
+      <h2>The Lost Sword of the Gods</h2>
+      <p>Turn-based fantasy RPG. Explore a world you uncover section by section, upgrade weapons and armour, fight down to the Underworld — then find the ending after the ending.</p>
+      <span class="players">1 Player</span>
+    </a>
   </main>
 
   <footer>
     Made with ♥ for friends &amp; family<br>
-    Works in Chrome, Firefox, Safari, Edge &amp; Opera — keyboard required
+    Works in Chrome, Firefox, Safari, Edge &amp; Opera<br>Most games need a keyboard — The Lost Sword of the Gods plays on touch too
   </footer>
 </body>
 </html>
