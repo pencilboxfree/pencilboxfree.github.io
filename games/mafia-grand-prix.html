@@ -35,6 +35,10 @@
   .backlink{margin:14px 0 0;font-size:12px}
   .backlink a{color:#8892a4;text-decoration:none}
   .backlink a:hover{color:#ffd23f;text-decoration:underline}
+  #replayBar{position:absolute;left:0;right:0;bottom:10px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;padding:0 10px}
+  #replayBar button{font-size:13px;padding:7px 13px;background:rgba(20,24,34,.88);border-color:#3a4152}
+  #replayBar button.on{background:#ffd23f;color:#221;border-color:#ffd23f}
+  #btnReplay{border-color:#ffd23f;color:#ffd23f}
   #results h2{font-size:40px;color:#ffd23f}
   #results .unlock{color:#7df07d;font-weight:700;margin:4px 0}
   .btnrow{display:flex;gap:10px;margin-top:16px}
@@ -61,9 +65,19 @@
     <p class="help">&#8593; accelerate &nbsp;&middot;&nbsp; &#8595; reverse (50%) &nbsp;&middot;&nbsp; &#8592;/&#8594; steer &nbsp;&middot;&nbsp; R restart &nbsp;&middot;&nbsp; M music<br>
     Spin a rival out for a 10s +10% speed boost &mdash; but botch it and you respawn at 0 MPH.<br>
     Brake into corners &mdash; holding full lock at high speed breaks traction and spins you out.<br>
+    Get boxed in while slow and you're CAPTURED &mdash; mash &#8592;/&#8594; to break free before the timer runs out.<br>
+    After every race you can &#9654; Watch Replay &mdash; space pauses, &#8592;/&#8594; scrub, Esc exits.<br>
     Win all 3 tracks to unlock Hard Mode. Win Hard Mode to unlock the Golden Car.</p>
     <button id="btnReset">Reset progress</button>
     <p class="backlink"><a href="../index.html">&larr; All Pencilbox Games</a></p>
+  </div>
+
+  <div id="replayBar" class="hidden">
+    <button id="rpPlay">❚❚ Pause</button>
+    <button id="rpRestart">↺ Restart</button>
+    <button id="rpSlow">0.5×</button>
+    <button id="rpFast">2×</button>
+    <button id="rpExit">✕ Exit</button>
   </div>
 
   <div id="results" class="overlay hidden">
@@ -71,6 +85,7 @@
     <p id="resSub" class="sub"></p>
     <div id="resUnlocks"></div>
     <div class="btnrow">
+      <button id="btnReplay">▶ Watch Replay</button>
       <button id="btnRetry">Retry</button>
       <button id="btnNext">Next Track</button>
       <button id="btnMenu">Menu</button>
@@ -121,6 +136,14 @@ addEventListener('keydown', e => {
   keys[e.key] = true;
   if ((e.key === 'r' || e.key === 'R') && (state === 'race' || state === 'count')) (bossMode ? beginBossRace() : startRace(trackIdx));
   if (state === 'intro' && (e.key === 'Enter' || e.key === ' ')) advanceIntroPhase();
+  if (cine && (e.key === 'Enter' || e.key === ' ')) skipCine();
+  if (state === 'replay'){                       // keyboard mirrors the on-screen buttons
+    if (e.key === ' '){ rpPlay.onclick(); }
+    if (e.key === 'r' || e.key === 'R'){ replay.i = 0; replay.acc = 0; replay.playing = true; syncReplayUI(); }
+    if (e.key === 'Escape' || e.key === 'Enter') exitReplay();
+    if (e.key === 'ArrowLeft')  replay.i = Math.max(0, replay.i - REC_HZ);
+    if (e.key === 'ArrowRight') replay.i = Math.min(rec.f.length-1, replay.i + REC_HZ);
+  }
   if (e.key === 'm' || e.key === 'M'){
     musicOn = !musicOn;
     if (!musicOn) stopMusic();
@@ -181,6 +204,9 @@ function startRace(t){
     ais.push(makeAI(mults[i], skills[i], stats.max, -80-row*85, col ? 70 : -70));
   }
   civs = []; toasts = []; civTimer = 1.5;
+  cops = []; cine = null; capture = null; sirenT = 0; copCalm = 4; buildCopZones();
+  replay = null; replayBar.classList.add('hidden'); recStart();
+  radio = null; radioCool = 0; radioStop();
   bossMode = false; boss = null; bombs = []; pads = []; padT = 0; stopRotor();
   startMusic();
   finishedCount = 0; playerRank = 0; raceT = 0; raceId++;
@@ -212,6 +238,7 @@ function effMax(){
 }
 
 function respawnPlayer(){
+  recEvent = 2;
   player.spinKind = 'crash';
   player.pspin = 1.1;   // spin-out animation, then reset in update
 }
@@ -246,7 +273,9 @@ function updatePlayer(dt){
   if (p.invuln > 0) p.invuln -= dt;
   if (p.boostT > 0) p.boostT -= dt;
 
-  const locked = state !== 'race' || p.finished;
+  // held by the police, or mid-arrest: no driving input (escape mashing is separate)
+  const held = (cine && cine.type === 'arrest');   // moving capture leaves you driving
+  const locked = state !== 'race' || p.finished || held;
   let steer = 0;
   if (!locked){
     if (kUp())        p.speed += st.accel*dt;
@@ -393,15 +422,729 @@ function updateCiv(c, dt){
   if (c.knocked) c.speed += ((c.bike ? 95 : 140) - c.speed)*0.8*dt;
 }
 
+// ============================== POLICE INTERCEPTORS ==============================
+// Cops are ordinary vehicles: same dimensions, same impulse physics, same renderer.
+// Only their steering brain and their pin/capture rules are new.
+let cops = [], copZones = [], copZone = 0, cine = null, capture = null, sirenT = 0, copIntercepts = 1;
+const COP_TOP  = 0.94;           // settled pace vs player max — catchable, never hopeless
+const COP_MAX  = 5;              // hard cap on live cruisers (perf + fairness)
+const COP_LULL = 2;              // guaranteed quiet seconds between encounters
+let copCalm = 0;                 // counts down the lull
+
+// Pursuit zones: recurring stretches across the whole lap. More encounters, and
+// Hard Mode calls in bigger squads.
+// Ambush points are re-rolled every race and jittered, so they are never in the
+// same place twice and the player cannot learn where to expect them.
+function buildCopZones(){
+  copZones = []; copZone = 0;
+  const len = TRK.len;
+  let f = 0.06 + rnd()*0.05;
+  while (f < 0.97){
+    const lo = hardMode ? 3 : 2, hi = hardMode ? 5 : 4;
+    copZones.push({ s: Math.round(len*f), n: lo + Math.floor(rnd()*(hi-lo+1)), fired: false });
+    f += 0.040 + rnd()*0.055;                   // irregular spacing, never a rhythm
+  }
+}
+
+// Cruisers merge in from the verge: they start off-road on the left or right,
+// well clear of the player, then sweep onto the racing surface.
+function spawnCop(side, i, total){
+  if (cops.length >= COP_MAX) return;
+  const outside = (HALF + 95 + rnd()*55) * side;      // parked/rolling on the shoulder
+  // Mixed approach so the player can never predict where they'll come from:
+  // some lie in wait down the road and pull out as you reach them, others
+  // slip in from a side road behind. Staggered so a squad never enters as a wall.
+  const ahead = rnd() < 0.5;
+  const s = ahead ? player.s + (340 + i*120 + rnd()*260)
+                  : player.s - (250 + i*135 + rnd()*90);
+  cops.push({
+    kind:'cop', s, x: outside, speed: player.speed*0.55 + 120,
+    w:26, l:50, color:'#20304e', ang:0, tang:0, vx:0,
+    mode:'merge', side, merge: 0.9 + rnd()*0.5,       // seconds spent sweeping on
+    role: ['ram','flank','flank','trail','ram'][i % 5],
+    stun:0, cool:0, push:0, wig: rnd()*6.28, life:0,
+    ramT: 1.4 + rnd()*2.2, ramming:0, miss: rnd() < 0.28, // some attempts are fumbled
+    intercept:false, holdT:0
+  });
+}
+function beginPursuit(n){
+  n = Math.max(2, Math.min(5, n));                    // squads are always 2–5 strong
+  const room = COP_MAX - cops.length;
+  n = Math.min(n, room);
+  if (n < 2) return 0;                                // no room yet — leave the zone armed
+  // split the squad across both verges when there's more than one car
+  let side = rnd() < 0.5 ? -1 : 1;
+  for (let i = 0; i < n; i++){
+    spawnCop(side, i, n);
+    if (n > 1 && i % 2 === 0) side = -side;            // alternate flanks
+  }
+  // NO warning of any kind: no toast, no siren, no cutscene, no camera move.
+  // The first thing the player sees is a cruiser sliding in off the verge.
+  sirenT = 0; copCalm = COP_LULL;
+  copIntercepts = 1 + (rnd() < 0.55 ? 1 : 0);   // this squad closes with 1 or 2
+  recEvent = 3;                       // recorded only, shown in replay
+  return n;
+}
+
+// ---- squad coordination: only 1-2 cars actively close for a capture ----
+const MAX_INTERCEPT   = 2;     // never more than two closing at once
+const INTERCEPT_NEAR  = 92;    // along-track proximity that counts as "on him"
+const INTERCEPT_LAT   = 60;    // lateral proximity for the same
+const INTERCEPT_HOLD  = 1.5;   // continuous seconds glued before a capture locks in
+const INTERCEPT_RANGE = 430;   // beyond this a car cannot hold the interceptor role
+const CAPTURE_BREAK_S = 230;   // longitudinal gap that shakes an established capture
+const CAPTURE_BREAK_X = 95;    // lateral gap that does the same
+
+function eligibleInterceptor(c){
+  return c.stun <= 0 && c.mode !== 'retire' && c.mode !== 'merge' &&
+         Math.abs(c.s - player.s) < INTERCEPT_RANGE;
+}
+// Runs once per frame for the whole squad. Promotes the closest eligible cars and
+// demotes any that fall away, so another car naturally takes over the interception.
+function updateInterceptors(dt){
+  for (const c of cops){
+    if (c.intercept && !eligibleInterceptor(c)){ c.intercept = false; c.holdT = 0; }
+  }
+  const want = Math.min(copIntercepts || 1, MAX_INTERCEPT, cops.length);
+  let active = cops.filter(c => c.intercept);
+  if (active.length >= want) return;
+  const pool = cops.filter(c => !c.intercept && eligibleInterceptor(c))
+                   .sort((a,b) => Math.abs(a.s-player.s) - Math.abs(b.s-player.s));
+  for (const c of pool){
+    if (active.length >= want) break;
+    c.intercept = true; c.holdT = 0; active.push(c);
+  }
+}
+
+// ---- dialogue validation: every line must describe what is ACTUALLY happening ----
+// Counts cruisers genuinely closing a pincer on the player right now.
+function nearestCop(){
+  let best = null, bd = 1e9;
+  for (const o of cops){
+    if (o.stun > 0 || o.mode === 'retire' || o.mode === 'merge') continue;
+    const d = Math.abs(o.s - player.s);
+    if (d < bd){ bd = d; best = o; }
+  }
+  return best;
+}
+function countPinners(){
+  let n = 0;
+  for (const o of cops){
+    if (o.stun > 0 || o.mode === 'retire' || o.mode === 'merge') continue;
+    if (Math.abs(o.s - player.s) < 90 && Math.abs(o.x - player.x) < 80) n++;
+  }
+  return n;
+}
+// Single source of truth. Returns false unless THIS car, right now, satisfies the
+// real gameplay conditions the line claims. No timers, no random triggering.
+function canPoliceSpeak(c, ev){
+  if (!c || cops.indexOf(c) < 0) return false;              // car must still exist
+  if (c.stun > 0 && ev !== 'broke') return false;            // disabled cars don't talk
+  //   ('broke' is the one exception: a car just shoved aside still radios it in)
+  if (Math.abs(c.x) > HALF + 45) return false;              // must be on the racing surface
+  if (ev !== 'off' && (c.mode === 'retire' || c.mode === 'merge')) return false;
+  const ds  = player.s - c.s;                               // + = player ahead
+  const gap = Math.abs(ds);
+  if (gap > POLICE_RADIO_RANGE) return false;               // OUT OF RADIO RANGE: always silent
+  const inView = ds < 560 && ds > -360;                     // roughly what the camera holds
+  switch (ev){
+    // detection: first acquisition, close enough to see, pursuit actually starting
+    case 'spot':  return !c.spotted && gap < 420 && inView && c.mode === 'chase';
+    // closing: actively pursuing AND measurably reducing the gap
+    case 'close': return gap < 340 && inView && c.closeRate < -35;
+    // ram: the lunge has actually begun and it is within striking range
+    case 'ram':   return c.ramming > 0 && gap < 155;
+    // cut off: a lunge that is crossing laterally to block the player's line
+    case 'block': return c.ramming > 0 && gap < 155 && Math.abs(player.x - c.x) > 32;
+    // missed: an attempt genuinely finished without contact
+    case 'miss':  return c.ramMissed === true && gap < 320;
+    // getting away: was engaged, gap now large AND still growing
+    case 'flee':  return c.wasClose && !c.fledSaid && gap > 330 && c.closeRate > 40;
+    // box in: needs a real multi-car pincer, never a lone car
+    case 'box':   return countPinners() >= 2 && capture && capture.t > 0.3 && !capture.on;
+    // capture claims require the capture state to actually be set
+    case 'caught':return !!(capture && capture.on);
+    case 'broke': return true;                               // range already enforced above
+    // breaking off: only worth saying while still near enough to have been in it
+    case 'off':   return c.mode === 'retire';
+  }
+  return false;
+}
+// EVENT -> VALIDATE -> pick among valid lines -> speak. Randomness only picks wording.
+function copSay(key, c){
+  if (!canPoliceSpeak(c, key)) return false;
+  const who = Math.max(1, cops.indexOf(c) + 1);
+  const ev = police_say(key, who, false, c);                 // returns null if on cooldown
+  if (!ev) return false;                                     // skipped, never queued
+  if (rec) recRadio = ev;
+  return true;
+}
+
+function updateCop(c, dt){
+  c.life += dt;
+  c.tang = Math.atan(roadSlope(c.s));
+  // arrest staging: cruisers glide into a ring around the stopped car, engines off
+  if (cine && cine.type === 'arrest'){
+    if (c.slot === undefined) c.slot = cops.indexOf(c);
+    const ring = [[62, -46], [-64, -40], [4, 74]][c.slot % 3];
+    c.s += ((player.s + ring[0]) - c.s) * Math.min(1, 3.4*dt);
+    c.x += ((player.x + ring[1]) - c.x) * Math.min(1, 3.4*dt);
+    c.speed = 0; c.ang = 0; c.stun = 0;
+    return;
+  }
+  if (c.stun > 0){                       // shaken off after a heavy hit
+    c.stun -= dt;
+    c.speed = Math.max(0, c.speed - 240*dt);
+    c.x += c.vx*dt; c.vx *= Math.exp(-2.4*dt);
+    c.ang = Math.sin(c.stun*16)*0.35;
+    c.s += c.speed*dt;
+    return;
+  }
+  c.ang = 0;
+  if (c.cool > 0) c.cool -= dt;
+  const pmax = player.stats.max;
+  const ds = player.s - c.s;             // + = player ahead of the cop
+  const captured = capture && capture.on;
+  // live telemetry the dialogue validator reads: is this car actually closing?
+  const gapNow = Math.abs(ds);
+  if (c.prevDs === undefined) c.prevDs = gapNow;
+  const dGap = (gapNow - c.prevDs) / Math.max(dt, 1e-6);     // + = falling behind
+  c.closeRate = (c.closeRate || 0)*0.85 + dGap*0.15;
+  c.prevDs = gapNow;
+  if (gapNow < 300) { c.wasClose = true; c.fledSaid = false; }
+
+  // --- break off: a pursuit doesn't last forever. They peel away and drop back,
+  //     which creates the quiet stretch before the next squad is called in. ---
+  if (c.mode !== 'retire' && !captured && c.life > 19 + (c.wig % 5)){
+    c.mode = 'retire';
+    if (!cops.some(o => o !== c && o.mode !== 'retire')){ copSay('off', c); toast('They broke off the pursuit', '#9fd0a0'); }
+  }
+  if (c.mode === 'retire'){
+    c.speed += (player.speed*0.55 - c.speed) * 0.6 * dt;   // eases off, never slams the brakes
+    c.x += ((HALF+60)*(c.side||1) - c.x) * 0.5 * dt;       // drifts back toward the verge
+    c.ang = 0; c.s += c.speed*dt;
+    return;
+  }
+
+  // --- merge: sweep in off the shoulder onto the racing surface ---
+  if (c.mode === 'merge'){
+    c.merge -= dt;
+    const tgt = c.side * (HALF - 40);                    // aim for the outside lane
+    c.x += (tgt - c.x) * Math.min(1, 2.6*dt);
+    c.ang = Math.max(-0.3, Math.min(0.3, (tgt - c.x) * 0.006));
+    c.speed += (pmax*1.16 - c.speed) * 1.9 * dt;         // hard launch to close the gap
+    c.s += c.speed*dt;
+    if (c.merge <= 0 && Math.abs(c.x) < HALF - 18){ c.mode = 'chase'; }
+    return;
+  }
+
+  // --- target line: intercept where the player WILL be, not where they are ---
+  const lead = Math.max(0, Math.min(1.1, ds/520));
+  let tx = player.x + (player.latV||0) * lead * 0.55;
+  // roles keep a squad from stacking into one lane
+  if (c.role === 'flank') tx += (c.side || 1) * 46;
+  if (c.role === 'trail') tx += Math.sin(c.life*0.9) * 55;
+
+  // --- ram cycle: line up, lunge at the player, then peel off and re-arm ---
+  if (c.ramming > 0){
+    c.ramming -= dt;
+    tx = c.miss ? player.x + (c.side||1)*54 : player.x;  // fumbled runs slide wide
+    if (c.ramming <= 0){
+      c.ramMissed = !c.ramHit;                            // verified: attempt made, no contact
+      if (c.ramMissed) copSay('miss', c);
+      c.ramMissed = false;
+      c.cool = Math.max(c.cool, 1.1); c.ramT = 2.2 + rnd()*2.6; c.miss = rnd() < 0.28;
+    }
+  } else if (c.role !== 'trail' && c.cool <= 0 && Math.abs(ds) < 210){
+    c.ramT -= dt;                                        // only lunge from striking range
+    if (c.ramT <= 0){
+      c.ramming = 1.5 + rnd()*0.6; c.ramHit = false; c.ramMissed = false;   // attempt begins
+      copSay(Math.abs(player.x - c.x) > 32 ? 'block' : 'ram', c);
+    }
+  }
+  if (c.intercept && (captured || (Math.abs(ds) < 90 && c.mode === 'pin' && c.ramming <= 0))){
+    // designated interceptor: sit alongside and squeeze toward the nearest verge
+    tx = player.x + (c.x < player.x ? -34 : 34);
+  } else if (!c.intercept && Math.abs(ds) < 130 && c.ramming <= 0){
+    // everyone else keeps a working distance instead of magnetically stacking up
+    tx = player.x + (c.x < player.x ? -1 : 1) * 82;
+  }
+  // don't plough through the racers — brief lateral dodge, same idea as the AI brain
+  for (const a of ais){
+    if (a.finished || a.mode !== 'race') continue;
+    const dd = a.s - c.s;
+    if (dd > 0 && dd < 210 && Math.abs(a.x - c.x) < 50){
+      tx = a.x > c.x ? a.x - 95 : a.x + 95; break;
+    }
+  }
+  tx += Math.sin(c.life*1.6 + c.wig) * 14;                 // slight human weave
+  tx = Math.max(-HALF+22, Math.min(HALF-22, tx));
+
+  // --- speed: closes gaps, but capped below the player's maximum ---
+  // Closes the gap, then rides alongside matching pace. It can sit on you, but it
+  // cannot *stop* you: capture needs you slowed below 235, so a clean fast lap is safe.
+  // Arrives noticeably quicker, then bleeds that advantage off SLOWLY once engaged —
+  // `spool` decays over ~7s of contact, so there is no sudden braking.
+  c.spool = (c.spool === undefined) ? 1 : Math.max(0, c.spool - (Math.abs(ds) < 300 ? dt/7 : -dt*0.5));
+  c.spool = Math.min(1, c.spool);
+  const surge = 1 + 0.17*c.spool;                                        // 1.17x fresh → 1.0x engaged
+  let want;
+  if (ds > 220)       want = pmax * surge * (1 + Math.min(0.04, ds/14000));  // run-down
+  else if (ds < -160) want = Math.max(player.speed * 0.80, 110);             // overshot, drop back and re-hook
+  else                want = Math.min(pmax*1.02*surge, Math.max(player.speed + 25, pmax*COP_TOP));
+  if (copSay('flee', c)) c.fledSaid = true;                                  // validated: losing him
+  if (c.ramming > 0)  want = Math.max(want, player.speed + 195);             // lunge drives through
+  if (captured || c.mode === 'pin') want = Math.min(want, Math.max(player.speed, 150));
+  // stamina: after a long stint glued to you it drops back, giving a clean break
+  c.push = (c.push || 0) + (Math.abs(ds) < 220 ? dt : -dt*0.7);
+  c.push = Math.max(0, Math.min(9, c.push));
+  if (c.push >= 8) c.cool = Math.max(c.cool, 2.6);
+  if (c.cool > 0){ want *= 0.80; c.push = Math.max(0, c.push - dt*3); }  // lull after a ram / stint
+  want /= (1 + Math.abs(roadSlope(c.s))*0.55);             // cops brake for corners too
+  const acc = c.ramming > 0 ? 760 : 300;                   // a lunge is a real stab of throttle
+  c.speed += Math.max(-420*dt, Math.min(acc*dt, want - c.speed));
+
+  // --- mode: chase until alongside, then pin; ram when closing from behind ---
+  const near = Math.abs(ds) < 95 && Math.abs(player.x - c.x) < 105;
+  c.mode = near ? 'pin' : 'chase';
+  if (copSay('spot', c)) c.spotted = true;      // first genuine acquisition only
+  else if (c.spotted) copSay('close', c);       // then only while measurably closing
+  // keep the squad spread out — cruisers nudge away from each other, not into a stack
+  for (const o of cops){
+    if (o === c) continue;
+    if (Math.abs(o.s - c.s) < 70 && Math.abs(o.x - c.x) < 46) tx += (c.x - o.x) * 0.9 || 30;
+  }
+  tx = Math.max(-HALF+22, Math.min(HALF-22, tx));
+  const rate = c.ramming > 0 ? 380 : 250;              // lunges steer harder
+  const steer = Math.max(-rate*dt, Math.min(rate*dt, tx - c.x));
+  c.x += steer;
+  c.x = Math.max(-HALF-30, Math.min(HALF+30, c.x));
+  c.ang = Math.max(-0.24, Math.min(0.24, steer/(rate*dt+1e-6)*(c.ramming > 0 ? 0.24 : 0.16)));
+  c.s += c.speed*dt;
+}
+
+// --- capture: only from a believable pin, never a single tap ---
+function updateCapture(dt){
+  const p = player;
+  if (cine && cine.type === 'arrest') return;      // busted: the cutscene owns it now
+  if (!capture) capture = { on:false, t:0, timer:0, esc:0, lastKey:0, busted:false, cop:null };
+  if (capture.on){
+    capture.timer -= dt;
+    // ---- the capture only holds while an interceptor stays on him ----
+    let k = capture.cop;
+    const lost = !k || cops.indexOf(k) < 0 || k.stun > 0 ||
+                 Math.abs(k.s - p.s) > CAPTURE_BREAK_S || Math.abs(k.x - p.x) > CAPTURE_BREAK_X;
+    if (lost){
+      // another interceptor already alongside can take the handover
+      const relay = cops.find(c => c !== k && c.intercept && c.stun <= 0 &&
+        Math.abs(c.s - p.s) < INTERCEPT_NEAR + 40 && Math.abs(c.x - p.x) < INTERCEPT_LAT + 25);
+      if (relay) capture.cop = relay;
+      else {                                   // outdriven — capture breaks, race continues
+        capture.on = false; capture.t = 0; capture.esc = 0;
+        p.invuln = 1.2;
+        cine = null;
+        radioCool = 0; copSay('broke', nearestCop());
+        toast('SHOOK THEM OFF!', '#7df07d');
+        sfx('escape');
+        return;
+      }
+    }
+    // escape by swerving: the same steering that shakes them also fills the meter
+    const dir = kLeft() ? -1 : (kRight() ? 1 : 0);
+    if (dir && dir !== capture.lastKey){ capture.esc += 1; capture.lastKey = dir; }
+    if (capture.esc >= 14){                       // broke free
+      capture.on = false; capture.t = 0; capture.esc = 0;
+      p.invuln = 1.6; p.speed = Math.max(p.speed, 210);
+      const witness = nearestCop();                 // chosen before they get shoved aside
+      for (const c of cops){ c.stun = 1.1; c.cool = 2.4; c.vx = (c.x - p.x)*2.2; c.intercept = false; c.holdT = 0; }
+      cine = null;
+      radioCool = 0; copSay('broke', witness);
+      toast('ESCAPED!', '#7df07d');
+      sfx('escape');
+      return;
+    }
+    if (capture.timer <= 0 && !capture.busted){            // busted — fire once only
+      capture.busted = true; startCine('arrest', 4.2); sfx('siren'); recEvent = 5;
+    }
+    return;                                                // player keeps driving throughout
+  }
+  // ---- moving capture: a designated interceptor glued to him for a short spell ----
+  // No speed requirement: the player can be at full throttle. A car merely passing
+  // close cannot trigger it — the hold must be continuous.
+  let holder = null;
+  for (const c of cops){
+    if (!c.intercept || c.stun > 0){ c.holdT = 0; continue; }
+    const onHim = Math.abs(c.s - p.s) < INTERCEPT_NEAR && Math.abs(c.x - p.x) < INTERCEPT_LAT;
+    if (onHim) c.holdT = (c.holdT || 0) + dt;
+    else       c.holdT = Math.max(0, (c.holdT || 0) - dt*1.7);   // brief pass-by decays away
+    if (!holder || c.holdT > holder.holdT) holder = c;
+  }
+  capture.t = holder ? holder.holdT : Math.max(0, capture.t - dt*1.4);
+  if (holder && holder.holdT > 0.45) copSay('box', holder);
+  if (holder && holder.holdT >= INTERCEPT_HOLD && p.pspin <= 0 && p.invuln <= 0){
+    capture.on = true; capture.cop = holder; capture.timer = 6;
+    capture.esc = 0; capture.lastKey = 0; capture.busted = false; recEvent = 4;
+    radioCool = 0; copSay('caught', holder);
+    startCine('capture', 2.4);
+    sfx('siren');
+  }
+}
+
+// ============================== CUTSCENES ==============================
+// Reuses the existing camera + renderer: a timer, a camera zoom, and letterbox bars.
+function startCine(type, dur){ cine = { type, t: 0, dur, skip: type !== 'capture' }; }
+function cineZoom(){
+  if (!cine) return 1;
+  const f = Math.min(1, cine.t/0.5);
+  if (cine.type === 'arrive')  return 1 + 0.10*f;
+  if (cine.type === 'capture') return 1 + 0.26*f;
+  if (cine.type === 'arrest')  return 1 + 0.34*f;
+  return 1;
+}
+function updateCine(dt){
+  if (!cine) return;
+  cine.t += dt;
+  if (cine.t >= cine.dur){
+    const t = cine.type;
+    cine = null;
+    if (t === 'arrest'){ playerRank = 0; showResults('arrested'); }
+  }
+}
+function skipCine(){
+  if (!cine || !cine.skip) return;
+  if (cine.type === 'arrest'){ cine = null; playerRank = 0; showResults('arrested'); }
+  else cine = null;
+}
+// letterbox + captions, drawn crisp over the upscaled scene
+function drawCine(){
+  if (!cine && !(capture && capture.on)) return;
+  const c = cine;
+  if (c){
+    const bar = 62 * Math.min(1, c.t/0.35);
+    mg.fillStyle = '#000';
+    mg.fillRect(0, 0, W, bar); mg.fillRect(0, H-bar, W, bar);
+    mg.textAlign = 'center';
+    if (c.type === 'arrive'){
+      const a = Math.min(1, c.t/0.4) * (c.t > c.dur-0.5 ? Math.max(0,(c.dur-c.t)/0.5) : 1);
+      mg.globalAlpha = a;
+      mg.font = 'bold 44px Segoe UI, Arial';
+      mg.lineWidth = 7; mg.strokeStyle = 'rgba(0,0,0,0.75)';
+      mg.strokeText('POLICE!', W/2, 132);
+      mg.fillStyle = (Math.floor(c.t*7)&1) ? '#4d9bff' : '#ff5252';
+      mg.fillText('POLICE!', W/2, 132);
+      mg.font = 'bold 15px Segoe UI, Arial'; mg.lineWidth = 4;
+      mg.strokeText('Interceptors joining the race — do not let them box you in', W/2, 160);
+      mg.fillStyle = '#dfe6f2'; mg.fillText('Interceptors joining the race — do not let them box you in', W/2, 160);
+      mg.globalAlpha = 1;
+    } else if (c.type === 'capture'){
+      mg.font = 'bold 46px Segoe UI, Arial';
+      mg.lineWidth = 7; mg.strokeStyle = 'rgba(0,0,0,0.75)';
+      mg.strokeText('BOXED IN!', W/2, 132);
+      mg.fillStyle = '#ff5252'; mg.fillText('BOXED IN!', W/2, 132);
+    } else if (c.type === 'arrest'){
+      mg.font = 'bold 60px Segoe UI, Arial';
+      mg.lineWidth = 8; mg.strokeStyle = 'rgba(0,0,0,0.8)';
+      mg.strokeText('ARRESTED', W/2, 128);
+      mg.fillStyle = '#ff5252'; mg.fillText('ARRESTED', W/2, 128);
+      if (c.t > 1.2){
+        mg.globalAlpha = Math.min(1, (c.t-1.2)/0.5);
+        mg.font = 'bold 17px Segoe UI, Arial'; mg.lineWidth = 4;
+        mg.strokeText('Cuffed and walked to the cruiser. Race over.', W/2, H-30);
+        mg.fillStyle = '#dfe6f2'; mg.fillText('Cuffed and walked to the cruiser. Race over.', W/2, H-30);
+        mg.globalAlpha = 1;
+      }
+    }
+    if (c.skip){
+      mg.font = 'bold 12px Segoe UI, Arial'; mg.textAlign = 'right';
+      mg.fillStyle = 'rgba(255,255,255,0.5)';
+      mg.fillText('Enter to skip ▶', W-16, H-22);
+    }
+  }
+  // capture HUD: timer + escape meter (shown while held, after the cutscene ends)
+  if (capture && capture.on && (!c || c.type === 'capture')){
+    const bw = 300, bx = (W-bw)/2;
+    mg.textAlign = 'center';
+    mg.font = 'bold 34px Segoe UI, Arial';
+    mg.lineWidth = 6; mg.strokeStyle = 'rgba(0,0,0,0.8)';
+    const secs = Math.max(0, capture.timer).toFixed(1);
+    mg.strokeText('CAPTURED — ' + secs + 's', W/2, 210);
+    mg.fillStyle = capture.timer < 2 ? '#ff5252' : '#ffd23f';
+    mg.fillText('CAPTURED — ' + secs + 's', W/2, 210);
+    mg.font = 'bold 16px Segoe UI, Arial'; mg.lineWidth = 4;
+    mg.strokeText('MASH  ←  →  TO BREAK FREE', W/2, 242);
+    mg.fillStyle = '#dfe6f2'; mg.fillText('MASH  ←  →  TO BREAK FREE', W/2, 242);
+    mg.fillStyle = 'rgba(0,0,0,0.55)'; mg.fillRect(bx-3, 256, bw+6, 20);
+    mg.fillStyle = '#3a4152'; mg.fillRect(bx, 259, bw, 14);
+    mg.fillStyle = '#7df07d'; mg.fillRect(bx, 259, bw*Math.min(1, capture.esc/14), 14);
+    mg.strokeStyle = 'rgba(0,0,0,0.8)'; mg.lineWidth = 2; mg.strokeRect(bx, 259, bw, 14);
+  }
+}
+
+// ============================== POLICE RADIO ==============================
+// Compact dispatch panel + synthesised radio chatter. Original design; no logos,
+// no broadcast branding, no recorded speech.
+let radio = null, radioCool = 0, radioNodes = [];
+const RADIO_HOLD = 2.3, RADIO_GAP = 2.6;      // seconds on screen / minimum spacing
+// Hard cut-off: a cruiser further than this along the track is simply out of radio
+// contact. No text, no chatter — regardless of what it is doing.
+const POLICE_RADIO_RANGE = 520;
+
+// Lines are keyed by situation. NOTHING here may hint at an ambush before it lands —
+// every key below only fires once a cruiser is already on track and engaging.
+const RADIO_LINES = {
+  spot:   ['There he is.', 'Target ahead.', 'Got eyes on him.', 'That’s our car.'],
+  close:  ['Closing fast.', 'Moving in.', 'Right behind him.', 'Tightening up.'],
+  ram:    ['Move in.', 'Take the door.', 'Push him wide.'],
+  block:  ['Cut him off.', 'Heading him off.', 'Block the line.'],
+  miss:   ['Missed!', 'He slipped it.', 'No good — going around.', 'Lost the angle.'],
+  flee:   ['He’s getting away!', 'He’s gone wide!', 'Losing him!', 'He’s quick.'],
+  box:    ['Box him in.', 'Wall him up.', 'Squeeze him.', 'Shut the gap.'],
+  caught: ['We’ve got him.', 'He’s stopped.', 'Car secured.'],
+  broke:  ['He broke out!', 'He’s loose!', 'Back on him.'],
+  off:    ['Breaking off.', 'Standing down.', 'That’s us done.']
+};
+
+// A transmission = a short static burst, then 2–4 wordless syllables, then squelch.
+// Syllable shapes are picked per-message so no two sound identical, and they are
+// deliberately non-linguistic: pitch-swept blips through a bandpass, nothing more.
+function radioChatter(seed){
+  const ac = audioCtx(); if (!ac) return;
+  radioStop();
+  try {
+    const t0 = ac.currentTime;
+    const bus = ac.createGain(); bus.gain.value = 0.9;
+    const band = ac.createBiquadFilter();          // telephone/PTT character
+    band.type = 'bandpass'; band.frequency.value = 1500; band.Q.value = 1.6;
+    band.connect(ac.destination); bus.connect(band);
+    radioNodes.push(bus, band);
+    // click + static burst (mic keying)
+    if (noiseBuf || musicBus()){
+      const st = ac.createBufferSource(); st.buffer = noiseBuf;
+      const sg = ac.createGain();
+      sg.gain.setValueAtTime(0.10, t0);
+      sg.gain.exponentialRampToValueAtTime(0.001, t0 + 0.11);
+      st.connect(sg); sg.connect(bus); st.start(t0); st.stop(t0 + 0.14);
+      radioNodes.push(st);
+    }
+    // wordless syllables
+    let t = t0 + 0.11;
+    const n = 2 + (seed % 3);
+    for (let i = 0; i < n; i++){
+      const r  = ((seed * 37 + i * 101) % 100) / 100;
+      const dur = 0.09 + r*0.10;
+      const f0  = 150 + r*130;                       // vocal-ish fundamental
+      const o = ac.createOscillator(), gn = ac.createGain();
+      o.type = i % 2 ? 'square' : 'sawtooth';
+      o.frequency.setValueAtTime(f0, t);
+      o.frequency.linearRampToValueAtTime(f0 * (0.72 + r*0.6), t + dur);   // syllable contour
+      gn.gain.setValueAtTime(0.0001, t);
+      gn.gain.exponentialRampToValueAtTime(0.075, t + 0.02);
+      gn.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      o.connect(gn); gn.connect(bus);
+      o.start(t); o.stop(t + dur + 0.02);
+      radioNodes.push(o);
+      t += dur + 0.035 + r*0.05;
+    }
+    // squelch tail
+    const sq = ac.createOscillator(), sg2 = ac.createGain();
+    sq.type = 'square'; sq.frequency.value = 2100;
+    sg2.gain.setValueAtTime(0.035, t + 0.02);
+    sg2.gain.exponentialRampToValueAtTime(0.001, t + 0.09);
+    sq.connect(sg2); sg2.connect(bus); sq.start(t + 0.02); sq.stop(t + 0.12);
+    radioNodes.push(sq);
+  } catch(e){}
+}
+function radioStop(){
+  for (const n of radioNodes){ try { n.stop && n.stop(); n.disconnect && n.disconnect(); } catch(e){} }
+  radioNodes.length = 0;
+}
+// `who` is the cruiser index (1-based) so the panel names a consistent officer
+function police_say(key, who, silent, cop){
+  if (radioCool > 0 || !RADIO_LINES[key]) return;
+  const lines = RADIO_LINES[key];
+  const seed = (Math.floor(rnd()*1000) + key.length*7) | 0;
+  const txt = lines[seed % lines.length];
+  radio = { who: who || 1, txt, t: RADIO_HOLD, seed, cop: cop || null };
+  radioCool = RADIO_GAP;                        // one voice at a time, with spacing
+  if (!silent) radioChatter(seed);
+  return { k:key, w:radio.who, i:seed % lines.length, s:seed };
+}
+function updateRadio(dt){
+  if (radioCool > 0) radioCool -= dt;
+  if (!radio) return;
+  // A message describes the present moment only. If the officer who sent it drops
+  // out of range (or is gone), cut the text and the chatter immediately — never
+  // let an outdated transmission finish playing. (Replay is authoritative, skipped.)
+  if (state !== 'replay' && radio.cop){
+    const c = radio.cop;
+    if (cops.indexOf(c) < 0 || Math.abs(c.s - player.s) > POLICE_RADIO_RANGE){
+      radio = null; radioStop(); return;
+    }
+  }
+  radio.t -= dt;
+  if (radio.t <= 0){ radio = null; radioStop(); }     // audio ends with the message
+}
+// compact dispatch panel, lower-left, clear of the speed/rank/progress readouts
+function drawRadio(){
+  if (!radio) return;
+  const a = Math.min(1, Math.min(radio.t, RADIO_HOLD - radio.t + 0.25) * 4);  // fade in/out
+  if (a <= 0) return;
+  mg.save();
+  mg.globalAlpha = Math.max(0, Math.min(1, a));
+  mg.font = 'bold 12px Segoe UI, Arial';
+  const label = 'POLICE ' + radio.who;
+  const lw = mg.measureText(label).width + 16;
+  mg.font = '13px Segoe UI, Arial';
+  const tw = mg.measureText(radio.txt).width;
+  const w = Math.min(W - 40, lw + tw + 26), h = 30;
+  const x = 20, y = H - 118;
+  mg.fillStyle = 'rgba(9,13,22,0.9)';  mg.fillRect(x, y, w, h);
+  mg.fillStyle = '#2f4a78';            mg.fillRect(x, y, 3, h);        // channel stripe
+  mg.strokeStyle = 'rgba(120,160,220,0.5)'; mg.lineWidth = 1; mg.strokeRect(x+0.5, y+0.5, w-1, h-1);
+  mg.fillStyle = '#16233c';            mg.fillRect(x+3, y+1, lw, h-2); // speaker chip
+  mg.textAlign = 'left'; mg.textBaseline = 'middle';
+  mg.font = 'bold 12px Segoe UI, Arial'; mg.fillStyle = '#7fb2ff';
+  mg.fillText(label, x + 11, y + h/2 + 1);
+  mg.font = '13px Segoe UI, Arial'; mg.fillStyle = '#e8eefb';
+  mg.fillText(radio.txt, x + lw + 14, y + h/2 + 1);
+  // live transmission tick
+  if (Math.floor(radio.t*9) & 1){
+    mg.fillStyle = '#ff5a5a';
+    mg.beginPath(); mg.arc(x + w - 9, y + 8, 2.6, 0, 7); mg.fill();
+  }
+  mg.textBaseline = 'alphabetic';
+  mg.restore();
+}
+
+// ============================== RACE RECORDER / REPLAY ==============================
+// Records compact numeric snapshots (no video, no images) and plays them back
+// through the EXISTING renderer and camera by re-populating the same globals.
+let rec = null, recAcc = 0, recNextId = 1, recEvent = 0, recRadio = null, replay = null;
+const REC_HZ = 30, REC_MAX = 3000;          // ~100s cap, then it simply stops growing
+
+function recStart(){
+  rec = { reg:{}, f:[], track:trackIdx, hard:hardMode, boss:bossMode };
+  recAcc = 0; recNextId = 1; recEvent = 0;
+}
+function recId(o){
+  if (o._rid === undefined || !rec.reg[o._rid]){
+    o._rid = recNextId++;
+    rec.reg[o._rid] = { k:o.kind, t:!!o.truck, b:!!o.bike, c:o.color, w:o.w, l:o.l };
+  }
+  return o._rid;
+}
+function recSample(dt){
+  if (!rec || rec.f.length >= REC_MAX) return;
+  recAcc += dt;
+  if (recAcc < 1/REC_HZ) return;
+  recAcc = 0;
+  const a = [];
+  const put = o => a.push(recId(o), Math.round(o.s*10)/10, Math.round(o.x*10)/10,
+                          +(((o.ang||0)+(o.tang||0))).toFixed(3));
+  put(player);
+  for (const o of ais)  put(o);
+  for (const o of civs) put(o);
+  for (const o of cops) put(o);
+  const fr = { a, t:+raceT.toFixed(2), sp:Math.round(Math.abs(player.speed)),
+               iv: player.invuln > 0 ? 1 : 0, e: recEvent };
+  if (recRadio){ fr.r = recRadio; recRadio = null; }   // dialogue replays verbatim
+  if (bossMode && boss) fr.b = [Math.round(boss.s), Math.round(boss.x),
+                                +boss.alt.toFixed(2), +boss.bank.toFixed(2), +boss.rot.toFixed(2)];
+  rec.f.push(fr);
+  recEvent = 0;
+}
+// event codes surfaced as replay captions
+const REC_EV = { 1:'IMPACT', 2:'SPUN OUT', 3:'POLICE', 4:'CAPTURED', 5:'ARRESTED', 6:'BOOST' };
+
+function enterReplay(){
+  if (!rec || rec.f.length < 2) return;
+  replay = { i:0, acc:0, playing:true, rate:1, evT:0, evName:'' };
+  // replay renders the recorded race; it must not touch progression
+  resultsEl.classList.add('hidden');
+  replayBar.classList.remove('hidden');
+  stopMusic(); stopRotor();
+  bossMode = rec.boss; capture = null; cine = null; pads = pads || [];
+  state = 'replay';
+  syncReplayUI();
+}
+function exitReplay(){
+  replay = null;
+  replayBar.classList.add('hidden');
+  resultsEl.classList.remove('hidden');
+  state = 'over';                        // straight back to the results screen
+}
+function applyReplayFrame(k){
+  const fr = rec.f[k]; if (!fr) return;
+  const A = [], C = [], P = [];
+  for (let i = 0; i < fr.a.length; i += 4){
+    const reg = rec.reg[fr.a[i]]; if (!reg) continue;
+    if (reg.k === 'player'){
+      player.s = fr.a[i+1]; player.x = fr.a[i+2];
+      player.ang = fr.a[i+3]; player.tang = 0;
+      player.speed = fr.sp; player.invuln = fr.iv ? 1 : 0;
+      player.pspin = 0; player.finished = false; player.heading = 0;
+      continue;
+    }
+    const o = { kind:reg.k, truck:reg.t, bike:reg.b, color:reg.c, w:reg.w, l:reg.l,
+                s:fr.a[i+1], x:fr.a[i+2], ang:fr.a[i+3], tang:0 };
+    (reg.k === 'ai' ? A : reg.k === 'civ' ? C : P).push(o);
+  }
+  ais = A; civs = C; cops = P;
+  if (fr.b){ boss = { s:fr.b[0], x:fr.b[1], alt:fr.b[2], bank:fr.b[3], rot:fr.b[4],
+                      phase:'cruise', ramp:0, pace:0 }; }
+  if (fr.e && REC_EV[fr.e]){ replay.evT = 1.1; replay.evName = REC_EV[fr.e]; }
+  if (fr.r){                                    // same officer, same words, same chatter
+    const L = RADIO_LINES[fr.r.k];
+    if (L){ radio = { who: fr.r.w, txt: L[fr.r.i % L.length], t: RADIO_HOLD, seed: fr.r.s };
+            radioCool = RADIO_GAP; radioChatter(fr.r.s); }
+  }
+}
+function updateReplay(dt){
+  if (!replay) return;
+  if (replay.evT > 0) replay.evT -= dt;
+  if (replay.playing){
+    replay.acc += dt * replay.rate * REC_HZ;
+    while (replay.acc >= 1){ replay.acc -= 1; replay.i++; }
+    if (replay.i >= rec.f.length - 1){ replay.i = rec.f.length - 1; replay.playing = false; syncReplayUI(); }
+  }
+  applyReplayFrame(replay.i);
+}
+function drawReplayHUD(){
+  const fr = rec.f[replay.i] || {};
+  mg.textAlign = 'left';
+  mg.font = 'bold 15px Segoe UI, Arial';
+  mg.lineWidth = 4; mg.strokeStyle = 'rgba(0,0,0,0.75)';
+  const tag = (Math.floor(Date.now()/500)&1) && replay.playing ? '● REPLAY' : '  REPLAY';
+  mg.strokeText(tag, 20, 34); mg.fillStyle = '#ff5252'; mg.fillText(tag, 20, 34);
+  mg.font = 'bold 12px Segoe UI, Arial';
+  const info = (fr.t||0).toFixed(1) + 's  ·  ' + replay.rate + '×' + (replay.playing ? '' : '  ·  PAUSED');
+  mg.strokeText(info, 20, 52); mg.fillStyle = '#cfd6e4'; mg.fillText(info, 20, 52);
+  // progress bar
+  const bw = 300, bx = W - bw - 20, by = 30;
+  mg.fillStyle = 'rgba(0,0,0,0.5)'; mg.fillRect(bx-3, by-3, bw+6, 12);
+  mg.fillStyle = '#3a4152'; mg.fillRect(bx, by, bw, 6);
+  mg.fillStyle = '#ffd23f'; mg.fillRect(bx, by, bw*(replay.i/Math.max(1, rec.f.length-1)), 6);
+  if (replay.evT > 0){
+    mg.textAlign = 'center';
+    mg.globalAlpha = Math.min(1, replay.evT);
+    mg.font = 'bold 30px Segoe UI, Arial'; mg.lineWidth = 6;
+    mg.strokeText(replay.evName, W/2, 110);
+    mg.fillStyle = '#ffd23f'; mg.fillText(replay.evName, W/2, 110);
+    mg.globalAlpha = 1;
+  }
+}
+
 // ============================== COLLISIONS ==============================
 function overlap(a, b){
   const ds = Math.abs(a.s - b.s), dx = Math.abs(a.x - b.x);
   return ds < (a.l + b.l)/2 && dx < (a.w + b.w)/2 + 3;
 }
 // --- impulse physics: mass, impact normal, restitution, torque ---
-function massOf(c){ return c.truck ? 2.4 : (c.bike ? 0.32 : 1); }   // bikes are featherweights
+// bikes are featherweights; cruisers are a touch heavier than a race car
+function massOf(c){ return c.truck ? 2.4 : (c.bike ? 0.32 : (c.kind === 'cop' ? 1.25 : 1)); }
 function velOf(c){
   if (c.kind === 'ai')  return c.mode === 'spin' ? {s:c.vs, x:c.vx} : {s:c.speed, x:0};
+  if (c.kind === 'cop') return {s:c.speed, x:c.vx};
   if (c.kind === 'civ') return {s:c.speed, x:c.vx};
   return {s:Math.cos(c.heading || 0)*c.speed, x:c.latV + c.kickX};
 }
@@ -436,6 +1179,11 @@ function applyImpulse(c, j, ns, nx, sgn){
     c.speed = Math.max(-140, c.speed + js*k);
     c.vx += jx*k; c.spinV += torque*(c.bike ? 3.2 : 1); c.knocked = true;
     if (c.bike) c.weave = 0;
+  } else if (c.kind === 'cop'){
+    // takes hits like any car; a big one shakes it off the pursuit for a moment
+    c.speed = Math.max(0, c.speed + js*0.85);
+    c.vx += jx*0.5;
+    if (j > 300){ c.stun = Math.max(c.stun, 0.9); c.cool = 2.2; }
   } else if (c.kind === 'ai'){
     if (c.mode === 'spin'){ c.vs += js; c.vx += jx; c.spinV += torque; }
     else {
@@ -463,7 +1211,7 @@ function spinOut(a, hitter){
 
 function handleCollisions(){
   const p = player;
-  const bodies = [p, ...ais.filter(a => !a.finished), ...civs];
+  const bodies = [p, ...ais.filter(a => !a.finished), ...civs, ...cops];
   for (let i = 0; i < bodies.length; i++){
     for (let k = i+1; k < bodies.length; k++){
       const A = bodies[i], B = bodies[k];
@@ -491,6 +1239,12 @@ function handleCollisions(){
         if (r.j > 60){
           const ms = (A.s + B.s)/2, mx = roadCenter(ms) + (A.x + B.x)/2;
           emit(ms, mx, Math.min(12, 2 + Math.floor(r.j/45)), 'spark');
+          if (r.j > 200 && (A === p || B === p)) recEvent = 1;   // notable impact
+        }
+        // record genuine cop-on-player contact so "Missed!" can never be a lie
+        if (A === p || B === p){
+          const cop = A === p ? B : A;
+          if (cop.kind === 'cop' && cop.ramming > 0) cop.ramHit = true;
         }
       }
     }
@@ -502,6 +1256,7 @@ function checkFinish(){
   for (const a of ais){
     if (!a.finished && a.s >= TRK.len){ a.finished = true; finishedCount++; }
   }
+  if (cine && cine.type === 'arrest') return;      // busted: no crossing the line
   if (!player.finished && player.s >= TRK.len){
     player.finished = true;
     playerRank = 1 + finishedCount + (bossMode && boss && boss.s >= TRK.len ? 1 : 0);
@@ -510,9 +1265,21 @@ function checkFinish(){
   }
 }
 
-function showResults(){
+function showResults(reason){
   state = 'over';
   stopMusic();
+  // only offer the replay when there is actually a recording to play
+  const rb = document.getElementById('btnReplay');
+  if (rb) rb.disabled = !(rec && rec.f.length > 30);
+  if (reason === 'arrested'){
+    resPlace.textContent = 'ARRESTED';
+    resSub.textContent = TRK.name + (hardMode ? ' — Hard Mode' : '') +
+                         ' · busted after ' + raceT.toFixed(1) + 's';
+    resUnlocks.innerHTML = '<p class="unlock"><span style="color:#ff8f8f">' +
+      'The interceptors boxed you in. No points, no progress — take it again.</span></p>';
+    resultsEl.classList.remove('hidden');
+    return;
+  }
   if (bossMode){
     stopRotor();
     const bw = playerRank === 1;
@@ -559,15 +1326,37 @@ function update(dt){
     if (goT > 0) goT -= dt;
     civTimer -= dt;
     if (civTimer <= 0 && civs.length < 10){ spawnCiv(); civTimer = 2 + rnd()*2.2; }
+    // police only patrol the normal circuits — the boss duel stays a clean 1v1
+    if (!bossMode && !player.finished){
+      copCalm -= dt;                       // short breather of clean racing between squads
+      for (const z of copZones){
+        const active = cops.filter(c => c.mode !== 'retire').length;
+        if (!z.fired && player.s > z.s && copCalm <= 0 && active <= 2){
+          if (beginPursuit(z.n)) z.fired = true;     // only consume the zone on a real spawn
+          else copCalm = 1.5;                        // no room yet — retry shortly, don't spin
+          break;                                     // one squad call per frame, max
+        }
+      }
+    }
   }
+  updateCine(dt);
+  sirenT += dt;
   updatePlayer(dt);
   for (const a of ais) updateAI(a, dt);
   for (const c of civs) updateCiv(c, dt);
   const minS = Math.min(player.s, bossMode && boss ? boss.s : Infinity, ...ais.map(a=>a.s));
   civs = civs.filter(c => c.s > minS - 900 && Math.abs(c.x) < HALF + 260);
+  if (state === 'race' && !player.finished) updateInterceptors(dt);
+  for (const c of cops) updateCop(c, dt);
+  // retire cruisers left far behind, so the pursuit stays cheap and finite
+  cops = cops.filter(c => player.s - c.s < 1400 && c.s - player.s < 1800);
+  if (state === 'race' && cops.length && !player.finished) updateCapture(dt);
+  else if (capture && capture.on && (!cops.length || player.finished)){ capture.on = false; cine = null; }
   if (bossMode){ if (boss) updateBoss(dt); updateBombs(dt); if (state === 'race') updatePads(dt); }
   if (state === 'race') handleCollisions();
   checkFinish();
+  updateRadio(dt);
+  if (state === 'race') recSample(dt);          // lightweight state capture
   for (const t of toasts) t.t -= dt;
   toasts = toasts.filter(t => t.t > 0);
   for (const q of parts){
@@ -806,6 +1595,21 @@ function drawCar(c, sx, sy){
       g.fillRect(-w*0.30, l/2-8, 4, 5); g.fillRect(w*0.30-4, l/2-8, 4, 5);    // spoiler struts
       g.fillStyle = golden ? '#ffd700' : '#c0392b';
       g.fillRect(-w*0.62, l/2-4, w*1.24, 6);                                  // spoiler wing
+    } else if (c.kind === 'cop'){
+      // same silhouette as a rival car, wearing a livery + lightbar
+      g.fillStyle = c.color; rr(-w/2, -l/2, w, l, 6); g.fill(); g.stroke();
+      g.fillStyle = '#eef2f8'; g.fillRect(-w/2, -l*0.16, w, l*0.34);                    // white door panel
+      g.fillStyle = '#20304e'; g.fillRect(-w/2, -l*0.16, w, 2); g.fillRect(-w/2, l*0.17, w, 2);
+      g.fillStyle = '#1b2a44'; g.font = 'bold 7px Arial'; g.textAlign = 'center';
+      g.fillText('POLICE', 0, l*0.05);
+      g.fillStyle = '#222a33'; rr(-w*0.34, -l*0.30, w*0.68, l*0.13, 3); g.fill();       // windshield
+      g.fillStyle = '#2a323c'; rr(-w*0.34, l*0.22, w*0.68, l*0.16, 3); g.fill();        // rear window
+      const blue = (Math.floor(sirenT*7) & 1);                                          // alternating bar
+      g.fillStyle = '#0d1626'; g.fillRect(-w*0.42, -l*0.06, w*0.84, 6);
+      g.fillStyle = blue ? '#3d8bff' : '#2a3350'; g.fillRect(-w*0.40, -l*0.05, w*0.38, 4);
+      g.fillStyle = blue ? '#2a3350' : '#ff4040'; g.fillRect(w*0.02,  -l*0.05, w*0.38, 4);
+      g.fillStyle = '#fff3b8'; g.fillRect(-w/2+2, -l/2, 4, 3); g.fillRect(w/2-6, -l/2, 4, 3);
+      g.fillStyle = '#d23c3c'; g.fillRect(-w/2+2, l/2-3, 4, 3); g.fillRect(w/2-6, l/2-3, 4, 3);
     } else {
       g.fillStyle = c.color; rr(-w/2, -l/2, w, l, 6); g.fill(); g.stroke();
       g.fillStyle = 'rgba(255,255,255,0.18)'; g.fillRect(-w/2+3, -l/2+5, 3, l-12);      // flank highlight
@@ -903,6 +1707,39 @@ function drawLighting(time, drawable){
       if (a > 0.03) glow(c + HALF + 60 + r*260, y, 26, '255,255,240', a.toFixed(3));
     }
     g.globalCompositeOperation = 'source-over';
+  }
+}
+
+// Two officers step out and walk the driver to the cruiser. Deliberately plain:
+// simple figures, no weapons, no violence — it just reads as "you got caught".
+function drawArrest(cx, time){
+  const t = cine.t;
+  const psx = roadCenter(player.s) + player.x - cx + W/2, psy = PLAYER_Y;
+  const walk = Math.min(1, Math.max(0, (t - 0.8) / 1.6));
+  const officer = (ox, oy, flip) => {
+    g.save(); g.translate(ox, oy); g.scale(flip, 1);
+    g.fillStyle = 'rgba(0,0,0,0.32)'; g.beginPath(); g.ellipse(2, 12, 9, 4, 0, 0, 7); g.fill();
+    g.fillStyle = '#1b2a44'; g.fillRect(-4, -2, 3, 14); g.fillRect(1, -2, 3, 14);   // legs
+    g.fillStyle = '#24365a'; rr(-6, -16, 12, 16, 3); g.fill();                       // torso
+    g.fillStyle = '#eef2f8'; g.fillRect(-6, -12, 12, 3);                             // belt line
+    g.fillStyle = '#e8b48a'; g.beginPath(); g.arc(0, -21, 5, 0, 7); g.fill();        // head
+    g.fillStyle = '#16233c'; g.fillRect(-5, -25, 10, 4); g.fillRect(-6, -22, 12, 2); // cap
+    g.restore();
+  };
+  // one at each flank, converging on the car
+  officer(psx - 34 + walk*16, psy + 6, 1);
+  officer(psx + 34 - walk*16, psy - 4, -1);
+  if (t > 2.0){                       // driver stood beside the car, hands behind back
+    const a = Math.min(1, (t - 2.0)/0.6);
+    g.globalAlpha = a;
+    g.save(); g.translate(psx + 20, psy + 26);
+    g.fillStyle = 'rgba(0,0,0,0.32)'; g.beginPath(); g.ellipse(2, 12, 8, 4, 0, 0, 7); g.fill();
+    g.fillStyle = '#2b2f3a'; g.fillRect(-4, -2, 3, 14); g.fillRect(1, -2, 3, 14);
+    g.fillStyle = '#7a2f3a'; rr(-6, -16, 12, 16, 3); g.fill();
+    g.fillStyle = '#c9ccd4'; g.fillRect(-7, -8, 3, 4); g.fillRect(4, -8, 3, 4);      // cuffed hands
+    g.fillStyle = '#e8b48a'; g.beginPath(); g.arc(0, -21, 5, 0, 7); g.fill();
+    g.restore();
+    g.globalAlpha = 1;
   }
 }
 
@@ -1015,10 +1852,12 @@ function drawHUD(){
 function render(time){
   // scene pass -> half-res backbuffer (pixel-art)
   g = vg;
-  vg.setTransform(0.5, 0, 0, 0.5, 0, 0);
+  // cutscenes borrow the same camera: scale about the player's screen position
+  const z = cineZoom();
+  vg.setTransform(0.5*z, 0, 0, 0.5*z, 0.5*(W/2)*(1-z), 0.5*PLAYER_Y*(1-z));
   drawRoad(time);
   const cx = camX();
-  const cars = [...ais, ...civs, player];
+  const cars = [...ais, ...civs, ...cops, player];
   const drawable = [];
   for (const c of cars){
     const sy = PLAYER_Y - (c.s - player.s);
@@ -1033,6 +1872,7 @@ function render(time){
     drawCar(d.c, d.sx, d.sy);
     if (d.c.kind === 'player') labelQ.push(['You', d.sx, d.sy - 38, true]);
     else if (d.c.kind === 'ai') labelQ.push(['Not You', d.sx, d.sy - 36, false]);
+    else if (d.c.kind === 'cop') labelQ.push(['POLICE', d.sx, d.sy - 36, false]);
   }
   if (bossMode){
     drawPads(cx);
@@ -1042,6 +1882,7 @@ function render(time){
       if (hp) labelQ.push(['DEFINITELY Not You', hp.sx, hp.sy - 58, false]);
     }
   }
+  if (cine && cine.type === 'arrest') drawArrest(cx, time);
   drawParticles(cx);
   drawLighting(time, drawable);
   vg.setTransform(1, 0, 0, 1, 0, 0);
@@ -1051,6 +1892,8 @@ function render(time){
   mg.drawImage(view, 0, 0, W, H);
   for (const L of labelQ) drawLabel(L[0], L[1], L[2], L[3]);
   drawHUD();
+  drawRadio();
+  drawCine();
 }
 
 // ============================== SECRET BOSS ==============================
@@ -1080,6 +1923,9 @@ function tone(f, t0, d, type, vol){
 function sfx(name){
   if (name === 'evil') [0, 0.18, 0.36, 0.6, 0.78].forEach((t,i) => tone(240 - i*28, t, 0.22, 'square', 0.06));
   if (name === 'boom'){ tone(70, 0, 0.5, 'sawtooth', 0.14); tone(45, 0, 0.7, 'square', 0.11); }
+  // two-tone siren wail, and a bright sting when you break the pin
+  if (name === 'siren') for (let i = 0; i < 4; i++){ tone(740, i*0.34, 0.16, 'square', 0.05); tone(560, i*0.34+0.17, 0.16, 'square', 0.05); }
+  if (name === 'escape'){ tone(520, 0, 0.10, 'square', 0.07); tone(780, 0.08, 0.14, 'square', 0.07); }
 }
 function startRotor(){
   const ac = audioCtx(); if (!ac || rotorNodes) return;
@@ -1562,6 +2408,30 @@ btnReset.onclick = () => {
     }, 3200);
   }
 };
+// ---- replay controls (reuse the existing button styling) ----
+const replayBar = document.getElementById('replayBar');
+const rpPlay = document.getElementById('rpPlay'), rpSlow = document.getElementById('rpSlow'),
+      rpFast = document.getElementById('rpFast');
+function syncReplayUI(){
+  if (!replay) return;
+  rpPlay.textContent = replay.playing ? '❚❚ Pause' : '▶ Resume';
+  rpSlow.classList.toggle('on', replay.rate === 0.5);
+  rpFast.classList.toggle('on', replay.rate === 2);
+}
+document.getElementById('btnReplay').onclick = enterReplay;
+rpPlay.onclick = () => {
+  if (!replay) return;
+  if (!replay.playing && replay.i >= rec.f.length - 1) replay.i = 0;   // replay from the top
+  replay.playing = !replay.playing; syncReplayUI();
+};
+document.getElementById('rpRestart').onclick = () => {
+  if (!replay) return;
+  replay.i = 0; replay.acc = 0; replay.playing = true; syncReplayUI();
+};
+rpSlow.onclick = () => { if (replay){ replay.rate = replay.rate === 0.5 ? 1 : 0.5; syncReplayUI(); } };
+rpFast.onclick = () => { if (replay){ replay.rate = replay.rate === 2 ? 1 : 2; syncReplayUI(); } };
+document.getElementById('rpExit').onclick = exitReplay;
+
 titleBadge.onclick = () => { if (state === 'menu' && hardUnlocked()) startBossIntro(); };
 titleBadge.title = 'Click me…';
 cv.addEventListener('click', () => { if (state === 'intro') advanceIntroPhase(); });
@@ -1579,7 +2449,8 @@ function frame(now){
   const dt = Math.min(0.05, (now - last)/1000);
   last = now;
   updateMusic();
-  if (state === 'intro'){ renderIntro(dt, now/1000); }
+  if (state === 'replay'){ updateRadio(dt); updateReplay(dt); render(now/1000); drawReplayHUD(); }
+  else if (state === 'intro'){ renderIntro(dt, now/1000); }
   else {
     if (state === 'count' || state === 'race') update(dt);
     if (state !== 'menu') render(now/1000);
