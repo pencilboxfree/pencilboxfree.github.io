@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Stickman Swing Parkour</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='26' font-size='26'>%F0%9F%AA%A2</text></svg>">
+<style>
+  html,body{margin:0;height:100%;background:#07080f;color:#eee;font-family:"Courier New",monospace;
+    display:flex;align-items:center;justify-content:center}
+  #wrap{position:relative;width:min(96vw,960px)}
+  canvas{width:100%;height:auto;display:block;image-rendering:pixelated;
+    border:3px solid #333;border-radius:6px;background:#0d1020;box-shadow:0 12px 40px rgba(0,0,0,.6)}
+  .hint{margin-top:8px;font-size:12px;color:#aaa;letter-spacing:1px;text-align:center}
+</style>
+</head>
+<body>
+<div id="wrap">
+  <canvas id="c" width="480" height="270"></canvas>
+  <div class="hint">←→ / A D run &nbsp;·&nbsp; SPACE jump (hold = higher) &nbsp;·&nbsp; K grab/release rope &nbsp;·&nbsp; R checkpoint &nbsp;·&nbsp; P pause &nbsp;·&nbsp; M mute</div>
+</div>
+
+<script>
+"use strict";
+/* =====================================================================
+   STICKMAN SWING PARKOUR — single-file HTML5 platformer (no libraries)
+   Architecture mirrors Rock N' Roll Rumble (same proven skeleton):
+     1  Config & tuning              6  Level data (authored, deterministic)
+     2  Input (held + edge flags)    7  Player physics & swing physics
+     3  Storage (localStorage+fb)    8  World update (movers/crumbles/hazards)
+     4  Audio (Chip engine)          9  Rendering (parallax + stickman)
+     5  Utilities & camera          10  State machine & fixed-timestep loop
+   ===================================================================== */
+
+/* ---------- 1. CONFIG & TUNING ---------- */
+const cv = document.getElementById("c"), ctx = cv.getContext("2d");
+const VW = 480, VH = 270;              // virtual resolution (same as prior games)
+const G_Y = 200;                       // canonical ground surface y
+const KILL_Y = 360;                    // below this = bottomless pit
+
+// --- Locomotion (all values are px/frame at the fixed 60 Hz step) ---
+const RUN_MAX     = 3.20;  // top ground speed
+const RUN_ACCEL   = 0.42;  // ground acceleration
+const RUN_DECEL   = 0.42;  // ground friction when no input
+const TURN_BOOST  = 1.8;   // extra accel when reversing (snappy direction changes)
+const AIR_ACCEL   = 0.30;  // generous air control (steer out of a bad jump)
+const AIR_DRAG    = 0.010; // gentle air friction
+const AIR_MAX     = 3.60;  // air speed cap (above ground for hop-momentum)
+
+// --- Jump / gravity ---
+const GRAV        = 0.50;  // normal gravity
+const JUMP_HOLD_G = 0.24;  // reduced gravity while jump is held and rising
+const JUMP_V      = -7.00; // initial jump impulse
+const JUMP_HOLD_T = 30;    // max frames of held-jump lift
+const MAX_FALL    = 10.0;
+const COYOTE      = 12;    // frames of grace after leaving a ledge
+const JUMP_BUFFER = 10;    // frames a jump press stays queued
+const LAND_HARD   = 8.5;   // vy above this triggers landing recovery
+const LAND_FRAMES = 5;     // recovery duration (barely noticeable)
+
+// --- Wall interaction ---
+const WALL_SLIDE_V = 1.2;  // capped fall speed while hugging a wall
+const WALL_JUMP_VX = 3.80;
+const WALL_JUMP_VY = -6.80;
+const WALL_LOCK    = 5;    // frames of reduced air control after a wall jump
+const WALL_STICK   = 10;   // coyote frames for wall jumps
+
+// --- Rope / pendulum swing ---
+const ROPE_G     = 0.55;   // gravity used by the pendulum integrator
+const ROPE_DAMP  = 0.9990; // very light damping (keeps momentum)
+const ROPE_PUMP  = 0.00400;// angular accel added when pumping with the swing
+const ANG_MAX    = 0.100;  // rad/frame cap (~13 px/frame tip speed at len 130)
+const ANG_LIMIT  = 1.55;   // ~89° amplitude cap: a pumped swing never loops over the anchor
+const GRAB_R     = 26;     // auto-grab radius around the rope line (very forgiving)
+const GRAB_MIN_T = 0.20;   // hands can catch the rope from 20% of its length down
+const GRIP_MIN_T = 0.45;   // ...but you slide to at least this grip length (stable pendulum)
+const GRAB_CD    = 10;     // frames before you can re-grab THE ROPE YOU JUST LEFT
+const GRAB_HOLD  = 6;      // frames after grabbing before a manual release is accepted
+const REL_BOOST  = 3.00;   // upward kick when releasing with JUMP
+
+// --- Collapsing platforms ---
+const CRUMB_T    = 55;     // frames of shaking before it drops out (~0.9 s)
+const CRUMB_BACK = 70;     // frames until it comes back
+
+const COL = {
+  body:"#f2f6ff", bodyDark:"#0b0e18", rope:"#c8a06a", ropeDark:"#8a6c46",
+  plat:"#2e3a5c", platTop:"#5f7fbf", solid:"#242c46", solidTop:"#46557f",
+  mover:"#3d5c46", moverTop:"#6fbf85", crumb:"#5c3d3d", crumbTop:"#bf6f6f",
+  spike:"#c8ccd8", cpOff:"#6a7188", cpOn:"#ffd24a", flag:"#ff4d6a"
+};
+
+/* ---------- 2. INPUT ---------- */
+const held = { left:false, right:false, jump:false, down:false, grab:false };
+let justJump = false, justGrab = false, justRestart = false;  // edge-triggered, consumed each step
+const KEYMAP = {
+  ArrowLeft:"left", KeyA:"left", ArrowRight:"right", KeyD:"right",
+  ArrowDown:"down", KeyS:"down", Space:"jump", ArrowUp:"jump", KeyW:"jump", KeyK:"grab", ShiftLeft:"grab"
+};
+const PREVENT = ["ArrowLeft","ArrowRight","ArrowUp","ArrowDown","Space","KeyK"];
+addEventListener("keydown", e=>{
+  Chip.resume();                                   // unlock audio on first gesture
+  if (e.code === "KeyM") Chip.toggleMute();
+  if (PREVENT.includes(e.code)) e.preventDefault();
+  if (e.repeat) return;
+  if (e.code in KEYMAP) held[KEYMAP[e.code]] = true;
+  if (KEYMAP[e.code] === "jump") justJump = true;
+  if (KEYMAP[e.code] === "grab") justGrab = true;
+  if (e.code === "KeyR") justRestart = true;
+  if (e.code === "KeyP" && game.state === "PLAY") game.paused = !game.paused;
+  if (KEYMAP[e.code] === "jump" && (game.state === "TITLE" || game.state === "WIN")) titleAction();
+});
+addEventListener("keyup", e=>{ if (e.code in KEYMAP) held[KEYMAP[e.code]] = false; });
+addEventListener("pointerdown", ()=>Chip.resume());
+addEventListener("blur", ()=>{ for (const k in held) held[k] = false; });
+
+/* ---------- 3. STORAGE (try/catch + in-memory fallback) ---------- */
+const BEST_KEY = "ssp_best_v1";
+let memBest = null;
+function loadBest(){ try { return JSON.parse(localStorage.getItem(BEST_KEY)); } catch(e){ return memBest; } }
+function saveBest(rec){ try { localStorage.setItem(BEST_KEY, JSON.stringify(rec)); } catch(e){ memBest = rec; } }
+
+/* ---------- 4. AUDIO — chiptune engine (Web Audio API, no files) ----------
+   Same lookahead-scheduler engine proven in Rock N' Roll Rumble; only the
+   songs and SFX are new, so there is nothing to download and nothing to break. */
+const Chip = (function(){
+  let ac=null, master=null, noiseBuf=null, started=false, muted=false;
+  let song=null, sceneName=null, step=0, nextTime=0, stepDur=0, timer=null, playing=false;
+
+  const NOTE = {C:0,"C#":1,D:2,"D#":3,E:4,"F":5,"F#":6,G:7,"G#":8,A:9,"A#":10,B:11};
+  function nf(name){
+    if(!name || name==="." || name==="_") return 0;
+    const m=/^([A-G]#?)(\d)$/.exec(name); if(!m) return 0;
+    const semis = NOTE[m[1]] + (+m[2]+1)*12;
+    return 440 * Math.pow(2, (semis-69)/12);
+  }
+  const toks = s => s.trim().split(/\s+/);
+  function onsets(arr){
+    const N=arr.length, out=new Array(N).fill(null);
+    for(let i=0;i<N;i++){ const v=arr[i];
+      if(v && v!=="." && v!=="_"){ let d=1,j=i+1; while(j<N && arr[j]==="_"){d++;j++;} out[i]={note:v,dur:d}; } }
+    return out;
+  }
+  function build(def){
+    const lead=toks(def.lead), bass=toks(def.bass), drums=toks(def.drums);
+    return { bpm:def.bpm, loop:def.loop!==false, N:Math.max(lead.length,bass.length,drums.length),
+             lead:onsets(lead), bass:onsets(bass), drums:drums };
+  }
+
+  /* Original loops: airy D-mixolydian runner theme + a short victory fanfare. */
+  const SONGS = {
+    run: { bpm:158, loop:true,
+      lead:"D5 . A4 . D5 . F5 _ E5 . D5 . A4 . B4 . C5 . G4 . C5 . E5 _ D5 . C5 . A4 _ . .",
+      bass:"D2 . . . D2 . . . B1 . . . B1 . . . G1 . . . G1 . . . A1 . . . A1 . . .",
+      drums:"K . H . S . H H K . H . S . H . K . H . S . H H K . H H S . H ." },
+    win: { bpm:146, loop:false,
+      lead:"D5 A5 D6 F6 _ A6 _ _ F6 A6 _ _ _ _ . .",
+      bass:"D3 . A3 . D3 . F3 . D3 _ _ _ . . . .",
+      drums:"K . . . K . . . K . K . K . . ." }
+  };
+
+  function voice(freq,t,dur,type,g){
+    if(!freq) return;
+    const o=ac.createOscillator(), a=ac.createGain();
+    o.type=type; o.frequency.setValueAtTime(freq,t);
+    a.gain.setValueAtTime(0,t);
+    a.gain.linearRampToValueAtTime(g,t+0.008);
+    a.gain.setValueAtTime(g, t+Math.max(0.03,dur*0.55));
+    a.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+    o.connect(a); a.connect(master); o.start(t); o.stop(t+dur+0.02);
+  }
+  function slide(type,f0,f1,t,dur,g){
+    const o=ac.createOscillator(), a=ac.createGain();
+    o.type=type; o.frequency.setValueAtTime(f0,t); o.frequency.exponentialRampToValueAtTime(Math.max(30,f1),t+dur);
+    a.gain.setValueAtTime(g,t); a.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+    o.connect(a); a.connect(master); o.start(t); o.stop(t+dur+0.02);
+  }
+  function noiseHit(t,dur,g,hp){
+    const s=ac.createBufferSource(); s.buffer=noiseBuf;
+    const a=ac.createGain(), f=ac.createBiquadFilter();
+    f.type=hp?"highpass":"lowpass"; f.frequency.value=hp?3800:2200;
+    a.gain.setValueAtTime(g,t); a.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+    s.connect(f); f.connect(a); a.connect(master); s.start(t); s.stop(t+dur+0.02);
+  }
+  function kick(t){ const o=ac.createOscillator(), a=ac.createGain(); o.type="sine";
+    o.frequency.setValueAtTime(140,t); o.frequency.exponentialRampToValueAtTime(48,t+0.11);
+    a.gain.setValueAtTime(0.5,t); a.gain.exponentialRampToValueAtTime(0.001,t+0.13);
+    o.connect(a); a.connect(master); o.start(t); o.stop(t+0.15); }
+  const snare = t => noiseHit(t,0.12,0.24,true);
+  const hat   = t => noiseHit(t,0.035,0.09,true);
+
+  function schedule(t){
+    const s=song, st=step % s.N;
+    const lo=s.lead[st]; if(lo) voice(nf(lo.note), t, lo.dur*stepDur*0.9, "square", 0.11);
+    const bo=s.bass[st]; if(bo) voice(nf(bo.note), t, bo.dur*stepDur*0.95, "triangle", 0.18);
+    const d=s.drums[st % s.drums.length];
+    if(d==="K") kick(t); else if(d==="S") snare(t); else if(d==="H") hat(t);
+  }
+  function tick(){
+    if(!playing || !ac) return;
+    while(nextTime < ac.currentTime + 0.1){
+      schedule(nextTime); nextTime += stepDur; step++;
+      if(!song.loop && step >= song.N){ playing=false; break; }
+    }
+    if(playing) timer=setTimeout(tick,25);
+  }
+  function start(def){
+    song=build(def); stepDur=15/def.bpm;                 // 16th note
+    step=0; nextTime=ac.currentTime+0.06; playing=true;
+    clearTimeout(timer); tick();
+  }
+  function stop(){ playing=false; clearTimeout(timer); }
+
+  function init(){
+    if(started) return;
+    try{
+      ac=new (window.AudioContext||window.webkitAudioContext)();
+      master=ac.createGain(); master.gain.value=0.38; master.connect(ac.destination);
+      noiseBuf=ac.createBuffer(1, (ac.sampleRate*0.3)|0, ac.sampleRate);
+      const ch=noiseBuf.getChannelData(0); for(let i=0;i<ch.length;i++) ch[i]=Math.random()*2-1;
+      started=true;
+    }catch(e){ started=false; }
+  }
+  function resume(){ init(); if(ac && ac.state==="suspended") ac.resume(); }
+  function setScene(name){
+    if(!started) return;
+    const target = (name==="menu"||name==="play") ? "run" : name;
+    if(target===sceneName) return;
+    sceneName=target;
+    if(target==="run") start(SONGS.run);
+    else if(target==="win") start(SONGS.win);
+  }
+  function sfx(name){
+    if(!started || muted || !ac) return;
+    const t=ac.currentTime;
+    if(name==="jump")        slide("square",320,690,t,0.11,0.12);
+    else if(name==="land")   noiseHit(t,0.07,0.10,false);
+    else if(name==="wall"){  slide("square",480,880,t,0.09,0.11); noiseHit(t,0.05,0.07,true); }
+    else if(name==="grab"){  slide("triangle",240,520,t,0.10,0.15); }
+    else if(name==="release")slide("square",600,300,t,0.10,0.11);
+    else if(name==="check")  ["D5","A5","D6"].forEach((n,i)=>voice(nf(n),t+i*0.07,0.14,"square",0.15));
+    else if(name==="die")    ["A4","F4","D4","A3"].forEach((n,i)=>voice(nf(n),t+i*0.11,0.15,"triangle",0.16));
+    else if(name==="crumb")  noiseHit(t,0.16,0.11,false);
+  }
+  function toggleMute(){ if(!started) return muted; muted=!muted; master.gain.value=muted?0:0.38; return muted; }
+
+  return { resume, setScene, sfx, toggleMute, isMuted:()=>muted };
+})();
+
+/* ---------- 5. UTILITIES & CAMERA ---------- */
+const clamp = (v,a,b)=>Math.max(a,Math.min(b,v));
+const lerp  = (a,b,t)=>a+(b-a)*t;
+const sign  = v => v<0 ? -1 : (v>0 ? 1 : 0);
+function aabb(a,b){ return a.x < b.x+b.w && a.x+a.w > b.x && a.y < b.y+b.h && a.y+a.h > b.y; }
+const tri = p => { const f = p - Math.floor(p); return f < 0.5 ? f*2 : 2-f*2; };   // 0..1..0 ping-pong
+
+const cam = { x:0, y:0 };
+function updateCamera(snap){
+  const p = game.player;
+  const tx = p.x + p.w/2 - VW/2 + clamp(p.vx*16, -54, 54);          // velocity look-ahead
+  const ty = p.y + p.h/2 - VH*0.56;
+  if (snap){ cam.x = tx; cam.y = ty; } else { cam.x = lerp(cam.x, tx, 0.11); cam.y = lerp(cam.y, ty, 0.085); }
+  cam.x = clamp(cam.x, 0, LV.width - VW);
+  cam.y = clamp(cam.y, -120, 130);
+}
+
+/* ---------- 6. LEVEL DATA (authored with a cursor; fully deterministic) ---------- */
+const LV = { plats:[], movers:[], crumbles:[], ropes:[], spikes:[], checks:[], flag:null, width:0 };
+
+function P(x,y,w,h,oneway){ LV.plats.push({ x,y,w,h, oneway:!!oneway }); }
+function MOV(x,y,w,h,dx,dy,spd,ph){
+  LV.movers.push({ x,y,w,h, bx:x, by:y, dx,dy, spd, ph:ph||0, oneway:true, isMover:true, mx:0, my:0 });
+}
+function CRUMB(x,y,w,h){ LV.crumbles.push({ x,y,w,h, oneway:true, isCrumb:true, state:0, t:0 }); }
+function ROPE(ax,ay,len,a0){ LV.ropes.push({ ax, ay, len, a:a0, a0, av:0, held:false }); }
+function SPIKE(x,y,w){ LV.spikes.push({ x, y:y-7, w, h:7 }); }             // y = surface top
+function CP(x,y){ LV.checks.push({ x, y, w:8, h:24, sx:x-4, sy:y-20, on:false }); }
+
+function buildLevel(){
+  const G = G_Y;
+  /* --- A. Warm-up: momentum, gap timing, first checkpoint --- */
+  P(0, G, 480, 90);            CP(60, G);
+  P(540, G, 220, 90);
+  P(830, G-16, 190, 106);
+  P(1090, G-30, 170, 120);
+  P(1330, G-10, 200, 100);     CP(1370, G-10);
+
+  /* --- B. Jumps onto one-way ledges --- */
+  P(1610, G-40, 110, 130);
+  P(1790, G-66, 90, 8, true);
+  P(1950, G-40, 100, 8, true);
+  P(2110, G-10, 180, 100);     SPIKE(2225, G-10, 28);      CP(2150, G-10);
+  P(2360, G-10, 80, 100);
+  P(2510, G-30, 64, 8, true);
+  P(2640, G-50, 64, 8, true);
+  P(2770, G-20, 200, 110);     CP(2810, G-20);
+
+  /* --- C. Moving platforms (vertical, horizontal, diagonal) --- */
+  MOV(3050, G-30, 72, 8, 0, -60, 0.009, 0.00);
+  MOV(3200, G-40, 72, 8, 120, 0, 0.007, 0.30);
+  P(3470, G-20, 150, 100);     CP(3510, G-20);
+  MOV(3690, G-56, 66, 8, 0, 70, 0.010, 0.50);
+  MOV(3850, G-30, 66, 8, 110, -50, 0.008, 0.15);
+  P(4080, G, 240, 90);         SPIKE(4190, G, 34);         CP(4110, G);
+
+  /* --- D. Collapsing platforms: keep moving or fall --- */
+  CRUMB(4410, G-20, 80, 8);
+  CRUMB(4570, G-38, 80, 8);
+  CRUMB(4730, G-56, 80, 8);
+  P(4890, G-38, 110, 8, true);                             // safe breather
+  CRUMB(5050, G-38, 72, 8);
+  CRUMB(5190, G-20, 72, 8);
+  P(5310, G, 220, 90);         CP(5350, G);
+
+  /* --- E. Wall-jump shaft (78 px between solid faces, 170 px tall) --- */
+  P(5580, G-10, 80, 100);
+  P(5700, G, 110, 90);                                     // shaft floor
+  P(5700, G-170, 16, 100);                                 // left pillar — walk in underneath it
+  P(5794, G-170, 16, 180);                                 // right wall (seals the far side)
+  CP(5730, G);                                             // checkpoint at its base
+  P(5810, G-170, 140, 8, true);                            // top exit ledge
+  P(6030, G-130, 100, 8, true);
+  P(6190, G-70, 110, 8, true);
+  P(6340, G, 220, 90);         CP(6380, G);
+
+  /* --- F. First ropes: gaps that only a swing can clear --- */
+  ROPE(6660, 60, 115, -0.50);
+  P(6800, G-20, 180, 100);
+  ROPE(7040, 52, 120, 0.35);
+  P(7190, G-36, 160, 8, true);
+  ROPE(7400, 44, 130, -0.40);
+  P(7540, G-10, 220, 100);     CP(7580, G-10);
+
+  /* --- G. Ledges + movers + spike field --- */
+  P(7820, G-28, 64, 8, true);
+  P(7940, G-56, 60, 8, true);
+  MOV(8060, G-56, 70, 8, 90, 0, 0.009, 0.00);
+  P(8280, G-28, 64, 8, true);
+  P(8390, G, 280, 90);         SPIKE(8450, G, 40); SPIKE(8560, G, 28);
+  P(8730, G-36, 60, 8, true);
+  MOV(8850, G-60, 64, 8, 0, 80, 0.010, 0.25);
+  P(9000, G-20, 220, 100);     CP(9040, G-20);
+
+  /* --- H. The Chasm: four-rope chain, no floor for 860 px --- */
+  ROPE(9310, 44, 135, -0.45);
+  ROPE(9510, 36, 140, 0.22);
+  ROPE(9710, 48, 132, -0.30);
+  ROPE(9910, 40, 138, 0.20);
+  P(10080, G-30, 360, 120);    CP(10130, G-30);
+
+  /* --- I. Gauntlet: solid breather → crumble → rope → pads → mover → ledges --- */
+  P(10530, G-46, 90, 8, true);                             // solid breather (no timer pressure)
+  CRUMB(10680, G-64, 90, 8);
+  ROPE(10850, 44, 130, -0.30);
+  P(11010, G-56, 120, 8, true);                            // solid landing pad off the swing
+  MOV(11200, G-56, 80, 8, 90, 0, 0.007, 0.40);             // wide + slow
+  P(11390, G-20, 130, 100);    CP(11430, G-20);            // mid-gauntlet checkpoint
+  P(11570, G-46, 80, 8, true);
+  P(11700, G, 250, 90);
+
+  /* --- J. Finale: shaft climb, crumbling perches, high ropes --- */
+  P(11950, G, 100, 90);                                    // shaft floor
+  P(11950, G-140, 16, 80);                                 // left pillar — walk in underneath it
+  P(12034, G-140, 16, 150);                                // right wall (seals the far side)
+  CP(11980, G);
+  P(12050, G-140, 110, 8, true);                           // exit ledge
+  CRUMB(12200, 84, 72, 8);
+  ROPE(12360, 44, 116, -0.35);
+  CRUMB(12540, 108, 68, 8);
+  ROPE(12700, 48, 124, 0.30);
+  P(12860, G-40, 320, 130);    CP(12900, G-40);
+  LV.flag = { x:13030, y:G-40-40, w:4, h:40 };
+
+  LV.width = 13400;
+}
+buildLevel();
+
+/* ---------- GAME STATE ---------- */
+const game = {
+  state:"TITLE",                       // TITLE | PLAY | WIN
+  paused:false,
+  player:null, rope:null,              // rope = currently grabbed rope
+  frames:0, deaths:0, cpIndex:0, cpReached:1,
+  banner:"", bannerT:0, dust:[], flash:0, pendingRespawn:false,
+  bestRec: loadBest()
+};
+
+function makePlayer(x,y){
+  return { x, y, w:10, h:20, vx:0, vy:0, dir:1,
+           grounded:false, wall:0, wallSide:0, wallT:0, coyote:0, buffer:0,
+           jumping:false, jumpT:0, land:0, lock:0, ride:null,
+           grabCd:0, lastRope:null, anim:"idle", animT:0, prevVy:0 };
+}
+
+function resetRun(){
+  game.frames = 0; game.deaths = 0; game.cpIndex = 0; game.cpReached = 1;
+  game.dust.length = 0; game.rope = null; game.paused = false;
+  for (const c of LV.checks) c.on = false;
+  for (const c of LV.crumbles){ c.state = 0; c.t = 0; }
+  for (const r of LV.ropes){ r.a = r.a0; r.av = 0; r.held = false; }
+  LV.checks[0].on = true;
+  spawnAtCheckpoint(true);
+  game.state = "PLAY";
+  banner("REACH THE FLAG", 110);
+}
+function spawnAtCheckpoint(snap){
+  const c = LV.checks[game.cpIndex];
+  game.player = makePlayer(c.x - 5, c.y - 20);
+  game.rope = null;
+  for (const r of LV.ropes) r.held = false;
+  for (const cr of LV.crumbles){ cr.state = 0; cr.t = 0; }        // fair restart
+  updateCamera(!!snap);
+}
+function banner(t,frames){ game.banner = t; game.bannerT = frames; }
+
+function killPlayer(){
+  if (game.pendingRespawn) return;
+  Chip.sfx("die");
+  game.deaths++; game.flash = 10;
+  puff(game.player.x + game.player.w/2, game.player.y + game.player.h, 10, "#ff6a6a");
+  game.pendingRespawn = true;                                     // deferred: avoids stale-frame bugs
+}
+
+/* ---------- 7. PLAYER PHYSICS & SWING PHYSICS ---------- */
+// Broadphase: only platforms near the player can matter this frame.
+function nearby(pl, p){ return pl.x < p.x + 120 && pl.x + pl.w > p.x - 120; }
+function forEachPlatform(p, fn){
+  for (const pl of LV.plats)    if (nearby(pl,p)) fn(pl);
+  for (const m  of LV.movers)   if (nearby(m,p))  fn(m);
+  for (const c  of LV.crumbles) if (c.state !== 2 && nearby(c,p)) fn(c);
+}
+
+function moveX(p){
+  const dir = sign(p.vx);
+  p.x += p.vx;
+  p.wall = 0;
+  if (dir === 0) return;
+  forEachPlatform(p, pl=>{
+    if (pl.oneway) return;                                   // one-ways never block horizontally
+    if (!(p.x < pl.x+pl.w && p.x+p.w > pl.x && p.y < pl.y+pl.h && p.y+p.h > pl.y)) return;
+    if (dir > 0){ p.x = pl.x - p.w; p.wall = 1; } else { p.x = pl.x + pl.w; p.wall = -1; }
+    p.vx = 0;
+  });
+}
+function moveY(p){
+  const prevBottom = p.y + p.h, prevTop = p.y;
+  const vy = p.vy;
+  p.y += p.vy;
+  p.grounded = false; p.ride = null;
+  forEachPlatform(p, pl=>{
+    if (p.x + p.w <= pl.x || p.x >= pl.x + pl.w) return;
+    if (vy >= 0){
+      if (prevBottom <= pl.y + 1.5 && p.y + p.h >= pl.y){
+        p.y = pl.y - p.h; p.vy = 0; p.grounded = true;
+        if (pl.isMover) p.ride = pl;
+        if (pl.isCrumb && pl.state === 0){ pl.state = 1; pl.t = CRUMB_T; Chip.sfx("crumb"); }
+      }
+    } else if (!pl.oneway){
+      if (prevTop >= pl.y + pl.h - 1.5 && p.y <= pl.y + pl.h && p.y + p.h > pl.y + pl.h){
+        p.y = pl.y + pl.h; p.vy = 0;
+      }
+    }
+  });
+}
+
+function updatePlayer(){
+  const p = game.player;
+  if (game.rope){ updateSwing(p); return; }
+
+  // --- carried by a moving platform (applied before self-motion) ---
+  if (p.ride){ p.x += p.ride.mx; p.y += p.ride.my; }
+
+  const ix = (held.left ? -1 : 0) + (held.right ? 1 : 0);
+  if (ix) p.dir = ix;
+
+  // --- horizontal: acceleration, deceleration, momentum ---
+  const landScale = p.land > 0 ? 0.72 : 1;                    // slight landing recovery
+  const lockScale = p.lock > 0 ? 0.25 : 1;                    // brief post-wall-jump control lock
+  if (p.grounded){
+    if (ix){
+      const turning = sign(p.vx) !== 0 && sign(p.vx) !== ix;
+      p.vx += ix * RUN_ACCEL * (turning ? TURN_BOOST : 1) * landScale;
+      p.vx = clamp(p.vx, -RUN_MAX*landScale, RUN_MAX*landScale);
+    } else {
+      const d = RUN_DECEL;
+      p.vx = Math.abs(p.vx) <= d ? 0 : p.vx - sign(p.vx)*d;
+    }
+  } else {
+    if (ix) p.vx = clamp(p.vx + ix*AIR_ACCEL*lockScale, -AIR_MAX, AIR_MAX);
+    else if (Math.abs(p.vx) > 0.02) p.vx -= sign(p.vx)*AIR_DRAG;
+  }
+
+  // --- timers ---
+  if (p.coyote > 0) p.coyote--;
+  if (p.buffer > 0) p.buffer--;
+  if (p.land   > 0) p.land--;
+  if (p.lock   > 0) p.lock--;
+  if (p.wallT  > 0) p.wallT--;
+  if (p.grabCd > 0) p.grabCd--;
+  if (justJump) p.buffer = JUMP_BUFFER;
+
+  // --- wall slide (only against solid walls, only while falling) ---
+  const sliding = !p.grounded && p.wall !== 0 && p.vy > 0 && (p.wall === 1 ? held.right : held.left);
+  if (p.wall !== 0 && !p.grounded){ p.wallT = WALL_STICK; p.wallSide = p.wall; }
+  if (sliding && p.vy > WALL_SLIDE_V) p.vy = WALL_SLIDE_V;
+
+  // --- jump: ground, coyote, or wall ---
+  if (p.buffer > 0){
+    if (p.grounded || p.coyote > 0){
+      p.vy = JUMP_V; p.jumping = true; p.jumpT = 0; p.buffer = 0; p.coyote = 0; p.grounded = false;
+      Chip.sfx("jump"); puff(p.x+p.w/2, p.y+p.h, 3, "#8fa3c8");
+    } else if (p.wallT > 0){
+      p.vy = WALL_JUMP_VY; p.vx = -p.wallSide * WALL_JUMP_VX;
+      p.dir = -p.wallSide; p.jumping = true; p.jumpT = 0; p.buffer = 0; p.wallT = 0; p.lock = WALL_LOCK;
+      Chip.sfx("wall"); puff(p.x + (p.wallSide>0 ? p.w : 0), p.y+p.h*0.6, 4, "#8fa3c8");
+    }
+  }
+
+  // --- gravity with variable jump height ---
+  if (p.jumping && held.jump && p.vy < 0 && p.jumpT < JUMP_HOLD_T){ p.vy += JUMP_HOLD_G; p.jumpT++; }
+  else { p.vy += GRAV; if (p.jumping && (!held.jump || p.vy >= 0)) p.jumping = false; }
+  if (p.vy > MAX_FALL) p.vy = MAX_FALL;
+
+  p.prevVy = p.vy;
+  moveX(p);
+  moveY(p);
+
+  // --- landing recovery + coyote refresh ---
+  if (p.grounded){
+    p.coyote = COYOTE;
+    if (p.prevVy > LAND_HARD){ p.land = LAND_FRAMES; Chip.sfx("land"); puff(p.x+p.w/2, p.y+p.h, 4, "#8fa3c8"); }
+  }
+
+  // --- rope acquisition (auto within range, or on demand with K) ---
+  // The cooldown only blocks the rope you just left, so rope-to-rope chains stay fluid.
+  if (!p.grounded) tryGrab(p, justGrab ? GRAB_R + 8 : GRAB_R);
+
+  p.x = clamp(p.x, 0, LV.width - p.w);
+}
+
+/* Closest point on the rope line; grabbing is allowed on the lower half only. */
+function tryGrab(p, radius){
+  const px = p.x + p.w/2, py = p.y + p.h*0.25;                 // hands are near the top of the body
+  for (const r of LV.ropes){
+    if (r.ax < px - 200 || r.ax > px + 200) continue;
+    if (r === p.lastRope && p.grabCd > 0) continue;            // can't instantly re-grab what you left
+    const ex = r.ax + Math.sin(r.a)*r.len, ey = r.ay + Math.cos(r.a)*r.len;
+    const dx = ex - r.ax, dy = ey - r.ay, L2 = dx*dx + dy*dy;
+    let t = ((px - r.ax)*dx + (py - r.ay)*dy) / L2;
+    t = clamp(t, GRAB_MIN_T, 1);
+    const cx = r.ax + dx*t, cy = r.ay + dy*t;
+    if (Math.hypot(px - cx, py - cy) > radius) continue;
+    grabRope(p, r, r.len * Math.max(t, GRIP_MIN_T));           // slide down to a stable grip
+    return;
+  }
+}
+function grabRope(p, r, len){
+  r.held = true; r.hlen = len;
+  // Preserve momentum: convert linear velocity into angular velocity at the grab point.
+  r.av = clamp((p.vx*Math.cos(r.a) - p.vy*Math.sin(r.a)) / len, -ANG_MAX, ANG_MAX);
+  game.rope = r;
+  p.jumping = false; p.grabCd = GRAB_HOLD;
+  Chip.sfx("grab");
+}
+function releaseRope(p, boost){
+  const r = game.rope; if (!r) return;
+  const L = r.hlen;
+  p.vx = clamp(L*Math.cos(r.a)*r.av, -9.5, 9.5);
+  p.vy = clamp(-L*Math.sin(r.a)*r.av, -11, 11);
+  if (boost) p.vy -= REL_BOOST;
+  if (p.vx) p.dir = sign(p.vx);
+  r.held = false; game.rope = null;
+  p.lastRope = r; p.grabCd = GRAB_CD; p.jumping = false; p.coyote = 0;
+  Chip.sfx("release");
+}
+function updateSwing(p){
+  const r = game.rope, L = r.hlen;
+  if (p.grabCd > 0) p.grabCd--;
+
+  // Pendulum: angular acceleration = -(g/L)·sin(a)
+  r.av += -(ROPE_G / L) * Math.sin(r.a);
+  // Pumping: input with the swing adds energy, against it bleeds energy.
+  // cos(a) weighting means the pump is strongest at the bottom of the arc and does
+  // nothing near horizontal — so the swing gains speed without drifting off-centre.
+  const ix = (held.left ? -1 : 0) + (held.right ? 1 : 0);
+  if (ix){
+    const along = sign(r.av);
+    if (along === 0 || along === ix) r.av += ix * ROPE_PUMP * Math.cos(r.a);
+    else r.av *= 0.985;                                        // gentle, forgiving brake
+  }
+  r.av *= ROPE_DAMP;
+  r.av = clamp(r.av, -ANG_MAX, ANG_MAX);
+  r.a += r.av;
+  // Amplitude cap: pumping builds speed, but the swing never loops over the anchor.
+  if (r.a >  ANG_LIMIT){ r.a =  ANG_LIMIT; if (r.av > 0) r.av = 0; }
+  if (r.a < -ANG_LIMIT){ r.a = -ANG_LIMIT; if (r.av < 0) r.av = 0; }
+
+  p.x = r.ax + Math.sin(r.a)*L - p.w/2;
+  p.y = r.ay + Math.cos(r.a)*L;
+  p.vx = L*Math.cos(r.a)*r.av; p.vy = -L*Math.sin(r.a)*r.av;    // kept in sync for the camera
+  p.dir = sign(p.vx) || p.dir;
+  p.grounded = false; p.anim = "swing";
+
+  if (justJump) releaseRope(p, true);
+  else if (justGrab && p.grabCd <= 0) releaseRope(p, false);
+}
+
+/* ---------- 8. WORLD UPDATE (movers, crumbles, hazards, goals) ----------
+   Motion runs once, before the player moves; hazards are tested once, after. */
+function updateWorldMotion(){
+  // Moving platforms: store this frame's delta so riders can be carried exactly.
+  for (const m of LV.movers){
+    const px = m.x, py = m.y;
+    m.ph += m.spd;
+    const t = tri(m.ph);
+    m.x = m.bx + m.dx*t; m.y = m.by + m.dy*t;
+    m.mx = m.x - px; m.my = m.y - py;
+  }
+  // Collapsing platforms: shake, vanish, then restore.
+  for (const c of LV.crumbles){
+    if (c.state === 1){ if (--c.t <= 0){ c.state = 2; c.t = CRUMB_BACK; puff(c.x+c.w/2, c.y+4, 6, "#bf6f6f"); } }
+    else if (c.state === 2){ if (--c.t <= 0){ c.state = 0; } }
+  }
+  // Idle rope sway keeps ungrabbed ropes alive and readable.
+  for (const r of LV.ropes){
+    if (r.held) continue;
+    r.av += -(ROPE_G / r.len) * Math.sin(r.a);
+    r.av *= 0.999; r.a += r.av;
+    if (r.a >  ANG_LIMIT){ r.a =  ANG_LIMIT; if (r.av > 0) r.av = 0; }
+    if (r.a < -ANG_LIMIT){ r.a = -ANG_LIMIT; if (r.av < 0) r.av = 0; }
+  }
+}
+function checkHazards(){
+  const p = game.player;
+  if (game.pendingRespawn) return;
+
+  // Hazards.
+  if (p.y > KILL_Y){ killPlayer(); return; }
+  for (const s of LV.spikes){
+    if (s.x > p.x + 60 || s.x + s.w < p.x - 60) continue;
+    // Forgiving hazard box: only the feet and lower body can be spiked.
+    if (aabb({x:p.x+3, y:p.y+10, w:p.w-6, h:p.h-10}, s)){ killPlayer(); return; }
+  }
+  // Checkpoints.
+  for (let i = game.cpIndex + 1; i < LV.checks.length; i++){
+    const c = LV.checks[i];
+    if (c.sx > p.x + 40) break;
+    if (aabb(p, {x:c.sx, y:c.sy, w:16, h:26})){
+      c.on = true; game.cpIndex = i; game.cpReached = i + 1;
+      Chip.sfx("check"); puff(c.x, c.y-22, 8, COL.cpOn);
+      banner("CHECKPOINT " + game.cpReached + "/" + LV.checks.length, 70);
+    }
+  }
+  // Finish flag.
+  const f = LV.flag;
+  if (p.x + p.w > f.x - 10 && p.x < f.x + 14 && p.y + p.h > f.y && p.y < f.y + f.h + 8) winRun();
+}
+
+function puff(x,y,n,col){
+  for (let i=0;i<n;i++)
+    game.dust.push({ x, y, vx:(Math.random()-0.5)*1.8, vy:-Math.random()*1.4-0.2, life:1, col });
+}
+function updateDust(){
+  for (let i=game.dust.length-1;i>=0;i--){
+    const d = game.dust[i];
+    d.x += d.vx; d.y += d.vy; d.vy += 0.06; d.life -= 0.035;
+    if (d.life <= 0) game.dust.splice(i,1);
+  }
+}
+
+/* ---------- 9. RENDERING ---------- */
+function R(x,y,w,h,c){ ctx.fillStyle=c; ctx.fillRect(x|0,y|0,w,h); }
+function ctext(str,x,y,c,size){ ctx.fillStyle=c||"#fff"; ctx.font=(size||8)+"px 'Courier New', monospace"; ctx.textAlign="center"; ctx.fillText(str,x,y); ctx.textAlign="left"; }
+function text(str,x,y,c,size){ ctx.fillStyle=c||"#fff"; ctx.font=(size||8)+"px 'Courier New', monospace"; ctx.textAlign="left"; ctx.fillText(str,x,y); }
+const fmtTime = f => { const s = f/60; return Math.floor(s/60)+":"+(s%60).toFixed(2).padStart(5,"0"); };
+
+function drawSky(){
+  const g = ctx.createLinearGradient(0,0,0,VH);
+  g.addColorStop(0,"#0c1030"); g.addColorStop(0.55,"#1c2350"); g.addColorStop(1,"#2b2246");
+  ctx.fillStyle=g; ctx.fillRect(0,0,VW,VH);
+  // Parallax skyline: two silhouette layers derived from the camera, no assets.
+  drawRidge(cam.x*0.15, 168, 54, "#161b3c", 96);
+  drawRidge(cam.x*0.34, 190, 40, "#101532", 64);
+}
+function drawRidge(scroll, baseY, maxH, col, period){
+  ctx.fillStyle = col;
+  const start = Math.floor(scroll/period)*period;
+  for (let i=-1;i<VW/period+2;i++){
+    const wx = start + i*period;
+    const h = maxH * (0.45 + 0.55*Math.abs(Math.sin(wx*0.0131)));
+    const w = period*0.72;
+    ctx.fillRect(Math.round(wx - scroll), baseY - h, w, h + 90);
+  }
+}
+
+function inView(o,pad){ const q = pad||24; return o.x + o.w > cam.x - q && o.x < cam.x + VW + q; }
+
+function drawPlatform(pl){
+  if (!inView(pl)) return;
+  const solid = !pl.oneway;
+  R(pl.x, pl.y, pl.w, pl.h, solid ? COL.solid : COL.plat);
+  R(pl.x, pl.y, pl.w, 2,    solid ? COL.solidTop : COL.platTop);
+  if (solid && pl.h > 30){                                   // wall texturing (readable climb surface)
+    for (let y = pl.y+8; y < pl.y+pl.h-4; y += 14) R(pl.x+2, y, pl.w-4, 1, "#1b2138");
+  }
+}
+function drawMover(m){
+  if (!inView(m)) return;
+  R(m.x, m.y, m.w, m.h, COL.mover); R(m.x, m.y, m.w, 2, COL.moverTop);
+  R(m.x+m.w/2-3, m.y+3, 6, 2, "#9de0ae");
+}
+function drawCrumble(c){
+  if (c.state === 2 || !inView(c)) return;
+  const shake = c.state === 1 ? (Math.random()-0.5)*2 : 0;
+  const a = c.state === 1 ? 0.55 + 0.45*Math.abs(Math.sin(c.t*0.5)) : 1;
+  ctx.globalAlpha = a;
+  R(c.x+shake, c.y, c.w, c.h, COL.crumb); R(c.x+shake, c.y, c.w, 2, COL.crumbTop);
+  for (let i=1;i<3;i++) R(c.x + c.w*i/3 + shake, c.y+2, 1, c.h-2, "#3a2626");
+  ctx.globalAlpha = 1;
+}
+function drawSpikes(s){
+  if (!inView(s)) return;
+  ctx.fillStyle = COL.spike;
+  for (let x = s.x; x < s.x + s.w - 3; x += 6){
+    ctx.beginPath(); ctx.moveTo(x, s.y+s.h); ctx.lineTo(x+3, s.y); ctx.lineTo(x+6, s.y+s.h); ctx.closePath(); ctx.fill();
+  }
+  R(s.x, s.y+s.h-1, s.w, 1, "#7d8296");
+}
+function drawRope(r){
+  if (r.ax < cam.x - 60 || r.ax > cam.x + VW + 60) return;
+  const ex = r.ax + Math.sin(r.a)*r.len, ey = r.ay + Math.cos(r.a)*r.len;
+  R(r.ax-6, r.ay-3, 12, 3, "#4a4f66");                        // ceiling mount
+  ctx.strokeStyle = r.held ? "#ffd24a" : COL.rope; ctx.lineWidth = 1.4;
+  ctx.beginPath(); ctx.moveTo(r.ax, r.ay); ctx.lineTo(ex, ey); ctx.stroke();
+  ctx.fillStyle = r.held ? "#ffd24a" : COL.ropeDark;
+  ctx.beginPath(); ctx.arc(ex, ey, 2.6, 0, Math.PI*2); ctx.fill();
+}
+function drawCheckpoint(c){
+  if (c.x < cam.x - 30 || c.x > cam.x + VW + 30) return;
+  const col = c.on ? COL.cpOn : COL.cpOff;
+  R(c.x, c.y-24, 2, 24, "#8b93ad");
+  const wav = c.on ? Math.sin(game.frames*0.12)*1.6 : 0;
+  ctx.fillStyle = col;
+  ctx.beginPath(); ctx.moveTo(c.x+2, c.y-24); ctx.lineTo(c.x+13+wav, c.y-20); ctx.lineTo(c.x+2, c.y-15); ctx.closePath(); ctx.fill();
+  if (c.on){ ctx.globalAlpha = 0.25 + 0.15*Math.sin(game.frames*0.1);
+    ctx.fillStyle = col; ctx.beginPath(); ctx.arc(c.x+1, c.y-22, 8, 0, Math.PI*2); ctx.fill(); ctx.globalAlpha = 1; }
+}
+function drawFlag(){
+  const f = LV.flag;
+  if (f.x < cam.x - 40 || f.x > cam.x + VW + 40) return;
+  R(f.x, f.y, f.w, f.h, "#d8dcea");
+  for (let r=0;r<4;r++) for (let cc=0;cc<4;cc++)
+    R(f.x+4 + cc*5, f.y+2 + r*5, 5, 5, (r+cc)%2 ? "#101322" : COL.flag);
+  ctext("FINISH", f.x+12, f.y-6, "#ffd24a", 9);
+}
+
+/* --- Stickman: pose-driven, procedural, no sprite sheets --- */
+function stroke2(x1,y1,x2,y2,x3,y3){
+  ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.lineTo(x3,y3); ctx.stroke();
+}
+function drawStick(p){
+  const swinging = !!game.rope;
+  ctx.lineCap = "round"; ctx.lineJoin = "round";
+
+  if (swinging){
+    const r = game.rope, gx = r.ax + Math.sin(r.a)*r.hlen, gy = r.ay + Math.cos(r.a)*r.hlen;
+    const drag = clamp(r.av*6, -0.55, 0.55);                  // body lags behind the swing
+    ctx.save(); ctx.translate(gx, gy); ctx.rotate(-r.a + drag*0.5);
+    ctx.strokeStyle = COL.body; ctx.lineWidth = 1.8; ctx.fillStyle = COL.body;
+    ctx.beginPath(); ctx.moveTo(-1.6,0); ctx.lineTo(0,5.5); ctx.lineTo(1.6,0); ctx.stroke();   // arms up to hands
+    ctx.beginPath(); ctx.arc(0, 8, 2.7, 0, Math.PI*2); ctx.fill();                             // head
+    ctx.beginPath(); ctx.moveTo(0, 10.5); ctx.lineTo(0, 16); ctx.stroke();                     // torso
+    const k = drag*3;
+    stroke2(0,16, -2+k, 19, -3.5+k*2, 22.5);
+    stroke2(0,16,  2+k, 19,  3.5+k*2, 22.5);
+    ctx.restore();
+    return;
+  }
+
+  const t = p.animT, dir = p.dir, spd = Math.abs(p.vx);
+  const crouch = p.land > 0 ? (p.land/LAND_FRAMES)*3.2 : 0;
+  const lean = p.grounded ? dir * clamp(spd*0.55, 0, 1.8) : dir * 0.9;
+  const x = p.x + p.w/2, top = p.y + crouch*0.6;
+  const headY = top + 3.4, neck = top + 6.6, hip = top + 13.4 + crouch*0.5, feet = p.y + p.h;
+
+  ctx.strokeStyle = COL.body; ctx.fillStyle = COL.body; ctx.lineWidth = 1.7;
+  // head + torso
+  ctx.beginPath(); ctx.arc(x + lean*0.9, headY, 2.7, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(x + lean*0.7, neck); ctx.lineTo(x, hip); ctx.stroke();
+
+  if (p.anim === "run"){
+    const s = Math.sin(t*0.30), c = Math.cos(t*0.30);
+    stroke2(x, hip, x + s*3.0, hip+3.4, x + s*5.2 + dir*1.2, feet);
+    stroke2(x, hip, x - s*3.0, hip+3.4, x - s*5.2 + dir*1.2, feet);
+    stroke2(x+lean*0.7, neck+0.6, x - c*2.6, neck+3.4, x - c*4.4 + dir*0.8, neck+5.6);
+    stroke2(x+lean*0.7, neck+0.6, x + c*2.6, neck+3.4, x + c*4.4 + dir*0.8, neck+5.6);
+  } else if (p.anim === "wall"){
+    const w = p.wallSide || dir;
+    stroke2(x, hip, x - w*2.4, hip+3.2, x - w*1.2, feet);
+    stroke2(x, hip, x + w*1.6, hip+3.6, x + w*2.6, feet-1);
+    stroke2(x, neck+0.6, x + w*2.4, neck+1.4, x + w*3.6, neck-1.6);      // hand on the wall
+    stroke2(x, neck+0.6, x - w*1.8, neck+3.2, x - w*2.6, neck+5.8);
+  } else if (p.anim === "jump"){
+    stroke2(x, hip, x - 2.6, hip+2.6, x - 1.4 + dir, feet-2.2);          // knees tucked
+    stroke2(x, hip, x + 2.2, hip+3.4, x + 3.4 + dir, feet-0.6);
+    stroke2(x+lean*0.7, neck+0.6, x - 2.8, neck+1.6, x - 3.8, neck-2.2);
+    stroke2(x+lean*0.7, neck+0.6, x + 2.8, neck+1.6, x + 3.8, neck-2.2);
+  } else if (p.anim === "fall"){
+    const f = clamp(p.vy/MAX_FALL, 0, 1);
+    stroke2(x, hip, x - 2.4 - f, hip+3.4, x - 3.2 - f*1.6, feet);
+    stroke2(x, hip, x + 2.4 + f, hip+3.4, x + 3.2 + f*1.6, feet);
+    stroke2(x+lean*0.7, neck+0.6, x - 3.2, neck+0.8, x - 4.2, neck-3.0 - f*1.5);
+    stroke2(x+lean*0.7, neck+0.6, x + 3.2, neck+0.8, x + 4.2, neck-3.0 - f*1.5);
+  } else if (p.anim === "land"){
+    stroke2(x, hip, x - 3.4, hip+2.8, x - 3.0, feet);
+    stroke2(x, hip, x + 3.4, hip+2.8, x + 3.0, feet);
+    stroke2(x, neck+0.6, x + dir*3.0, neck+2.4, x + dir*4.6, neck+3.2);
+    stroke2(x, neck+0.6, x - dir*1.6, neck+3.0, x - dir*2.4, neck+5.2);
+  } else {                                                               // idle (subtle breathing)
+    const b = Math.sin(t*0.055)*0.5;
+    stroke2(x, hip, x - 1.8, hip+3.4, x - 2.2, feet);
+    stroke2(x, hip, x + 1.8, hip+3.4, x + 2.2, feet);
+    stroke2(x+lean*0.7, neck+0.6+b, x - 2.4, neck+3.2, x - 2.8, neck+6.0);
+    stroke2(x+lean*0.7, neck+0.6+b, x + 2.4, neck+3.2, x + 2.8, neck+6.0);
+  }
+}
+function pickAnim(p){
+  if (game.rope) { p.anim = "swing"; p.animT += 1; return; }
+  if (p.land > 0) p.anim = "land";
+  else if (!p.grounded && p.wall !== 0 && p.vy > 0) p.anim = "wall";
+  else if (!p.grounded) p.anim = p.vy < -0.4 ? "jump" : "fall";
+  else if (Math.abs(p.vx) > 0.25) p.anim = "run";
+  else p.anim = "idle";
+  p.animT += p.anim === "run" ? Math.max(1, Math.abs(p.vx)*1.5) : 1;
+}
+
+function drawHUD(){
+  R(0,0,VW,13,"rgba(6,8,20,.70)");
+  text("TIME " + fmtTime(game.frames), 4, 9, "#fff");
+  text("DEATHS " + game.deaths, 108, 9, game.deaths ? "#ff6a6a" : "#9be34a");
+  text("CP " + game.cpReached + "/" + LV.checks.length, 186, 9, "#ffd24a");
+  // Progress bar toward the flag.
+  const prog = clamp((game.player.x) / LV.flag.x, 0, 1);
+  R(258, 4, 180, 5, "#222839"); R(258, 4, 180*prog, 5, "#4ad2ff");
+  R(258 + 180*prog - 1, 2, 2, 9, "#fff");
+  text(Math.round(prog*100)+"%", 444, 9, "#9ab");
+  if (Chip.isMuted()) text("MUTE", 444, 9, "#ff6a6a");
+}
+function drawBanner(){
+  if (game.bannerT <= 0) return;
+  ctx.globalAlpha = Math.min(1, game.bannerT/30);
+  R(0, VH/2-38, VW, 20, "rgba(0,0,0,.55)");
+  ctext(game.banner, VW/2, VH/2-24, "#ffd24a", 11);
+  ctx.globalAlpha = 1;
+}
+
+function drawTitle(){
+  drawSky();
+  ctext("STICKMAN", VW/2, 66, "#4ad2ff", 30);
+  ctext("SWING PARKOUR", VW/2, 94, "#ffd24a", 22);
+  ctext("←→ run   ·   SPACE jump (hold for height)   ·   K grab / release", VW/2, 130, "#cfd", 9);
+  ctext("Swing to build momentum. Some gaps need it.", VW/2, 146, "#9ab", 8);
+  ctext("R = back to checkpoint   ·   P = pause   ·   M = mute", VW/2, 162, "#9ab", 8);
+  const b = game.bestRec;
+  ctext(b ? "BEST  " + fmtTime(b.time) + "   deaths " + b.deaths : "NO RUN RECORDED YET",
+        VW/2, 194, b ? "#ffd24a" : "#777", 10);
+  ctext("PRESS SPACE TO RUN", VW/2, 240, (Date.now()>>8)%2 ? "#fff" : "#4ad2ff", 12);
+}
+function drawWin(){
+  drawSky();
+  ctext("YOU REACHED THE FLAG", VW/2, 56, "#ffd24a", 18);
+  ctext("TOTAL TIME", VW/2, 92, "#9ab", 9);
+  ctext(fmtTime(game.frames), VW/2, 116, "#4ad2ff", 26);
+  ctext("DEATHS  " + game.deaths, VW/2, 144, "#fff", 12);
+  ctext("CHECKPOINTS  " + game.cpReached + " / " + LV.checks.length, VW/2, 162, "#fff", 12);
+  const b = game.bestRec;
+  if (b) ctext((b.time === game.frames ? "NEW BEST!  " : "BEST  ") + fmtTime(b.time) + "   deaths " + b.deaths,
+               VW/2, 190, b.time === game.frames ? "#9be34a" : "#9ab", 10);
+  ctext("PRESS SPACE FOR TITLE", VW/2, 238, (Date.now()>>8)%2 ? "#fff" : "#ffd24a", 11);
+}
+
+function render(){
+  ctx.clearRect(0,0,VW,VH);
+  if (game.state === "TITLE"){ drawTitle(); return; }
+  if (game.state === "WIN"){ drawWin(); return; }
+
+  drawSky();
+  ctx.save();
+  ctx.translate(-(cam.x|0), -(cam.y|0));
+  for (const r of LV.ropes)     drawRope(r);
+  for (const pl of LV.plats)    drawPlatform(pl);
+  for (const m of LV.movers)    drawMover(m);
+  for (const c of LV.crumbles)  drawCrumble(c);
+  for (const s of LV.spikes)    drawSpikes(s);
+  for (const c of LV.checks)    drawCheckpoint(c);
+  drawFlag();
+  for (const d of game.dust){ ctx.globalAlpha = Math.max(0, d.life); R(d.x, d.y, 1.6, 1.6, d.col); }
+  ctx.globalAlpha = 1;
+  if (game.player) drawStick(game.player);
+  ctx.restore();
+
+  if (game.flash > 0){ ctx.globalAlpha = game.flash/10*0.45; R(0,0,VW,VH,"#ff2b4a"); ctx.globalAlpha = 1; }
+  drawHUD(); drawBanner();
+  if (game.paused){ R(0,VH/2-16,VW,26,"rgba(0,0,0,.6)"); ctext("PAUSED — P TO RESUME", VW/2, VH/2+2, "#fff", 12); }
+}
+
+/* ---------- 10. STATE MACHINE & MAIN LOOP ---------- */
+function winRun(){
+  game.state = "WIN";
+  const b = game.bestRec;
+  if (!b || game.frames < b.time){ game.bestRec = { time:game.frames, deaths:game.deaths }; saveBest(game.bestRec); }
+}
+function titleAction(){
+  if (game.state === "TITLE") resetRun();
+  else if (game.state === "WIN") game.state = "TITLE";
+}
+
+function stepGame(){
+  if (game.state !== "PLAY" || game.paused) return;
+  if (game.pendingRespawn){                      // deferred respawn avoids stale-frame collisions
+    game.pendingRespawn = false;
+    spawnAtCheckpoint(false);
+    banner("CHECKPOINT " + game.cpReached, 50);
+    return;
+  }
+  if (justRestart){ killPlayer(); return; }
+  game.frames++;
+  if (game.bannerT > 0) game.bannerT--;
+  if (game.flash   > 0) game.flash--;
+  updateWorldMotion();                           // platforms/ropes move first
+  updatePlayer();                                // then the player reacts to them
+  checkHazards();                                // then hazards judge the final position
+  pickAnim(game.player);
+  updateDust();
+  updateCamera(false);
+}
+
+const sceneFor = () => game.state === "WIN" ? "win" : "play";
+
+// Fixed-timestep loop: deterministic physics, frame-rate independent.
+let acc = 0, last = performance.now();
+function loop(now){
+  let dt = (now - last)/1000; last = now; if (dt > 0.1) dt = 0.1;
+  acc += dt;
+  let guard = 0;
+  while (acc >= 1/60 && guard++ < 5){
+    stepGame();
+    justJump = false; justGrab = false; justRestart = false;
+    acc -= 1/60;
+  }
+  if (guard >= 5) acc = 0;
+  Chip.setScene(sceneFor());
+  render();
+  requestAnimationFrame(loop);
+}
+game.player = makePlayer(LV.checks[0].x - 5, LV.checks[0].y - 20);   // so the HUD/camera have a subject
+updateCamera(true);
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>

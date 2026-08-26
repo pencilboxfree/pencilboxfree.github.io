@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Skater Pro</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='26' font-size='26'>%F0%9F%9B%B9</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  /* ============ THEME TOKENS ============ */
+  :root{
+    --dusk-1:#241448;      /* upper sky      */
+    --dusk-2:#6d2170;      /* mid sky        */
+    --sun:#ff8a3d;         /* horizon / sun  */
+    --ink:#0e0a1a;         /* darkest        */
+    --neon:#38f0d0;        /* HUD accent     */
+    --neon-2:#ff4d8d;      /* secondary neon */
+    --p1:#ff5a5f;          /* player 1       */
+    --p2:#22d3ee;          /* player 2       */
+    --panel:rgba(14,10,26,.82);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{
+    font-family:"Oswald",system-ui,sans-serif; color:#fff;
+    background:radial-gradient(130% 90% at 50% 120%, #3a1c5e 0%, #160e2b 55%, #0b0718 100%);
+    display:flex; align-items:center; justify-content:center; padding:18px;
+  }
+  .frame{width:100%; max-width:920px}
+
+  .brand{display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; margin:0 4px 12px}
+  .brand h1{font-family:"Bebas Neue",sans-serif; font-size:clamp(30px,6vw,46px); letter-spacing:4px; margin:0; line-height:.9}
+  .brand h1 .a{color:var(--neon)} .brand h1 .b{color:var(--neon-2)}
+  .brand .tag{font-size:12px; text-transform:uppercase; letter-spacing:3px; color:rgba(255,255,255,.55)}
+
+  /* ============ STAGE + CANVAS ============ */
+  .stage{position:relative; border-radius:16px; overflow:hidden; box-shadow:0 20px 50px rgba(0,0,0,.5), inset 0 0 0 1px rgba(255,255,255,.06); line-height:0}
+  canvas{width:100%; height:auto; display:block; touch-action:none}
+
+  /* ============ HUD ============ */
+  .hud{position:absolute; inset:0; pointer-events:none; padding:14px 16px; display:flex; justify-content:space-between; align-items:flex-start; gap:12px; font-family:"Oswald",sans-serif}
+  .hud.hidden{display:none}
+  .hud .card{background:var(--panel); border:1px solid rgba(255,255,255,.12); border-radius:12px; padding:8px 14px; backdrop-filter:blur(4px); max-width:48%; overflow:hidden}
+  .hud .who{font-size:12px; letter-spacing:2px; text-transform:uppercase; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .hud .score{font-family:"Bebas Neue",sans-serif; font-size:clamp(26px,5vw,40px); line-height:1; letter-spacing:1px}
+  .hud .bank{font-size:11px; letter-spacing:1px; color:rgba(255,255,255,.6); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .hud .time{font-family:"Bebas Neue",sans-serif; font-size:clamp(26px,5vw,40px); line-height:1; text-align:right; letter-spacing:1px}
+  .hud .time small{display:block; font-family:"Oswald",sans-serif; font-size:11px; letter-spacing:2px; text-transform:uppercase; color:rgba(255,255,255,.6); margin-top:2px}
+  .hud .time.low{color:var(--neon-2)}
+
+  /* ============ TOUCH CONTROLS ============ */
+  .pads{position:absolute; left:0; right:0; bottom:0; padding:12px 16px; display:flex; justify-content:space-between; gap:10px; pointer-events:none}
+  .pads.hidden{display:none}
+  .pad{pointer-events:auto; user-select:none; -webkit-user-select:none; flex:1; max-width:150px; text-align:center;
+       font-family:"Oswald",sans-serif; font-weight:700; letter-spacing:2px; text-transform:uppercase; font-size:13px;
+       padding:14px 0; border-radius:12px; border:1px solid rgba(255,255,255,.18); background:rgba(20,14,34,.6); color:#fff; cursor:pointer}
+  .pad .k{display:block; font-size:10px; letter-spacing:1px; color:rgba(255,255,255,.5); margin-top:3px}
+  .pad:active{background:rgba(56,240,208,.25); border-color:var(--neon)}
+
+  /* ============ OVERLAYS (start / ready / winner) ============
+     Flexible spacers (::before/::after) center the content but guarantee
+     a minimum top/bottom margin, so tall content scrolls instead of
+     overlapping or clipping. Children never shrink into each other. */
+  .screen{position:absolute; inset:0; display:none; flex-direction:column; align-items:center; justify-content:flex-start; text-align:center; overflow-y:auto;
+          background:linear-gradient(180deg, rgba(11,7,24,.6), rgba(11,7,24,.86)); padding:14px 22px}
+  .screen.show{display:flex}
+  .screen::before,.screen::after{content:""; flex:1 0 12px}
+  .screen > *{flex-shrink:0; max-width:100%}
+  .screen h2{font-family:"Bebas Neue",sans-serif; font-size:clamp(36px,8vw,70px); letter-spacing:3px; margin:0 0 10px; line-height:1; overflow-wrap:anywhere}
+  .screen p{margin:0 0 18px; line-height:1.5; letter-spacing:.5px; color:rgba(255,255,255,.85); max-width:520px}
+  .screen .big{font-family:"Bebas Neue",sans-serif; font-size:clamp(26px,6vw,52px); letter-spacing:2px; line-height:1.15}
+
+  .controls{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px 22px; margin:4px 0 20px; text-align:left; font-size:14px}
+  .controls b{color:var(--neon); font-weight:600}
+  .controls .k{display:inline-block; min-width:70px; font-family:"Bebas Neue",sans-serif; letter-spacing:1px; color:#fff}
+
+  .btn{font-family:"Oswald",sans-serif; font-weight:700; text-transform:uppercase; letter-spacing:2px; font-size:14px;
+       color:var(--ink); background:var(--neon); border:none; padding:13px 30px; border-radius:10px; cursor:pointer;
+       box-shadow:0 5px 0 #159e86; transition:transform .08s ease, box-shadow .08s ease}
+  .btn:hover{transform:translateY(-1px)} .btn:active{transform:translateY(3px); box-shadow:0 2px 0 #159e86}
+  .btn:focus-visible{outline:3px solid #fff; outline-offset:2px}
+
+  .tags{display:flex; flex-wrap:wrap; justify-content:center; gap:6px 16px; margin-bottom:16px; font-size:13px; letter-spacing:1px}
+  .tags span{opacity:.85; white-space:nowrap} .tags b{font-family:"Bebas Neue",sans-serif; font-size:20px; letter-spacing:1px}
+  .p1c{color:var(--p1)} .p2c{color:var(--p2)}
+
+  /* ---- Customization menu ---- */
+  .menu{display:grid; grid-template-columns:1fr 1fr; gap:14px; width:100%; max-width:560px; margin:6px 0 16px}
+  .skcard{background:rgba(20,14,34,.55); border:1px solid rgba(255,255,255,.12); border-radius:12px; padding:12px; text-align:left}
+  .skhead{display:flex; align-items:center; gap:10px; margin-bottom:10px}
+  .skdot{width:20px; height:20px; border-radius:50%; border:1px solid rgba(0,0,0,.4); flex:0 0 auto}
+  .skname{flex:1; min-width:0; background:rgba(0,0,0,.3); border:2px solid #fff; color:#fff; font-family:"Oswald",sans-serif; font-weight:600; font-size:14px; letter-spacing:.5px; padding:7px 10px; border-radius:8px}
+  .skname:focus{outline:none}
+  .skpal{display:grid; grid-template-columns:repeat(7,1fr); gap:5px}
+  .sw{aspect-ratio:1; border:1px solid rgba(0,0,0,.45); border-radius:5px; cursor:pointer; padding:0; transition:transform .08s ease}
+  .sw:hover{transform:scale(1.14)}
+  .sw.on{outline:2px solid #fff; outline-offset:1px}
+  @media (max-width:560px){ .menu{grid-template-columns:1fr} }
+
+  .legend{margin:8px 4px 0; font-size:12px; letter-spacing:1px; color:rgba(255,255,255,.5); display:flex; gap:6px 18px; flex-wrap:wrap}
+  .legend b{color:#fff; font-weight:600}
+  @media (max-width:560px){ .controls{grid-template-columns:1fr} .pad{font-size:12px} }
+</style>
+</head>
+<body>
+  <div class="frame">
+    <div class="brand">
+      <h1><span class="a">SKATER</span> <span class="b">PRO</span></h1>
+      <span class="tag">Two-player street session</span>
+    </div>
+
+    <div class="stage">
+      <canvas id="game" width="900" height="480"></canvas>
+
+      <!-- Heads-up display -->
+      <div class="hud hidden" id="hud">
+        <div class="card">
+          <div class="who" id="hudWho">Player 1</div>
+          <div class="score" id="hudScore">0</div>
+          <div class="bank" id="hudBank"></div>
+          <div class="bank" id="hudSpec"></div>
+        </div>
+        <div class="card">
+          <div class="time" id="hudTime">45<small>seconds</small></div>
+        </div>
+      </div>
+
+      <!-- On-screen controls (also work with keyboard) -->
+      <div class="pads hidden" id="pads">
+        <div class="pad" id="padJump">Jump<span class="k">SPACE · hold=higher</span></div>
+        <div class="pad" id="padGrind">Grind<span class="k">Z · optional, on rails</span></div>
+        <div class="pad" id="padFlip">Kickflip<span class="k">X · in air</span></div>
+        <div class="pad" id="padSpec">Special<span class="k">S · when charged</span></div>
+      </div>
+
+      <!-- START + CUSTOMIZE -->
+      <div class="screen show" id="startScreen">
+        <h2>Skater Pro</h2>
+
+        <div class="menu">
+          <div class="skcard">
+            <div class="skhead"><span class="skdot" id="dot1"></span><input class="skname" id="name1" maxlength="12" placeholder="Player 1" /></div>
+            <div class="skpal" id="pal1"></div>
+          </div>
+          <div class="skcard">
+            <div class="skhead"><span class="skdot" id="dot2"></span><input class="skname" id="name2" maxlength="12" placeholder="Player 2" /></div>
+            <div class="skpal" id="pal2"></div>
+          </div>
+        </div>
+
+        <div class="tags">
+          <span><b class="p1c">Grind</b> +10</span>
+          <span><b class="p2c">Kickflip</b> +15</span>
+          <span><b>Bail</b> −5</span>
+          <span><b style="color:#ffd166">Special</b> +30</span>
+          <span><b>Combo</b> +10</span>
+        </div>
+        <button class="btn" id="startBtn">Start session</button>
+      </div>
+
+      <!-- READY (per player) -->
+      <div class="screen" id="readyScreen">
+        <h2 id="readyTitle">Player 1</h2>
+        <div class="big" id="readyBank"></div>
+        <button class="btn" id="dropBtn" style="margin-top:14px">Drop in</button>
+        <p id="readySub" style="margin:22px 0 0">45 seconds. Rack up as many trick points as you can.</p>
+      </div>
+
+      <!-- WINNER -->
+      <div class="screen" id="winScreen">
+        <h2 id="winTitle">Player 1 wins</h2>
+        <p class="big" id="winScores"></p>
+        <button class="btn" id="againBtn">New session</button>
+      </div>
+    </div>
+
+    <div class="legend">
+      <span><b>Space</b> jump / hold higher</span>
+      <span><b>Z</b> grind (optional)</span>
+      <span><b>X</b> kickflip (jump first — grounded flips bail)</span>
+      <span><b>S</b> special (charges every 120 pts)</span>
+      <span>Hazards: potholes · gaps — rails &amp; ramps are safe</span>
+    </div>
+  </div>
+
+<script>
+"use strict";
+/* =========================================================================
+   SKATER PRO — endless side-scrolling skateboard runner
+   Single file, no libraries. Sections:
+     1. Config & constants          6. Physics + collision
+     2. Seeded RNG (fair course)    7. Scoring & floating text
+     3. Game/run state              8. Audio (procedural beatbox)
+     4. Obstacle spawning           9. Rendering
+     5. Player actions             10. Input, flow, main loop
+   ========================================================================= */
+
+/* ---------- 1. CONFIG & CONSTANTS ---------- */
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+const W = canvas.width, H = canvas.height;
+
+const GROUND_Y   = 360;   // y of the ground surface
+const PLAYER_X   = 220;   // fixed on-screen x of the skater (camera follows)
+const GRAVITY    = 0.62;  // per-frame downward accel (vy is +up)
+const JUMP_V     = 13.2;  // initial jump velocity (full hold height)
+const JUMP_CUT   = 6.0;   // velocity cap when Space released early (short hop)
+const MAX_FALL   = 17;
+const BASE_SPEED = 4.6;   // starting roll speed (px/frame)
+const MAX_SPEED  = 7.8;
+const FOOT       = 13;    // half-width of the skater's collision footprint
+const FLIP_SPEED = 0.34;  // kickflip spin (rad/frame)
+const RUN_TIME   = 45;    // seconds per player's run
+const SPAWN_AHEAD= 1200;  // spawn obstacles this far past the camera
+const SINK_TIME  = 0.55;  // s the character sinks into a hole
+const ROLL_TIME  = 2.0;   // s recovery pause (roll + get up) before resuming
+const SPECIAL_PTS= 30;    // special trick (backflip grab) value
+const CHARGE_REQ = 120;   // points earned per special charge
+const RAMP_BOOST = Math.SQRT2; // vy multiplier off a ramp → double jump height
+const COLORS     = { 1:"#ff5a5f", 2:"#22d3ee" };
+
+const clamp = (v,a,b)=>Math.max(a,Math.min(b,v));
+const colorOf = p => game.players[p].color;   // live player color (set in the menu)
+// Difficulty steps up every 15 s of run time (0,1,2,3) — fair, capped.
+const diffLevel = () => run ? Math.min(3, Math.floor((RUN_TIME - run.timeLeft)/15)) : 0;
+
+/* ---------- 2. SEEDED RNG ----------
+   Both players skate an identical course, so scores are directly comparable. */
+function mulberry32(seed){
+  let a = seed >>> 0;
+  return function(){
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+let rng = Math.random;
+
+/* ---------- 3. GAME / RUN STATE ---------- */
+const game = {
+  phase: "start",                 // start | ready | countdown | playing | winner
+  current: 1,                     // whose turn (1 or 2)
+  seed: 0,
+  players: { 1:{name:"Player 1", color:"#ff5a5f", score:0, played:false},
+             2:{name:"Player 2", color:"#22d3ee", score:0, played:false} }
+};
+let run = null;                   // per-run runtime (see newRun)
+let ambientX = 0;                 // background scroll for menus
+
+function newRun(playerId){
+  rng = mulberry32(game.seed);    // reset course to the shared seed
+  run = {
+    player: playerId,
+    worldX: 0, speed: BASE_SPEED, boost: 0,
+    yOffset: 0, vy: 0, grounded: true, jumpCut: true,
+    grinding: false, currentRail: null,
+    flipUsed: false, flipping: false, flipAngle: 0,
+    special: { ready:false, progress:0, active:false, angle:0, used:false },
+    combo: { tricks:0, points:0 },  // airborne trick pot — banks on clean landing
+    fall: null,                    // {state:"sink"|"roll", t, resumeX} — recovery sequence
+    lvl: 0,
+    score: 0, timeLeft: RUN_TIME, countdown: 3,
+    obstacles: [], nextSpawnX: 620,
+    floats: [], legPhase: 0
+  };
+}
+
+/* ---------- 4. OBSTACLE SPAWNING (procedural) ---------- */
+function spawnOne(){
+  const r = rng();
+  const type = r < 0.34 ? "pothole" : r < 0.62 ? "rail" : r < 0.82 ? "gap" : "ramp";
+  let w;
+  if      (type === "pothole") w = 55 + rng()*45;   //  55–100
+  else if (type === "rail")    w = 80 + rng()*58;   //  80–138
+  else if (type === "gap")     w = 108 + rng()*54;  // 108–162
+  else                          w = 95 + rng()*50;  //  95–145 (ramp)
+  const ob = { type, x: run.nextSpawnX, w, grinded:false };
+  if (type === "ramp") ob.h = 44 + rng()*18;        // launch height 44–62 px
+  if (type === "rail"){
+    ob.h1 = 34 + rng()*26;        // start height 34–60 px
+    ob.h2 = 34 + rng()*26;        // end height — different h1/h2 = angled rail
+  }
+  run.obstacles.push(ob);
+
+  // Spacing tightens per 15 s difficulty level; floor keeps runs always jumpable.
+  const lvl = diffLevel();
+  const gap = Math.max(185, (330 - lvl*55) + rng()*90);
+  run.nextSpawnX += w + gap;
+}
+function ensureObstacles(){
+  while (run.nextSpawnX < run.worldX + SPAWN_AHEAD) spawnOne();
+  // Cull obstacles well behind the camera.
+  const behind = run.worldX - PLAYER_X - 260;
+  run.obstacles = run.obstacles.filter(o => o.x + o.w > behind);
+}
+// Overlap helpers between the skater footprint and an obstacle.
+function overlaps(o){ return (run.worldX+FOOT) > o.x && (run.worldX-FOOT) < (o.x+o.w); }
+// Rails and ramps are safe — only holes are hazards. Skipping a rail costs nothing.
+function hazardAtFeet(){ for(const o of run.obstacles) if((o.type==="pothole"||o.type==="gap") && overlaps(o)) return o; return null; }
+function railAtPlayer(){ for(const o of run.obstacles) if(o.type==="rail" && overlaps(o)) return o; return null; }
+function rampAtPlayer(){ for(const o of run.obstacles) if(o.type==="ramp" && overlaps(o)) return o; return null; }
+// Ground surface height above GROUND_Y at a world x (ramps raise it linearly).
+function groundHeightAt(x){ const o = rampAtPlayer(); return o ? clamp((x - o.x)/o.w, 0, 1) * o.h : 0; }
+// Rail surface height (above ground) at a world x — linear between h1 and h2.
+function railHeightAt(o, x){ const t = clamp((x - o.x)/o.w, 0, 1); return o.h1 + (o.h2 - o.h1)*t; }
+
+/* ---------- 5. PLAYER ACTIONS ---------- */
+const keys = { jump:false, grind:false };
+
+function doJump(){
+  if (game.phase !== "playing" || run.fall) return;
+  if (run.grinding){                 // ollie off a rail
+    run.grinding = false; run.currentRail = null;
+    run.vy = JUMP_V*0.82; run.grounded = false; run.jumpCut = false;
+    run.special.used = false;
+  } else if (run.grounded){          // jump from ground (ramps double the height)
+    run.vy = JUMP_V * (rampAtPlayer() ? RAMP_BOOST : 1);
+    run.grounded = false; run.jumpCut = false; run.flipUsed = false;
+    run.special.used = false;
+  }
+}
+function doFlip(){
+  if (game.phase !== "playing" || run.fall) return;
+  if (run.grounded && !run.grinding){ startTrip(); return; }  // flip without jumping = fall
+  // Airborne: only the board spins — see drawSkater.
+  if (!run.grounded && !run.grinding && !run.flipUsed && !run.special.active){
+    run.flipUsed = true; run.flipping = true; run.flipAngle = 0;
+    addTrick(15, "KICKFLIP", colorOf(run.player));
+  }
+}
+function doSpecial(){
+  if (game.phase !== "playing" || run.fall) return;
+  const sp = run.special;
+  // Needs a banked charge and airtime (jump first); one special per jump.
+  if (!sp.ready || sp.active || sp.used || run.grounded || run.grinding) return;
+  sp.ready = false; sp.active = true; sp.used = true; sp.angle = 0;
+  run.flipping = false; run.flipAngle = 0;   // the board moves to the hands
+  addTrick(SPECIAL_PTS, "BACKFLIP GRAB", "#ffd166");
+}
+
+/* ---------- 6. PHYSICS + COLLISION ---------- */
+function physics(ds){
+  // --- Fall / recovery sequence: sink → roll (2 s pause) → resume. ---
+  if (run.fall){
+    const f = run.fall; f.t += ds/60;
+    if (f.state === "sink"){
+      run.yOffset -= 2.6*ds;                       // character sinks into the hole
+      if (f.t >= SINK_TIME){
+        f.state = "roll"; f.t = 0;
+        run.worldX = f.resumeX; run.yOffset = 0;   // reappear just past the hazard
+      }
+    } else if (f.t >= ROLL_TIME){                  // roll/get-up done — resume play
+      run.fall = null;
+    }
+    return;                                        // world frozen while recovering
+  }
+
+  // Horizontal roll: speed steps up per difficulty level; boost carries rail momentum.
+  const target = Math.min(MAX_SPEED, BASE_SPEED + diffLevel()*1.05);
+  run.speed += (target - run.speed) * 0.015 * ds;
+  run.boost -= run.boost * 0.012 * ds;             // momentum bleeds off gradually
+  run.worldX += (run.speed + run.boost) * ds;
+  run.legPhase += 0.35 * ds;
+  ensureObstacles();
+
+  // Vertical movement.
+  if (run.grinding){
+    const rail = run.currentRail;
+    run.yOffset = railHeightAt(rail, run.worldX);  // follow the rail's angle
+    // Momentum from the slope: downhill speeds you up, uphill slows you down.
+    const slope = (rail.h2 - rail.h1) / rail.w;    // + = rising ahead
+    run.boost = clamp(run.boost - slope*0.6*ds, -1.4, 2.0);
+    if (!keys.grind || run.worldX > rail.x + rail.w){   // dropped or reached the end
+      run.grinding = false; run.currentRail = null;
+      run.vy = 3; run.grounded = false;                 // small pop off the rail
+    }
+  } else if (run.grounded){
+    const gh = groundHeightAt(run.worldX);               // ramps raise the surface
+    if (run.yOffset > 4 && gh <= 0.01){                  // rolled off a ramp lip
+      run.vy = JUMP_V * RAMP_BOOST;                      // launch — double jump height
+      run.grounded = false; run.jumpCut = true;
+      run.flipUsed = false; run.special.used = false;
+    } else {
+      run.yOffset = gh;                                  // follow flat ground / ramp incline
+    }
+  } else {
+    // Variable jump height: releasing Space early cuts the rise.
+    if (!keys.jump && run.vy > 0 && !run.jumpCut){ run.vy = Math.min(run.vy, JUMP_CUT); run.jumpCut = true; }
+    run.vy -= GRAVITY * ds;
+    if (run.vy < -MAX_FALL) run.vy = -MAX_FALL;
+    run.yOffset += run.vy * ds;
+    const gh = groundHeightAt(run.worldX);
+    if (run.yOffset <= gh && run.vy <= 0){               // touched down
+      run.yOffset = gh; run.vy = 0; run.grounded = true;
+      run.special.active = false; run.special.angle = 0; run.special.used = false;
+      run.flipping = false; run.flipAngle = 0;
+      if (!hazardAtFeet()) bankCombo();                  // clean landing banks the combo
+    }
+  }
+
+  // Kickflip spin animation (board only). Finishing a flip frees the next trick,
+  // so bigger air (ramps) fits several tricks in one jump.
+  if (run.flipping){ run.flipAngle += FLIP_SPEED * ds; if (run.flipAngle >= Math.PI*2){ run.flipping=false; run.flipAngle=0; run.flipUsed=false; } }
+  // Special: whole-body backflip with the board in hand.
+  if (run.special.active){
+    run.special.angle += 0.22 * ds;
+    if (run.special.angle >= Math.PI*2){ run.special.active = false; run.special.angle = 0; }
+  }
+
+  // Engage a grind: airborne, over a rail, near the rail surface, holding X.
+  if (!run.grinding && !run.grounded && keys.grind){
+    const rail = railAtPlayer();
+    if (rail){
+      const rh = railHeightAt(rail, run.worldX);
+      if (run.yOffset > 0 && run.yOffset >= rh - 10 && run.yOffset <= rh + 44){
+        run.grinding = true; run.currentRail = rail; run.vy = 0; run.yOffset = rh;
+        if (!rail.grinded){ rail.grinded = true; addTrick(10, "GRIND", colorOf(run.player)); }
+      }
+    }
+  }
+
+  // Fall: on the ground and overlapping a hole (potholes/gaps only — never rails).
+  if (run.grounded){
+    const o = hazardAtFeet();
+    if (o) startFall(o);
+  }
+}
+function startFall(o){
+  run.fall = { state:"sink", t:0, resumeX: o.x + o.w + 14 };
+  failCombo();
+  addScore(-5, "BAIL", "#ff4d8d");
+  run.grinding = false; run.currentRail = null;
+  run.grounded = true; run.vy = 0; run.boost = 0;
+  run.flipping = false; run.flipAngle = 0;
+}
+// Popping the board without jumping: counts as a fall — straight to the recovery roll.
+function startTrip(){
+  run.fall = { state:"roll", t:0, resumeX: run.worldX };
+  failCombo();
+  addScore(-5, "BAIL", "#ff4d8d");
+  run.flipping = false; run.flipAngle = 0; run.boost = 0;
+}
+// A fall wipes the un-banked combo pot and any charged special.
+function failCombo(){
+  if (run.combo.tricks > 0) pushFloat("COMBO LOST", "#ff4d8d");
+  run.combo = { tricks:0, points:0 };
+  run.special.ready = false; run.special.active = false; run.special.angle = 0;
+  updateHUD();
+}
+
+/* ---------- 7. SCORING, COMBOS & FLOATING TEXT ---------- */
+// Airborne tricks build a combo pot; each trick keeps its own value.
+function addTrick(pts, label, color){
+  run.combo.tricks++; run.combo.points += pts;
+  pushFloat("+" + pts + " " + label + (run.combo.tricks > 1 ? "  ×" + run.combo.tricks : ""), color);
+  updateHUD();
+}
+// Clean landing: bank every trick's value; 2+ tricks add the +10 combo bonus.
+function bankCombo(){
+  const c = run.combo;
+  if (c.tricks === 0) return;
+  const bonus = c.tricks >= 2 ? 10 : 0;
+  addScore(c.points + bonus, bonus ? "COMBO ×" + c.tricks : "LANDED", "#8ac926");
+  run.combo = { tricks:0, points:0 };
+}
+function addScore(pts, label, color){
+  run.score = Math.max(0, run.score + pts);   // never dip below zero
+  if (pts > 0){                               // every 120 pts earned charges a special
+    run.special.progress += pts;
+    if (!run.special.ready && run.special.progress >= CHARGE_REQ){
+      run.special.progress -= CHARGE_REQ;
+      run.special.ready = true;
+      pushFloat("SPECIAL READY — S", "#ffd166", 1.6);
+    }
+  }
+  pushFloat((pts>0?"+":"") + pts + " " + label, color);
+  updateHUD();
+}
+function pushFloat(text, color, life = 1){
+  // Stagger simultaneous messages upward so texts never overlap.
+  let y = Math.max(96, GROUND_Y - 120 - run.yOffset);
+  for (const f of run.floats) if (Math.abs(f.y - y) < 22) y = Math.min(y, f.y) - 22;
+  run.floats.push({ x: PLAYER_X, y: Math.max(58, y), text, color, life });
+}
+function updateFloats(ds){
+  for (const f of run.floats){ f.y -= 0.7*ds; f.life -= 0.02*ds; }
+  run.floats = run.floats.filter(f => f.life > 0);
+}
+
+/* ---------- 8. AUDIO — fast beatbox/chiptune track (Web Audio, no assets) ----------
+   Original synthesized loop: beatbox kit (kick/hat/snare from filtered noise)
+   plus a chiptune square-wave hook over a triangle bassline. 125 BPM (~30%
+   faster than before). Intensity layers stack with the 15 s difficulty level,
+   and the whole track plays 15% faster while a special is charged — tempo
+   only, same volume, no restart (scheduling is incremental, so the groove
+   simply tightens mid-flow and relaxes back the moment the charge is spent
+   or lost). Nothing is loaded — tiny CPU, zero file weight. */
+const music = (() => {
+  let ac = null, nextT = 0, step = 0, timer = null, noiseBuf = null, master = null;
+  const BPM = 125;                                    // fast skate pace
+  // +15% playback speed while a special is charged; normal otherwise.
+  const rate = () => (run && game.phase !== "start" && run.special.ready) ? 1.15 : 1;
+  const spb  = () => (60/BPM/2) / rate();             // seconds per 8th-note step
+  // 4-bar loop (32 8th-steps, Hz, 0 = rest) — A-minor-pentatonic hook: rising
+  // call in bars 1–2, answer that tumbles back down in bar 4. The earworm.
+  const LEAD = [440,523,659,523, 440,0,392,440,  440,523,659,784, 659,0,587,523,
+                440,523,659,523, 440,0,392,440,  659,587,523,587, 523,440,392,0];
+  const BASS = [110,0,110,110, 0,110,0,131,  87,0,87,87, 0,87,0,98,
+                131,0,131,131, 0,131,0,110,  98,0,98,98, 0,98,110,123];
+  function init(){
+    if (ac) return;
+    ac = new (window.AudioContext || window.webkitAudioContext)();
+    master = ac.createGain(); master.gain.value = 0.8; master.connect(ac.destination);
+    noiseBuf = ac.createBuffer(1, ac.sampleRate*0.2, ac.sampleRate);
+    const d = noiseBuf.getChannelData(0);
+    for (let i=0;i<d.length;i++) d[i] = Math.random()*2 - 1;
+  }
+  function env(g,t,len,vol){ g.gain.setValueAtTime(vol,t); g.gain.exponentialRampToValueAtTime(0.001,t+len); }
+  function kick(t){ const o=ac.createOscillator(), g=ac.createGain();
+    o.frequency.setValueAtTime(150,t); o.frequency.exponentialRampToValueAtTime(40,t+0.1);
+    env(g,t,0.12,0.5); o.connect(g).connect(master); o.start(t); o.stop(t+0.14); }
+  function hat(t,open){ const s=ac.createBufferSource(), f=ac.createBiquadFilter(), g=ac.createGain();
+    s.buffer=noiseBuf; f.type="highpass"; f.frequency.value=6500;
+    env(g,t,open?0.1:0.035,0.12); s.connect(f); f.connect(g); g.connect(master); s.start(t); s.stop(t+0.12); }
+  function snare(t){ const s=ac.createBufferSource(), f=ac.createBiquadFilter(), g=ac.createGain();
+    s.buffer=noiseBuf; f.type="bandpass"; f.frequency.value=1900;
+    env(g,t,0.08,0.3); s.connect(f); f.connect(g); g.connect(master); s.start(t); s.stop(t+0.1); }
+  function bassN(t,hz,dur){ const o=ac.createOscillator(), g=ac.createGain();
+    o.type="triangle"; o.frequency.value=hz;
+    env(g,t,dur*0.85,0.22); o.connect(g).connect(master); o.start(t); o.stop(t+dur); }
+  function leadN(t,hz,dur){ const o=ac.createOscillator(), g=ac.createGain();
+    o.type="square"; o.frequency.value=hz;                    // chiptune voice
+    env(g,t,dur*0.7,0.085); o.connect(g).connect(master); o.start(t); o.stop(t+dur*0.8); }
+  function schedule(){
+    const lvl = (game.phase==="playing" || game.phase==="countdown") ? diffLevel() : 0;
+    while (nextT < ac.currentTime + 0.12){
+      const dur = spb();                                       // live tempo (special = faster)
+      const s = step % 32;
+      if (s % 4 === 0) kick(nextT);                            // driving kick pulse
+      if (s % 8 === 4) snare(nextT);                           // backbeat from the start
+      hat(nextT, s % 4 === 2);                                 // hats keep time
+      if (lvl >= 1 && s % 8 === 7) kick(nextT + dur/2);        // lvl 1: syncopated kick
+      if (lvl >= 2) hat(nextT + dur/2, false);                 // lvl 2: 16th-note hats
+      const b = BASS[s]; if (b) bassN(nextT, lvl >= 1 ? b*2 : b, dur);
+      const m = LEAD[s]; if (m) leadN(nextT, lvl >= 3 ? m*2 : m, dur); // lvl 3: octave up
+      nextT += dur; step++;
+    }
+  }
+  return {
+    start(){ init(); if (ac.state === "suspended") ac.resume();
+      if (timer) return;
+      nextT = ac.currentTime + 0.05; step = 0;
+      timer = setInterval(schedule, 50); },
+    stop(){ if (timer){ clearInterval(timer); timer = null; } }
+  };
+})();
+
+/* ---------- 9. RENDERING ---------- */
+function drawBackground(scroll){
+  // Sky
+  const sky = ctx.createLinearGradient(0,0,0,GROUND_Y+40);
+  sky.addColorStop(0, "#241448"); sky.addColorStop(.55, "#6d2170"); sky.addColorStop(1, "#ff8a3d");
+  ctx.fillStyle = sky; ctx.fillRect(0,0,W,GROUND_Y+40);
+  // Sun
+  ctx.fillStyle = "rgba(255,213,128,.95)";
+  ctx.beginPath(); ctx.arc(W*0.62, GROUND_Y-70, 58, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = "rgba(255,150,90,.35)";
+  ctx.beginPath(); ctx.arc(W*0.62, GROUND_Y-70, 84, 0, Math.PI*2); ctx.fill();
+  // Parallax skyline (two layers)
+  drawCity(scroll*0.18, GROUND_Y, 150, "#3a1c54", 190, 8);
+  drawCity(scroll*0.34, GROUND_Y, 108, "#25123c", 130, 3);
+  // Street wall with graffiti (closest background layer)
+  drawGraffitiWall(scroll*0.55);
+}
+function drawCity(off, baseY, maxH, color, period, seedShift){
+  ctx.fillStyle = color;
+  const start = -((off % period) + period) % period;
+  for (let x = start, i = 0; x < W + period; x += period, i++){
+    // Deterministic pseudo-random heights so the skyline is stable.
+    const n = Math.abs(Math.sin((Math.floor((off)/period)+i+seedShift) * 12.9898) * 43758.5453) % 1;
+    const h = 60 + n * maxH, bw = period*0.62;
+    ctx.fillRect(x, baseY - h, bw, h);
+    ctx.fillRect(x + bw*0.35, baseY - h - 16, bw*0.3, 16); // rooftop box
+  }
+}
+function drawGraffitiWall(off){
+  // Skate-spot wall: tags, throw-ups, spray drips. Deterministic per segment —
+  // cheap fills/text only, no shadows or gradients per piece.
+  const period = 260, wallH = 62, y = GROUND_Y - wallH;
+  ctx.fillStyle = "#2c1a44"; ctx.fillRect(0, y, W, wallH);
+  ctx.fillStyle = "rgba(255,255,255,.06)"; ctx.fillRect(0, y, W, 3);        // coping line
+  const TAGS = ["SK8","OLLIE","GRIND","FLIP","PRO","RAIL","DROP"];
+  const CLRS = ["#ff4d8d","#38f0d0","#ffd166","#8ac926","#b57bee","#ff8a3d"];
+  const start = -((off % period) + period) % period;
+  const base = Math.floor(off / period);
+  ctx.textAlign = "left";
+  for (let x = start, i = 0; x < W + period; x += period, i++){
+    const n = Math.abs(Math.sin((base+i) * 127.1) * 43758.5453) % 1;
+    const tag = TAGS[Math.floor(n * TAGS.length) % TAGS.length];
+    const c   = CLRS[Math.floor(n * 39) % CLRS.length];
+    // Two-tone tag: dark offset behind color = quick "outline" spray look.
+    ctx.font = "italic 700 26px 'Bebas Neue', sans-serif";
+    ctx.fillStyle = "rgba(0,0,0,.45)"; ctx.fillText(tag, x+20, y+44);
+    ctx.fillStyle = c;                 ctx.fillText(tag, x+18, y+42);
+    // Spray drips under the tag.
+    ctx.fillRect(x+24+n*40, y+44, 2, 7+n*8);
+    ctx.fillRect(x+52+n*22, y+44, 2, 4+n*6);
+    // Sticker blob / spray circle further along the wall.
+    ctx.fillStyle = "rgba(255,255,255,.12)";
+    ctx.beginPath(); ctx.arc(x+period*0.72, y+28, 9+n*8, 0, Math.PI*2); ctx.fill();
+  }
+}
+function drawGround(scroll){
+  // Concrete slab
+  ctx.fillStyle = "#1b1330"; ctx.fillRect(0, GROUND_Y, W, H-GROUND_Y);
+  ctx.fillStyle = "#241a3d"; ctx.fillRect(0, GROUND_Y, W, 10);
+  ctx.strokeStyle = "rgba(56,240,208,.55)"; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(0, GROUND_Y+1); ctx.lineTo(W, GROUND_Y+1); ctx.stroke();
+  // Scrolling lane dashes
+  ctx.strokeStyle = "rgba(255,255,255,.14)"; ctx.lineWidth = 4; ctx.setLineDash([26,26]);
+  ctx.lineDashOffset = -scroll % 52;
+  ctx.beginPath(); ctx.moveTo(0, GROUND_Y+42); ctx.lineTo(W, GROUND_Y+42); ctx.stroke();
+  ctx.setLineDash([]);
+}
+function drawObstacles(){
+  for (const o of run.obstacles){
+    const sx = o.x - (run.worldX - PLAYER_X);
+    if (sx > W+40 || sx + o.w < -40) continue;
+    if (o.type === "rail") drawRail(sx, o.w, o);
+    else if (o.type === "ramp") drawRamp(sx, o.w, o);
+    else drawPit(sx, o.w, o.type);
+  }
+}
+function drawPit(sx, w, type){
+  // Punch a dark hole through the ground.
+  ctx.fillStyle = "#0b0718"; ctx.fillRect(sx, GROUND_Y+1, w, H-GROUND_Y);
+  ctx.fillStyle = type==="gap" ? "rgba(255,77,141,.16)" : "rgba(0,0,0,.35)";
+  ctx.fillRect(sx, GROUND_Y+1, w, 26);
+  // Crumbled edges
+  ctx.strokeStyle = "rgba(56,240,208,.5)"; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(sx-1, GROUND_Y+1); ctx.lineTo(sx-1, GROUND_Y+16);
+  ctx.moveTo(sx+w+1, GROUND_Y+1); ctx.lineTo(sx+w+1, GROUND_Y+16); ctx.stroke();
+}
+function drawRail(sx, w, o){
+  // Angled rail: the bar runs from height h1 (left) to h2 (right).
+  const y1 = GROUND_Y - o.h1, y2 = GROUND_Y - o.h2;
+  ctx.strokeStyle = "#6b7482"; ctx.lineWidth = 4;             // support posts
+  ctx.beginPath(); ctx.moveTo(sx+6, GROUND_Y); ctx.lineTo(sx+6, y1);
+  ctx.moveTo(sx+w-6, GROUND_Y); ctx.lineTo(sx+w-6, y2);
+  ctx.moveTo(sx+6, y1); ctx.lineTo(sx+w-6, GROUND_Y-6); ctx.stroke(); // diagonal brace
+  ctx.strokeStyle = "#c9d2dc"; ctx.lineWidth = 7; ctx.lineCap = "round";
+  ctx.beginPath(); ctx.moveTo(sx, y1-4); ctx.lineTo(sx+w, y2-4); ctx.stroke();  // rail bar
+  ctx.strokeStyle = "rgba(255,255,255,.5)"; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(sx, y1-6); ctx.lineTo(sx+w, y2-6); ctx.stroke();  // highlight
+  ctx.lineCap = "butt";
+}
+function drawRamp(sx, w, o){
+  const topY = GROUND_Y - o.h;
+  ctx.fillStyle = "#31235a";
+  ctx.beginPath(); ctx.moveTo(sx, GROUND_Y); ctx.lineTo(sx+w, topY); ctx.lineTo(sx+w, GROUND_Y); ctx.closePath(); ctx.fill();
+  ctx.strokeStyle = "rgba(56,240,208,.8)"; ctx.lineWidth = 3;                  // riding surface
+  ctx.beginPath(); ctx.moveTo(sx, GROUND_Y); ctx.lineTo(sx+w, topY); ctx.stroke();
+  ctx.fillStyle = "rgba(255,255,255,.14)"; ctx.fillRect(sx+w-4, topY, 4, o.h); // back edge
+}
+function drawSkater(){
+  const color = colorOf(run.player);
+  const feetY = GROUND_Y - run.yOffset;
+  const bob   = run.grounded ? Math.sin(run.legPhase)*1.5 : 0;
+  const fall  = run.fall;
+
+  ctx.save();
+  ctx.translate(PLAYER_X, feetY);
+  // Recovery roll: one full rotation around the body's center, then get up.
+  if (fall && fall.state === "roll"){
+    const a = Math.min(1, fall.t/0.9) * Math.PI*2;
+    ctx.translate(0,-18); ctx.rotate(a); ctx.translate(0,18);
+  } else if (fall){                 // sinking into the hole — slight backwards lean
+    ctx.rotate(-0.35);
+  } else if (run.special.active){   // special: whole-body backflip
+    ctx.translate(0,-20); ctx.rotate(-run.special.angle); ctx.translate(0,20);
+  }
+
+  const tuck = (!run.grounded && !run.grinding) ? 4 : 0; // knees up in the air
+
+  // --- Skateboard (kickflip spins the board only; the special holds it in the hands) ---
+  ctx.save();
+  if (run.special.active){ ctx.translate(8, -26); ctx.rotate(0.4); }
+  else if (run.flipping) ctx.rotate(run.flipAngle);
+  ctx.fillStyle = "#20242e";
+  roundRect(-20, -4, 40, 6, 3); ctx.fill();
+  ctx.fillStyle = color; roundRect(-20, -4, 40, 3, 2); ctx.fill();   // grip stripe
+  ctx.fillStyle = "#f4c542";                                        // wheels
+  ctx.beginPath(); ctx.arc(-12, 4, 3.2, 0, Math.PI*2); ctx.arc(12, 4, 3.2, 0, Math.PI*2); ctx.fill();
+  ctx.restore();
+
+  // --- Body (hoodie in player color) ---
+  const hipY = -22 + tuck;
+  ctx.strokeStyle = "#12101c"; ctx.lineCap = "round";
+  // legs
+  ctx.lineWidth = 5;
+  ctx.beginPath(); ctx.moveTo(-6, -2); ctx.lineTo(-3, hipY); ctx.moveTo(8, -2); ctx.lineTo(3, hipY); ctx.stroke();
+  // torso
+  ctx.strokeStyle = color; ctx.lineWidth = 10;
+  ctx.beginPath(); ctx.moveTo(0, hipY); ctx.lineTo(-2, hipY-20+bob); ctx.stroke();
+  // arm (out for balance / grabbing)
+  ctx.strokeStyle = color; ctx.lineWidth = 5;
+  const armY = hipY-14+bob;
+  if (run.special.active){          // both hands grab the board mid-backflip
+    ctx.beginPath(); ctx.moveTo(-2, armY); ctx.lineTo(4, -24); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(-2, armY-4); ctx.lineTo(12, -28); ctx.stroke();
+  }
+  else if (run.grinding){ ctx.beginPath(); ctx.moveTo(-2,armY); ctx.lineTo(-16,armY-8); ctx.lineTo(-22,armY+2); ctx.stroke(); }
+  else { ctx.beginPath(); ctx.moveTo(-2,armY); ctx.lineTo(14, armY - (run.grounded?2:8)); ctx.stroke(); }
+  // head
+  ctx.fillStyle = "#e9c39a";
+  ctx.beginPath(); ctx.arc(-2, hipY-30+bob, 7, 0, Math.PI*2); ctx.fill();
+  // cap
+  ctx.fillStyle = color;
+  ctx.beginPath(); ctx.arc(-2, hipY-32+bob, 7.5, Math.PI, Math.PI*2); ctx.fill();
+  ctx.fillRect(-2, hipY-33.5+bob, 12, 2.5);
+
+  ctx.restore();
+
+  // Grind sparks (world-space, under the board).
+  if (run.grinding){
+    ctx.strokeStyle = "#ffe27a"; ctx.lineWidth = 2;
+    for (let i=0;i<4;i++){
+      const gx = PLAYER_X - 16 - Math.random()*14, gy = feetY + 3;
+      ctx.beginPath(); ctx.moveTo(gx, gy); ctx.lineTo(gx-6-Math.random()*6, gy+4+Math.random()*4); ctx.stroke();
+    }
+  }
+  // Recovery stars.
+  if (fall){
+    ctx.fillStyle = "#ffd36b"; ctx.font = "16px Oswald";
+    ctx.fillText("✦", PLAYER_X-18, GROUND_Y-70); ctx.fillText("✦", PLAYER_X+6, GROUND_Y-82); ctx.fillText("✦", PLAYER_X-2, GROUND_Y-64);
+  }
+
+  // Floating trick text.
+  for (const f of run.floats){
+    ctx.globalAlpha = clamp(f.life,0,1);
+    ctx.fillStyle = f.color; ctx.font = "700 18px Oswald"; ctx.textAlign = "center";
+    ctx.fillText(f.text, f.x, f.y); ctx.textAlign = "left"; ctx.globalAlpha = 1;
+  }
+}
+function roundRect(x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y);
+  ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+
+function render(){
+  const scroll = (game.phase==="playing"||game.phase==="countdown") ? run.worldX : ambientX;
+  drawBackground(scroll);
+  drawGround(scroll);
+
+  if (game.phase==="playing" || game.phase==="countdown"){
+    drawObstacles();
+    drawSkater();
+  } else {
+    drawIdleSkater(scroll);   // ambient skater on menus
+  }
+
+  if (game.phase==="countdown") drawCountdown();
+}
+function drawIdleSkater(scroll){
+  // A lone cruiser to keep menus alive (no obstacles).
+  const color = colorOf(game.current) || "#ffffff";
+  const feetY = GROUND_Y - Math.max(0, Math.sin(scroll*0.05))*2;
+  ctx.save(); ctx.translate(PLAYER_X, feetY);
+  ctx.fillStyle="#20242e"; roundRect(-20,-4,40,6,3); ctx.fill();
+  ctx.fillStyle=color; roundRect(-20,-4,40,3,2); ctx.fill();
+  ctx.fillStyle="#f4c542"; ctx.beginPath(); ctx.arc(-12,4,3.2,0,Math.PI*2); ctx.arc(12,4,3.2,0,Math.PI*2); ctx.fill();
+  ctx.strokeStyle=color; ctx.lineWidth=10; ctx.beginPath(); ctx.moveTo(0,-22); ctx.lineTo(-2,-42); ctx.stroke();
+  ctx.fillStyle="#e9c39a"; ctx.beginPath(); ctx.arc(-2,-52,7,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+}
+function drawCountdown(){
+  const n = Math.ceil(run.countdown);
+  ctx.fillStyle = "rgba(11,7,24,.35)"; ctx.fillRect(0,0,W,H);
+  ctx.fillStyle = "#fff"; ctx.textAlign = "center";
+  ctx.font = "700 120px 'Bebas Neue'";
+  ctx.fillText(n > 0 ? n : "GO", W/2, H/2+40);
+  ctx.textAlign = "left";
+}
+
+/* ---------- 10. INPUT, FLOW, MAIN LOOP ---------- */
+const el = id => document.getElementById(id);
+
+// HUD refresh.
+function updateHUD(){
+  const p = game.current;
+  el("hudWho").textContent = game.players[p].name;
+  el("hudWho").style.color = colorOf(p);
+  el("hudScore").textContent = run ? run.score : 0;
+  // Show the other player's banked score during the second run.
+  const other = p===1 ? 2 : 1;
+  el("hudBank").textContent = game.players[other].played ? game.players[other].name+": "+game.players[other].score : "";
+  const spEl = el("hudSpec");
+  if (run){
+    let txt = run.special.ready ? "★ SPECIAL READY — S" : "Special " + Math.floor(run.special.progress) + "/" + CHARGE_REQ;
+    if (run.combo.tricks > 0) txt += " · combo " + run.combo.points;
+    spEl.textContent = txt;
+    spEl.style.color = run.special.ready ? "#ffd166" : "";
+  } else spEl.textContent = "";
+}
+function updateTimer(){
+  const t = run ? Math.ceil(run.timeLeft) : RUN_TIME;
+  el("hudTime").innerHTML = t + "<small>seconds</small>";
+  el("hudTime").classList.toggle("low", t <= 10);
+}
+
+// Screen visibility helpers.
+function show(screen){ ["startScreen","readyScreen","winScreen"].forEach(s=>el(s).classList.toggle("show", s===screen)); }
+function setHudVisible(v){ el("hud").classList.toggle("hidden", !v); el("pads").classList.toggle("hidden", !v); }
+
+// ---- Customization menu (names + colors) ----
+const MENU_COLORS = [
+  "#ff5a5f","#ff8a3d","#ffd166","#8ac926","#22d3ee","#38f0d0","#4361ee",
+  "#7b2ff7","#b5179e","#ff4d8d","#f72585","#e0e0e0","#9aa0aa","#111827"
+];
+function buildMenu(){
+  [1,2].forEach(p=>{
+    const nameEl = el("name"+p);
+    nameEl.value = game.players[p].name;
+    nameEl.addEventListener("input", ()=>{ game.players[p].name = nameEl.value; });
+    const pal = el("pal"+p); pal.innerHTML = "";
+    MENU_COLORS.forEach(hex=>{
+      const b = document.createElement("button");
+      b.className = "sw"; b.style.background = hex; b.dataset.hex = hex; b.title = hex;
+      b.addEventListener("click", ()=>{ game.players[p].color = hex; syncMenu(); });
+      pal.appendChild(b);
+    });
+  });
+  syncMenu();
+}
+function syncMenu(){
+  [1,2].forEach(p=>{
+    const c = game.players[p].color;
+    el("dot"+p).style.background = c;
+    el("name"+p).style.borderColor = c;
+    el("pal"+p).querySelectorAll(".sw").forEach(b=>b.classList.toggle("on", b.dataset.hex.toLowerCase()===c.toLowerCase()));
+  });
+}
+function showStart(){
+  game.phase = "start"; setHudVisible(false); show("startScreen"); syncMenu();
+}
+
+// ---- Flow ----
+function beginMatch(){
+  // Lock in menu choices (fall back to defaults for blank names).
+  [1,2].forEach(p=>{ game.players[p].name = (game.players[p].name||"").trim() || ("Player "+p); });
+  game.seed = (Math.random()*1e9) >>> 0;   // one shared course for both players
+  game.current = 1;
+  game.players[1].score = 0; game.players[1].played = false;
+  game.players[2].score = 0; game.players[2].played = false;
+  showReady(1);
+}
+function showReady(playerId){
+  game.current = playerId;
+  game.phase = "ready";
+  setHudVisible(false);
+  el("readyTitle").textContent = game.players[playerId].name;
+  el("readyTitle").style.color = colorOf(playerId);
+  el("readySub").textContent = "45 seconds on the shared course. Stack grinds and kickflips — rails are optional, holes are not.";
+  el("readyBank").textContent = playerId===2 ? (game.players[1].name+" banked "+game.players[1].score) : "";
+  show("readyScreen");
+}
+function startRun(){
+  newRun(game.current);
+  ensureObstacles();
+  game.phase = "countdown";
+  show(null); setHudVisible(true);
+  updateHUD(); updateTimer();
+  music.start();                     // user gesture — safe to start audio here
+  if (document.activeElement) document.activeElement.blur();
+}
+function endRun(){
+  music.stop();
+  game.players[game.current].score = run.score;
+  game.players[game.current].played = true;
+  setHudVisible(false);
+  if (game.current === 1){ showReady(2); }
+  else { showWinner(); }
+}
+function showWinner(){
+  game.phase = "winner";
+  const s1 = game.players[1].score, s2 = game.players[2].score;
+  const title = el("winTitle");
+  if (s1 === s2){ title.textContent = "It's a tie"; title.style.color = "#fff"; }
+  else { const w = s1>s2?1:2; title.textContent = game.players[w].name+" wins"; title.style.color = colorOf(w); }
+  el("winScores").innerHTML =
+    `<span style="color:${colorOf(1)}">${game.players[1].name}: ${s1}</span>` +
+    ` &nbsp;·&nbsp; ` +
+    `<span style="color:${colorOf(2)}">${game.players[2].name}: ${s2}</span>`;
+  show("winScreen");
+}
+
+// ---- Buttons ----
+el("startBtn").addEventListener("click", beginMatch);
+el("dropBtn").addEventListener("click", startRun);
+el("againBtn").addEventListener("click", showStart);
+
+// ---- Keyboard ----
+function primaryButton(){
+  if (game.phase==="start")  return el("startBtn");
+  if (game.phase==="ready")  return el("dropBtn");
+  if (game.phase==="winner") return el("againBtn");
+  return null;
+}
+window.addEventListener("keydown", (e)=>{
+  // Don't hijack keys while the player is typing a name in the menu.
+  if (e.target && e.target.tagName === "INPUT") return;
+  if (e.code==="Space" || e.code==="ArrowUp"){
+    e.preventDefault();
+    const b = primaryButton();
+    if (b){ b.click(); return; }
+    keys.jump = true; doJump();
+  } else if (e.code==="KeyZ"){ keys.grind = true; }
+  else if (e.code==="KeyX"){ doFlip(); }
+  else if (e.code==="KeyS"){ doSpecial(); }
+  else if (e.code==="Enter"){ const b=primaryButton(); if(b){ e.preventDefault(); b.click(); } }
+});
+window.addEventListener("keyup", (e)=>{
+  if (e.code==="Space" || e.code==="ArrowUp") keys.jump = false;
+  else if (e.code==="KeyZ") keys.grind = false;
+});
+
+// ---- Touch / mouse pads ----
+function bindPad(id, onDown, onUp){
+  const p = el(id);
+  const down = e=>{ e.preventDefault(); onDown(); };
+  const up   = e=>{ e.preventDefault(); if(onUp) onUp(); };
+  p.addEventListener("pointerdown", down);
+  p.addEventListener("pointerup", up);
+  p.addEventListener("pointerleave", up);
+  p.addEventListener("pointercancel", up);
+}
+bindPad("padJump",  ()=>{ keys.jump=true; doJump(); }, ()=>{ keys.jump=false; });
+bindPad("padGrind", ()=>{ keys.grind=true; },          ()=>{ keys.grind=false; });
+bindPad("padFlip",  ()=>{ doFlip(); });
+bindPad("padSpec",  ()=>{ doSpecial(); });
+
+// ---- Update dispatch ----
+function update(dt){
+  ambientX += 72 * dt;                      // menu drift — dt-scaled, so background
+                                            // motion is always smooth and never
+                                            // outpaces the player's world speed
+  const ds = clamp(dt*60, 0.1, 2.5);        // frame-rate-independent physics scale
+
+  if (game.phase === "countdown"){
+    run.countdown -= dt;
+    if (run.countdown <= 0) game.phase = "playing";
+    return;
+  }
+  if (game.phase !== "playing") return;
+
+  // Clock pauses during the fall/recovery sequence — the 2 s isn't lost time.
+  if (!run.fall){
+    run.timeLeft -= dt;
+    if (run.timeLeft <= 0){ run.timeLeft = 0; endRun(); return; }
+    // Difficulty step every 15 s — flag it so it feels earned, not unfair.
+    const lvl = diffLevel();
+    if (lvl !== run.lvl){
+      run.lvl = lvl;
+      pushFloat("SPEED UP", "#ffd166", 1.4);
+    }
+  }
+
+  physics(ds);
+  updateFloats(ds);
+  updateTimer();
+}
+
+// ---- Main loop ----
+buildMenu();          // populate the name fields and color palettes
+let last = performance.now();
+function loop(now){
+  const dt = Math.min(0.05, (now - last)/1000) || 0;   // clamp big gaps (tab switches)
+  last = now;
+  update(dt);
+  render();
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
