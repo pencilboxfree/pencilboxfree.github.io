@@ -11,7 +11,7 @@
   #wrap{position:relative;width:min(96vw,960px)}
   canvas{width:100%;height:auto;display:block;image-rendering:pixelated;
     border:3px solid #333;border-radius:6px;background:#1a1230;box-shadow:0 12px 40px rgba(0,0,0,.6)}
-  /* Name-entry overlay (used instead of prompt() so it works in sandboxes) */
+   
   #entry{position:absolute;inset:0;display:none;align-items:center;justify-content:center;
     background:rgba(6,4,14,.86);border-radius:6px;text-align:center}
   #entry.show{display:flex}
@@ -39,41 +39,41 @@
 
 <script>
 "use strict";
-/* =====================================================================
-   ROCK N' ROLL RUMBLE — single-file HTML5 platformer (no libraries)
-   Sections:
-     1  Config & level data          6  Enemy & boss AI
-     2  Input                         7  Combat, powerups, scoring
-     3  High-score storage            8  Player update & physics
-     4  Utilities & world            9  Rendering (rect pixel art)
-     5  Entity factories            10  State machine & main loop
-   ===================================================================== */
 
-/* ---------- 1. CONFIG & LEVEL DATA ---------- */
+
+
+
+
+
+
+
+
+
+ 
 const cv = document.getElementById("c"), ctx = cv.getContext("2d");
-const VW = 480, VH = 270;                 // virtual resolution
+const VW = 480, VH = 270;                  
 const GRAV = 0.5, JUMP_V = -8.6, MOVE = 1.7, MAX_ENEMIES = 5;
-const GROUND_TOP = VH - 22;               // y of the ground surface
+const GROUND_TOP = VH - 22;                
 const P1COL = { skin:"#e0b083", hair:"#141414", shirt:"#111", logo:"#e23b3b", jeans:"#2b4a8b", shoe:"#0a0a0a" };
 
-// Per-level boss configuration. bossHP 7,9,11,13 · bossScore 5,6,7,8 · rate = seconds between attacks.
+ 
 const LEVELS = [
   { name:"LEVEL 1", boss:"RONEY",  full:"Roney the Zombie Bunny", threshold:13, hp:7,  reward:5, bonus:10, atk:"carrots", rate:2.0 },
   { name:"LEVEL 2", boss:"$NAKE",  full:"$nake the Mummy Snake",  threshold:17, hp:9,  reward:6, bonus:13, atk:"poison",  rate:1.7 },
   { name:"LEVEL 3", boss:"OWL",    full:"The Owl",                threshold:21, hp:11, reward:7, bonus:15, atk:"eggs",    rate:1.5 },
   { name:"LEVEL 4", boss:"OVERLORD",full:"The Final Overlord",    threshold:25, hp:13, reward:8, bonus:20, atk:"lasers",  rate:1.1 },
 ];
-// Regular-enemy fire frequency scales by level: L1 fires ~15% as often as L4,
-// increasing each level (interval = L4 baseline / factor).
+ 
+ 
 const ENEMY_FIRE_FACTOR = [0.15, 0.43, 0.72, 1.0];
 const enemyFireFactor = ()=>ENEMY_FIRE_FACTOR[game.level] || 1;
 
-/* ---------- 2. INPUT ---------- */
+ 
 const held = { left:false, right:false, jump:false, shield:false };
-let justJump = false, justSword = false;   // edge-triggered actions, consumed each step
+let justJump = false, justSword = false;    
 const KEYMAP = { ArrowLeft:"left", ArrowRight:"right", Space:"jump", KeyZ:"shield" };
 addEventListener("keydown", e=>{
-  Chip.resume();                                    // unlock/resume audio on first gesture
+  Chip.resume();                                     
   if (e.code === "KeyM"){ Chip.toggleMute(); }
   if (["ArrowLeft","ArrowRight","Space","KeyX","KeyZ","ArrowUp"].includes(e.code)) e.preventDefault();
   if (e.repeat) return;
@@ -85,7 +85,7 @@ addEventListener("keydown", e=>{
 addEventListener("keyup", e=>{ if (e.code in KEYMAP) held[KEYMAP[e.code]] = false; });
 addEventListener("pointerdown", ()=>Chip.resume());
 
-/* ---------- 3. HIGH-SCORE STORAGE (try/catch + in-memory fallback) ---------- */
+ 
 const HS_KEY = "rnr_highscores_v1";
 let memScores = [];
 function loadScores(){ try { return JSON.parse(localStorage.getItem(HS_KEY)) || []; } catch(e){ return memScores.slice(); } }
@@ -99,23 +99,23 @@ function submitScore(name, v){
 }
 const HS_TITLES = ["Highest Scorer of All Time", "2nd Loser", "3rd Loser"];
 
-/* ---------- 3.5 AUDIO — original chiptune engine (Web Audio API, no files) ----------
-   Square lead + triangle bass + noise drums, driven by a lookahead scheduler.
-   Three original loops (gameplay / boss / victory) + lightweight SFX. All tones are
-   synthesized live, so there are no audio assets to download. */
+
+
+
+
 const Chip = (function(){
   let ctx=null, master=null, noiseBuf=null, started=false, muted=false;
   let song=null, sceneName=null, step=0, nextTime=0, stepDur=0, timer=null, playing=false;
 
   const NOTE = {C:0,"C#":1,D:2,"D#":3,E:4,"F":5,"F#":6,G:7,"G#":8,A:9,"A#":10,B:11};
-  function nf(name){                                   // note name -> frequency
+  function nf(name){                                    
     if(!name || name==="." || name==="_") return 0;
     const m=/^([A-G]#?)(\d)$/.exec(name); if(!m) return 0;
-    const semis = NOTE[m[1]] + (+m[2]+1)*12;           // MIDI number
+    const semis = NOTE[m[1]] + (+m[2]+1)*12;            
     return 440 * Math.pow(2, (semis-69)/12);
   }
   const toks = s => s.trim().split(/\s+/);
-  function onsets(arr){                                // expand ties ('_') into note durations
+  function onsets(arr){                                 
     const N=arr.length, out=new Array(N).fill(null);
     for(let i=0;i<N;i++){ const v=arr[i];
       if(v && v!=="." && v!=="_"){ let d=1,j=i+1; while(j<N && arr[j]==="_"){d++;j++;} out[i]={note:v,dur:d}; } }
@@ -127,26 +127,26 @@ const Chip = (function(){
              lead:onsets(lead), bass:onsets(bass), drums:drums };
   }
 
-  /* ----- Original songs (hand-written, not derived from any existing game) ----- */
+   
   const SONGS = {
-    // Gameplay: bright C-major hook, C–Am–F–G bass.
+     
     game: { bpm:150, loop:true,
       lead:"E5 . E5 . G5 . A5 _ A5 . G5 . E5 . D5 . C5 . D5 . E5 . G5 _ E5 . D5 . C5 _ . .",
       bass:"C3 . . . C3 . . . A2 . . . A2 . . . F2 . . . F2 . . . G2 . . . G2 . . .",
       drums:"K . H . S . H . K . H . S . H . K . H . S . H . K . H . S . H ." },
-    // Boss: darker, driving A-minor loop, straight-eighth bass (Am–F–G–E).
+     
     boss: { bpm:172, loop:true,
       lead:"A4 . C5 . E5 . A5 _ G5 . E5 . D5 . C5 . A4 . B4 . C5 . E5 _ D5 . C5 . B4 _ . .",
       bass:"A2 . A2 . A2 . A2 . F2 . F2 . F2 . F2 . G2 . G2 . G2 . G2 . E2 . E2 . E2 . E2 .",
       drums:"K . H H S . H H K . H H S . H H K . H H S . H H K . H H S . H H" },
-    // Victory: short rising major fanfare, plays once.
+     
     win: { bpm:140, loop:false,
       lead:"G5 C6 E6 G6 _ E6 G6 _ _ _ _ _ . . . .",
       bass:"C3 . G3 . C3 . E3 . C3 _ _ _ . . . .",
       drums:"K . . . K . . . K . K . K . . ." }
   };
 
-  /* ----- Synthesis primitives ----- */
+   
   function voice(freq,t,dur,type,g){
     if(!freq) return;
     const o=ctx.createOscillator(), a=ctx.createGain();
@@ -177,7 +177,7 @@ const Chip = (function(){
   function snare(t){ noiseHit(t,0.12,0.26,true); }
   function hat(t){ noiseHit(t,0.035,0.10,true); }
 
-  /* ----- Sequencer (lookahead scheduler) ----- */
+   
   function schedule(t){
     const s=song, st=step % s.N;
     const lo=s.lead[st]; if(lo) voice(nf(lo.note), t, lo.dur*stepDur*0.9, "square", 0.13);
@@ -189,18 +189,18 @@ const Chip = (function(){
     if(!playing || !ctx) return;
     while(nextTime < ctx.currentTime + 0.1){
       schedule(nextTime); nextTime += stepDur; step++;
-      if(!song.loop && step >= song.N){ playing=false; break; }   // one-shot: let it ring out
+      if(!song.loop && step >= song.N){ playing=false; break; }    
     }
     if(playing) timer=setTimeout(tick,25);
   }
   function start(def){
-    song=build(def); stepDur=15/def.bpm;                          // 16th note = (60/bpm)/4
+    song=build(def); stepDur=15/def.bpm;                           
     step=0; nextTime=ctx.currentTime+0.06; playing=true;
     clearTimeout(timer); tick();
   }
   function stop(){ playing=false; clearTimeout(timer); }
 
-  /* ----- Public API ----- */
+   
   function init(){
     if(started) return;
     try{
@@ -214,7 +214,7 @@ const Chip = (function(){
   function resume(){ init(); if(ctx && ctx.state==="suspended") ctx.resume(); }
   function setScene(name){
     if(!started) return;
-    const target = (name==="menu"||name==="play") ? "game" : name;   // keep menu↔play seamless
+    const target = (name==="menu"||name==="play") ? "game" : name;    
     if(target===sceneName) return;
     sceneName=target;
     if(target==="game") start(SONGS.game);
@@ -238,27 +238,27 @@ const Chip = (function(){
   return { resume, setScene, sfx, toggleMute, isMuted:()=>muted, isOn:()=>started };
 })();
 
-/* ---------- 4. UTILITIES & WORLD ---------- */
+ 
 const rnd  = (a,b)=>a + Math.random()*(b-a);
 const irnd = (a,b)=>Math.floor(rnd(a,b+1));
 const coin = ()=>Math.random() < 0.5;
 const clamp= (v,a,b)=>Math.max(a,Math.min(b,v));
 function aabb(a,b){ return a.x < b.x+b.w && a.x+a.w > b.x && a.y < b.y+b.h && a.y+a.h > b.y; }
-// Combat hitbox: ~15% smaller than the sprite (7.5% inset per side). Sprite/physics unchanged.
+ 
 function hitbox(e){ const ix = e.w*0.075, iy = e.h*0.075; return { x:e.x+ix, y:e.y+iy, w:e.w-ix*2, h:e.h-iy*2 }; }
 
-// One-way platforms (land only when falling onto the top). Ground spans full width.
+ 
 const PLATFORMS = [
-  { x:0,   y:GROUND_TOP, w:VW, h:22 },              // ground
-  { x:96,  y:GROUND_TOP-58, w:76, h:6 },            // reachable dodge platform
-  { x:300, y:GROUND_TOP-58, w:76, h:6 },            // reachable dodge platform
-  { x:VW-96, y:56, w:96, h:6 },                     // high spawn ledge, right (unreachable)
-  { x:0,     y:56, w:96, h:6 },                     // high spawn ledge, left (unreachable)
+  { x:0,   y:GROUND_TOP, w:VW, h:22 },               
+  { x:96,  y:GROUND_TOP-58, w:76, h:6 },             
+  { x:300, y:GROUND_TOP-58, w:76, h:6 },             
+  { x:VW-96, y:56, w:96, h:6 },                      
+  { x:0,     y:56, w:96, h:6 },                      
 ];
-const LEDGE = PLATFORMS[3];        // right spawn ledge
-const LEDGE_L = PLATFORMS[4];      // left spawn ledge
+const LEDGE = PLATFORMS[3];         
+const LEDGE_L = PLATFORMS[4];       
 
-// Generic gravity + one-way platform landing for any entity with x,y,w,h,vy.
+ 
 function stepPhysics(e){
   e.vy += GRAV; if (e.vy > 12) e.vy = 12;
   const prevBottom = e.y + e.h;
@@ -271,18 +271,18 @@ function stepPhysics(e){
   }
 }
 
-/* ---------- 5. ENTITY FACTORIES ---------- */
+ 
 function makePlayer(){
   return { x:40, y:GROUND_TOP-19, w:12, h:19, vx:0, vy:0, dir:1, grounded:false,
            hp:2, iframe:0, swing:0, swordCd:0, hitSet:[], shielding:false };
 }
 function makeEnemy(type){
   const zombie = type === "zombie";
-  const w = zombie ? 21 : 14, h = zombie ? 24 : 16;        // zombies 1.5x mummy size
-  const side = coin() ? 1 : -1;                            // 1 = left ledge, -1 = right ledge
+  const w = zombie ? 21 : 14, h = zombie ? 24 : 16;         
+  const side = coin() ? 1 : -1;                             
   const x = side < 0 ? LEDGE.x + LEDGE.w - w - 4 : LEDGE_L.x + 4;
   return { kind:"enemy", type, x, y:LEDGE.y - h, w, h, vx:0, vy:0, dir:side, side,
-           speed: rnd(0.35, 0.8) + game.level*0.05,        // independent random chase speed
+           speed: rnd(0.35, 0.8) + game.level*0.05,         
            hp: zombie ? 2 : 1, pts: zombie ? 3 : 1, phase:"ledge", grounded:false,
            atkTimer: rnd(1.0,2.2)/enemyFireFactor(), flash:0, stun:0 };
 }
@@ -293,18 +293,18 @@ function makeBoss(levelIdx){
            swoop:0, swoopCd:rnd(3,5), burst:0 };
 }
 function makeProjectile(x,y,vx,vy,kind,dmg){ return { x, y, w:6, h:6, vx, vy, kind, dmg:dmg||1, life:5 }; }
-function makePowerup(x,y,type){ return { x, y, w:11, h:11, vy:0, type }; }        // "invincible" | "sword"
+function makePowerup(x,y,type){ return { x, y, w:11, h:11, vy:0, type }; }         
 function makeFloat(x,y,text,col){ return { x, y, text, col, life:1 }; }
 
-/* ---------- GAME STATE ---------- */
+ 
 const game = {
-  state:"TITLE",                 // TITLE | PLAY | END
+  state:"TITLE",                  
   level:0, levelDefeats:0,
   lives:3, score:0, best:0,
-  swordKills:0, jumpedEnemies:0, // lifetime stats (feed the Final Treasure)
-  consec:0,                      // consecutive head-bounces
-  powerMark:0, pendingDrop:false,// score-gated powerup drops (every 7)
-  power:null,                    // { type, timer }
+  swordKills:0, jumpedEnemies:0,  
+  consec:0,                       
+  powerMark:0, pendingDrop:false, 
+  power:null,                     
   player:null, enemies:[], shots:[], drops:[], floats:[], boss:null,
   spawnTimer:0, banner:"", bannerT:0, pendingRespawn:false, atBoss:false,
   won:false, finalValue:0, entered:false
@@ -317,7 +317,7 @@ function resetGame(){
   startLevel(0);
 }
 function startLevel(idx){
-  game.level = idx; game.levelDefeats = 0; game.atBoss = false;   // checkpoint not yet reached
+  game.level = idx; game.levelDefeats = 0; game.atBoss = false;    
   game.enemies = []; game.shots = []; game.drops = []; game.boss = null;
   game.player = makePlayer();
   banner(LEVELS[idx].name + " — BEAT " + LEVELS[idx].threshold + " FOES", 150);
@@ -325,34 +325,34 @@ function startLevel(idx){
 }
 function banner(t,frames){ game.banner = t; game.bannerT = frames; }
 
-/* ---------- 6. ENEMY & BOSS AI ---------- */
+ 
 function spawnLogic(){
-  if (game.boss) return;                                   // bosses are 1v1
-  if (game.levelDefeats >= LEVELS[game.level].threshold){  // time for the boss
+  if (game.boss) return;                                    
+  if (game.levelDefeats >= LEVELS[game.level].threshold){   
     game.enemies = []; game.shots = [];
     game.boss = makeBoss(game.level);
-    game.atBoss = true;                                    // checkpoint: reached the boss
+    game.atBoss = true;                                     
     banner(LEVELS[game.level].full + " APPEARS!", 150);
     return;
   }
   game.spawnTimer--;
   if (game.spawnTimer <= 0 && game.enemies.length < MAX_ENEMIES){
-    game.enemies.push(makeEnemy(coin() ? "mummy" : "zombie"));  // 50/50
-    game.spawnTimer = irnd(70, 130) - game.level*6;             // faster on later levels
+    game.enemies.push(makeEnemy(coin() ? "mummy" : "zombie"));   
+    game.spawnTimer = irnd(70, 130) - game.level*6;              
   }
 }
 function updateEnemy(e){
   const p = game.player;
   if (e.flash > 0) e.flash--;
-  if (e.phase === "ledge"){                 // walk to the inner edge of the spawn ledge, then drop
+  if (e.phase === "ledge"){                  
     e.x += e.side * 0.9;
     if (e.side < 0 ? e.x <= LEDGE.x - 2 : e.x + e.w >= LEDGE_L.x + LEDGE_L.w + 2) e.phase = "fall";
     e.y = LEDGE.y - e.h;
   } else {
     if (e.phase === "fall"){ stepPhysics(e); if (e.grounded) e.phase = "chase"; }
-    else { // chase: walk toward the player and throw projectiles
+    else {  
       stepPhysics(e);
-      if (e.stun > 0){ e.stun--; }                  // knocked back: briefly can't advance/attack
+      if (e.stun > 0){ e.stun--; }                   
       else {
         e.dir = p.x < e.x ? -1 : 1;
         e.x += e.dir * e.speed;
@@ -374,8 +374,8 @@ function updateBoss(b){
   const p = game.player, L = LEVELS[b.level];
   if (b.flash > 0) b.flash--;
   b.bob += 0.05;
-  b.dir = (p.x + p.w/2) < (b.x + b.w/2) ? -1 : 1;   // always face the player (instant flip, all states)
-  // Hover/patrol across the right half; owl also swoops toward the player.
+  b.dir = (p.x + p.w/2) < (b.x + b.w/2) ? -1 : 1;    
+   
   b.x += b.vx;
   if (b.x < VW*0.42 || b.x > VW - b.w - 4) b.vx *= -1;
   let targetY = GROUND_TOP - 90 + Math.sin(b.bob)*10;
@@ -386,35 +386,35 @@ function updateBoss(b){
   }
   b.y += (targetY - b.y) * 0.08;
 
-  // Attacks (rate rises per level but stays fair).
+   
   b.atkTimer -= 1/60;
   if (b.atkTimer <= 0){
     const cx = b.x + b.w/2, cy = b.y + b.h;
-    if (b.atk === "carrots"){                  // L1: 2 carrots / 2s
+    if (b.atk === "carrots"){                   
       for (let i=0;i<2;i++){ const a = i? -0.6 : 0.6; game.shots.push(makeProjectile(cx, cy, 2.2*b.dir, a, "carrot", 1)); }
       b.atkTimer = b.rate;
-    } else if (b.atk === "poison"){            // L2: 3-shot poison burst, then a ~2s safe pause
-      if (b.burst <= 0) b.burst = 3;           // start a new burst
+    } else if (b.atk === "poison"){             
+      if (b.burst <= 0) b.burst = 3;            
       const dx = p.x-cx, dy = p.y-cy, m = Math.hypot(dx,dy) || 1;
-      const spread = (b.burst - 2) * 0.35;     // slight vertical fan across the 3 shots
+      const spread = (b.burst - 2) * 0.35;      
       game.shots.push(makeProjectile(cx, cy, dx/m*2.7, dy/m*2.7 + spread, "poison", 1));
       b.burst--;
-      b.atkTimer = (b.burst > 0) ? 0.20 : 2.0; // quick within the burst, ~2s pause after it
-    } else if (b.atk === "eggs"){              // L3: drop eggs
+      b.atkTimer = (b.burst > 0) ? 0.20 : 2.0;  
+    } else if (b.atk === "eggs"){               
       game.shots.push(makeProjectile(cx, cy, rnd(-1,1), 1.4, "egg", 1));
       b.atkTimer = b.rate*0.8;
-    } else {                                   // L4: frequent lasers
+    } else {                                    
       game.shots.push(makeProjectile(b.dir>0 ? b.x+b.w : b.x-6, b.y+b.h/2, 3.4*b.dir, 0, "laser", 1));
       b.atkTimer = b.rate*0.6;
     }
   }
 }
 
-/* ---------- 7. COMBAT, POWERUPS, SCORING ---------- */
+ 
 function swordRect(p){
   const power = game.power && game.power.type === "sword";
-  const len = power ? 13 : 8;   // normal sword range +~15% (was 7)
-  const h   = power ? 7  : 8;   // normal sword hitbox a touch taller too
+  const len = power ? 13 : 8;    
+  const h   = power ? 7  : 8;    
   const y = p.y + 5;
   const x = p.dir > 0 ? p.x + p.w : p.x - len;
   return { x, y, w:len, h };
@@ -424,19 +424,19 @@ function doSwordHits(){
   if (p.swing <= 0) return;
   const rect = swordRect(p);
   const dmg = (game.power && game.power.type==="sword") ? 2 : 1;
-  // Enemies
+   
   for (const e of game.enemies){
     if (p.hitSet.includes(e) || e.phase === "ledge") continue;
     if (aabb(rect, hitbox(e))){
       e.hp -= dmg; e.flash = 6; p.hitSet.push(e);
       if (e.hp <= 0){ defeatEnemy(e); }
-      else if (e.type === "zombie"){                 // first hit: knock back ~2 body lengths
+      else if (e.type === "zombie"){                  
         e.x = clamp(e.x + p.dir * e.w * 2, -20, VW+20);
-        e.stun = 14;                                 // brief stun so the knockback reads
+        e.stun = 14;                                  
       }
     }
   }
-  // Boss
+   
   const b = game.boss;
   if (b && !p.hitSet.includes(b) && aabb(rect, b)){ b.hp -= dmg; b.flash = 8; p.hitSet.push(b);
     if (b.hp <= 0) defeatBoss(b); }
@@ -462,11 +462,11 @@ function addScore(pts, x, y){
   game.score += pts;
   if (game.score > game.best) game.best = game.score;
   game.floats.push(makeFloat(x, y-6, "+"+pts, "#9be34a"));
-  // Every 7 score, arm the next enemy to drop a powerup.
+   
   while (game.score - game.powerMark >= 7){ game.powerMark += 7; game.pendingDrop = true; }
 }
 function dropPowerup(x,y){ game.drops.push(makePowerup(x, y, coin() ? "invincible" : "sword")); }
-function activatePower(type){                       // only 1 active at once (replaces)
+function activatePower(type){                        
   Chip.sfx("power");
   game.power = { type, timer: 5 };
   game.floats.push(makeFloat(game.player.x, game.player.y-12, type==="invincible"?"INVINCIBLE!":"POWER SWORD!", "#4ad2ff"));
@@ -480,16 +480,16 @@ function hurtPlayer(source){
   p.vx = (source && source.x > p.x) ? -2.5 : 2.5; p.vy = -3;
   if (p.hp <= 0) killPlayer();
 }
-function respawn(){                         // score already 0 (reset in killPlayer)
-  if (game.atBoss) respawnBoss();          // boss checkpoint: rematch the reset boss
-  else respawnPlayer();                    // otherwise: only the player respawns
+function respawn(){                          
+  if (game.atBoss) respawnBoss();           
+  else respawnPlayer();                     
 }
 function respawnPlayer(){
-  // Keep levelDefeats: already-defeated enemies stay defeated and are not respawned.
-  // Clear the live field (so the player isn't instantly re-hit); kill progress is preserved.
+   
+   
   game.enemies = []; game.shots = []; game.drops = [];
   game.player = makePlayer();
-  game.spawnTimer = 60;                     // brief grace before enemies resume
+  game.spawnTimer = 60;                      
   const L = LEVELS[game.level];
   banner(L.name + " — " + game.levelDefeats + "/" + L.threshold + " DEFEATED", 100);
   game.state = "PLAY";
@@ -497,23 +497,23 @@ function respawnPlayer(){
 function respawnBoss(){
   game.enemies = []; game.shots = []; game.drops = [];
   game.player = makePlayer();
-  game.boss = makeBoss(game.level);        // fresh boss: full HP + initial attack state
+  game.boss = makeBoss(game.level);         
   banner(LEVELS[game.level].full + " — REMATCH!", 120);
   game.state = "PLAY";
 }
 function killPlayer(){
-  // Death: subtract a life immediately, wipe score/power-ups, then either end or respawn.
+   
   game.lives--;
   game.score = 0; game.powerMark = 0; game.pendingDrop = false; game.power = null; game.consec = 0;
-  if (game.lives <= 0){ gameOver(); return; }                 // end the game at 0 lives
+  if (game.lives <= 0){ gameOver(); return; }                  
   game.floats.push(makeFloat(game.player.x, game.player.y-10, "LIFE LOST", "#ff5a5a"));
-  game.pendingRespawn = true;                                 // auto-respawn at level start next step
+  game.pendingRespawn = true;                                  
 }
 
-/* ---------- 8. PLAYER UPDATE & PHYSICS ---------- */
-// When i-frames end, silently shove off any enemies still overlapping the player's
-// hitbox: they are removed with NO score, kill, drop, or combo progress, so a
-// pinning enemy can't land a free hit the moment invincibility wears off.
+ 
+ 
+ 
+ 
 function clearPinningEnemies(){
   const p = game.player;
   for (let i = game.enemies.length-1; i>=0; i--){
@@ -527,7 +527,7 @@ function clearPinningEnemies(){
 }
 function updatePlayer(){
   const p = game.player;
-  p.shielding = held.shield && p.grounded;      // shield is a grounded stance
+  p.shielding = held.shield && p.grounded;       
   const spd = p.shielding ? MOVE*0.35 : MOVE;
   p.vx = (held.left?-spd:0) + (held.right?spd:0);
   if (held.left) p.dir = -1; else if (held.right) p.dir = 1;
@@ -537,13 +537,13 @@ function updatePlayer(){
   p.x = clamp(p.x, 0, VW - p.w);
   stepPhysics(p);
 
-  // Sword
+   
   if (p.swordCd > 0) p.swordCd--;
   if (justSword && p.swordCd <= 0 && !p.shielding){ p.swing = 12; p.swordCd = 20; p.hitSet = []; Chip.sfx("sword"); }
   if (p.swing > 0){ doSwordHits(); p.swing--; }
   if (p.iframe > 0){ p.iframe--; if (p.iframe === 0) clearPinningEnemies(); }
 
-  // Head-bounce (dodge) vs enemies: bounce, no kill, feed the life streak.
+   
   for (const e of game.enemies){
     if (e.phase === "ledge") continue;
     const hb = hitbox(e);
@@ -558,17 +558,17 @@ function updatePlayer(){
         hurtPlayer(e);
       }
     }
-    if (game.pendingRespawn || game.state !== "PLAY") return;   // died this frame
+    if (game.pendingRespawn || game.state !== "PLAY") return;    
   }
-  // Boss contact damage.
+   
   if (game.boss && aabb(p, game.boss)){ hurtPlayer(game.boss);
     if (game.pendingRespawn || game.state !== "PLAY") return; }
 
-  // Powerup pickups.
+   
   for (let i=game.drops.length-1;i>=0;i--){ const d = game.drops[i]; stepPhysics(d);
     if (aabb(p, d)){ activatePower(d.type); game.drops.splice(i,1); } }
 
-  // Active powerup timer.
+   
   if (game.power){ game.power.timer -= 1/60; if (game.power.timer <= 0) game.power = null; }
 }
 function updateShots(){
@@ -579,7 +579,7 @@ function updateShots(){
     s.life -= 1/60;
     if (s.life <= 0 || s.x < -12 || s.x > VW+12 || s.y > VH+12){ game.shots.splice(i,1); continue; }
     if (aabb(s, p)){
-      const blocked = p.shielding && Math.sign(s.x - p.x) === p.dir;  // frontal block
+      const blocked = p.shielding && Math.sign(s.x - p.x) === p.dir;   
       if (blocked){ game.shots.splice(i,1); game.floats.push(makeFloat(p.x, p.y-8,"BLOCK","#cfd8ff")); }
       else { hurtPlayer(s); game.shots.splice(i,1); }
     }
@@ -587,16 +587,16 @@ function updateShots(){
 }
 function updateFloats(){ for (let i=game.floats.length-1;i>=0;i--){ const f=game.floats[i]; f.y-=0.5; f.life-=0.02; if (f.life<=0) game.floats.splice(i,1); } }
 
-/* ---------- 9. RENDERING (rect pixel art) ---------- */
+ 
 function R(x,y,w,h,c){ ctx.fillStyle=c; ctx.fillRect(x|0,y|0,w,h); }
 function text(str,x,y,c,size){ ctx.fillStyle=c||"#fff"; ctx.font=(size||8)+"px 'Courier New', monospace"; ctx.textAlign="left"; ctx.fillText(str,x,y); }
 function ctext(str,x,y,c,size){ ctx.fillStyle=c||"#fff"; ctx.font=(size||8)+"px 'Courier New', monospace"; ctx.textAlign="center"; ctx.fillText(str,x,y); ctx.textAlign="left"; }
 
 function drawWorld(){
-  // sky
+   
   const g = ctx.createLinearGradient(0,0,0,VH); g.addColorStop(0,"#241640"); g.addColorStop(1,"#3a1c4e");
   ctx.fillStyle=g; ctx.fillRect(0,0,VW,VH);
-  // platforms
+   
   for (const pl of PLATFORMS){
     if (pl===PLATFORMS[0]){ R(0,pl.y,VW,pl.h,"#20182f"); R(0,pl.y,VW,3,"#3a2d55"); }
     else if (pl===LEDGE || pl===LEDGE_L){ R(pl.x,pl.y,pl.w,pl.h,"#4a3a2a"); R(pl.x,pl.y,pl.w,2,"#6b573c"); }
@@ -606,18 +606,18 @@ function drawWorld(){
 function drawPlayer(p){
   if (p.iframe>0 && (p.iframe>>2)%2===0) {} else {
     const x=p.x|0, y=p.y|0, C=P1COL;
-    R(x+2,y+13,3,5,C.jeans); R(x+7,y+13,3,5,C.jeans);   // jeans
-    R(x+1,y+18,4,2,C.shoe);  R(x+7,y+18,4,2,C.shoe);    // shoes
-    R(x+1,y+6,10,8,C.shirt);                            // black shirt
-    R(x+3,y+8,6,3,C.logo);                              // "RNR" logo patch
-    R(x,y+6,1,6,C.shirt); R(x+11,y+6,1,6,C.shirt);      // arms
-    R(x+3,y,6,6,C.skin);                                // head
-    R(x+2,y-1,8,3,C.hair); R(x+2,y+2,1,5,C.hair); R(x+9,y+2,1,5,C.hair); // rocker hair
+    R(x+2,y+13,3,5,C.jeans); R(x+7,y+13,3,5,C.jeans);    
+    R(x+1,y+18,4,2,C.shoe);  R(x+7,y+18,4,2,C.shoe);     
+    R(x+1,y+6,10,8,C.shirt);                             
+    R(x+3,y+8,6,3,C.logo);                               
+    R(x,y+6,1,6,C.shirt); R(x+11,y+6,1,6,C.shirt);       
+    R(x+3,y,6,6,C.skin);                                 
+    R(x+2,y-1,8,3,C.hair); R(x+2,y+2,1,5,C.hair); R(x+9,y+2,1,5,C.hair);  
     if (game.power && game.power.type==="invincible"){ ctx.strokeStyle="#ffe27a"; ctx.strokeRect(x-1.5,y-2.5,p.w+3,p.h+3); }
   }
-  // shield
+   
   if (p.shielding){ const sx = p.dir>0 ? p.x+p.w+1 : p.x-3; R(sx,p.y+5,2,9,"#c9a227"); R(sx,p.y+5,2,2,"#efd27a"); }
-  // sword
+   
   if (p.swing>0){ const r=swordRect(p); R(r.x, r.y+2, r.w, 2, "#e8e8ef"); R(r.x, r.y, r.w, 1, "#fff"); }
 }
 function drawEnemy(e){
@@ -625,21 +625,21 @@ function drawEnemy(e){
   if (e.type==="mummy"){ R(x+2,y,10,14, hit?"#fff":"#dcdccb"); R(x+2,y+4,10,2,"#b9b9a6"); R(x+2,y+9,10,2,"#b9b9a6");
     R(x+4,y+3,2,2,"#333"); R(x+8,y+3,2,2,"#333"); }
   else { R(x+3,y,15,21, hit?"#fff":"#5fae5f"); R(x+5,y+5,3,3,"#123"); R(x+11,y+5,3,3,"#123"); R(x+5,y+12,9,2,"#1c3a1c");
-    R(x+1,y+9,3,8,"#4d924d"); R(x+17,y+9,3,8,"#4d924d"); }         // zombie drawn 1.5x mummy scale
-  if (e.type==="zombie" && e.hp>=2) R(x+3,y-2,15,1,"#8f8"); // full-hp tick
+    R(x+1,y+9,3,8,"#4d924d"); R(x+17,y+9,3,8,"#4d924d"); }          
+  if (e.type==="zombie" && e.hp>=2) R(x+3,y-2,15,1,"#8f8");  
 }
 function drawBoss(b){
   const x=b.x|0, y=b.y|0, hit=b.flash>0;
   const base = hit ? "#fff" : ["#e9e9e9","#d9c27a","#8a5a2b","#3a3050"][b.level];
-  const flip = b.dir > 0;                                  // art faces left; mirror when facing right
+  const flip = b.dir > 0;                                   
   if (flip){ ctx.save(); ctx.translate(x*2 + b.w, 0); ctx.scale(-1, 1); }
   R(x,y,b.w,b.h,base);
-  if (b.level===0){ R(x+4,y-8,5,9,base); R(x+b.w-9,y-8,5,9,base); R(x+6,y+8,4,4,"#e33"); R(x+b.w-10,y+8,4,4,"#e33"); } // bunny ears + eyes
-  if (b.level===1){ R(x,y+b.h,6,6,base); R(x-6,y+b.h,6,6,base); R(x+6,y+7,5,5,"#333"); R(x+b.w-11,y+7,5,5,"#333"); }   // snake tail
-  if (b.level===2){ R(x+3,y+6,7,7,"#ffcf4a"); R(x+b.w-10,y+6,7,7,"#ffcf4a"); R(x+5,y+8,3,3,"#111"); R(x+b.w-8,y+8,3,3,"#111"); R(x+b.w/2-2,y+13,4,4,"#ff8a3d"); } // owl eyes+beak
-  if (b.level===3){ R(x+5,y+7,6,4,"#ff3b6b"); R(x+b.w-11,y+7,6,4,"#ff3b6b"); R(x+2,y-4,b.w-4,3,"#6a5aa0"); }           // overlord visor
+  if (b.level===0){ R(x+4,y-8,5,9,base); R(x+b.w-9,y-8,5,9,base); R(x+6,y+8,4,4,"#e33"); R(x+b.w-10,y+8,4,4,"#e33"); }  
+  if (b.level===1){ R(x,y+b.h,6,6,base); R(x-6,y+b.h,6,6,base); R(x+6,y+7,5,5,"#333"); R(x+b.w-11,y+7,5,5,"#333"); }    
+  if (b.level===2){ R(x+3,y+6,7,7,"#ffcf4a"); R(x+b.w-10,y+6,7,7,"#ffcf4a"); R(x+5,y+8,3,3,"#111"); R(x+b.w-8,y+8,3,3,"#111"); R(x+b.w/2-2,y+13,4,4,"#ff8a3d"); }  
+  if (b.level===3){ R(x+5,y+7,6,4,"#ff3b6b"); R(x+b.w-11,y+7,6,4,"#ff3b6b"); R(x+2,y-4,b.w-4,3,"#6a5aa0"); }            
   if (flip) ctx.restore();
-  // health bar (never mirrored)
+   
   R(x-2, y-8, b.w+4, 4, "#331"); R(x-2, y-8, (b.w+4)*(b.hp/b.maxHp), 4, "#ff4d6a");
 }
 function drawShot(s){
@@ -706,7 +706,7 @@ function render(){
   drawHUD(); drawBanner();
 }
 
-/* ---------- 10. STATE MACHINE & MAIN LOOP ---------- */
+ 
 function gameOver(){ game.finalValue = game.best; endRun(false); }
 function winGame(){
   game.won = true;
@@ -715,7 +715,7 @@ function winGame(){
 }
 function endRun(won){
   game.state = "END"; game.entered = false;
-  if (qualifies(game.finalValue)) openEntry(won);   // ask for a name via overlay
+  if (qualifies(game.finalValue)) openEntry(won);    
 }
 function openEntry(won){
   const box = document.getElementById("entry");
@@ -748,7 +748,7 @@ function stepGame(){
   updateFloats();
 }
 
-// Pick the music intensity from the current game state.
+ 
 function sceneFor(){
   if (game.state==="TITLE") return "menu";
   if (game.state==="END")   return game.won ? "win" : "gameover";
@@ -756,13 +756,13 @@ function sceneFor(){
   return "menu";
 }
 
-// Fixed-timestep loop (deterministic physics, frame-rate independent).
+ 
 let acc = 0, last = performance.now();
 function loop(now){
   let dt = (now - last)/1000; last = now; if (dt > 0.1) dt = 0.1;
   acc += dt;
   while (acc >= 1/60){ stepGame(); justJump = false; justSword = false; acc -= 1/60; }
-  Chip.setScene(sceneFor());     // swap gameplay / boss / victory music as state changes
+  Chip.setScene(sceneFor());      
   render();
   requestAnimationFrame(loop);
 }

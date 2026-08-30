@@ -95,16 +95,16 @@
 
 <script>
 'use strict';
-// ============================== SETUP ==============================
+ 
 const cv = document.getElementById('game'), mg = cv.getContext('2d');
 const W = 800, H = 600, PLAYER_Y = 440, HALF = 170;
-// half-res backbuffer, upscaled without smoothing -> modernized pixel-art look
+ 
 const view = document.createElement('canvas'); view.width = W/2; view.height = H/2;
 const vg = view.getContext('2d');
-let g = vg;   // scene draws to the backbuffer; HUD/labels draw crisp to mg
+let g = vg;    
 const labelQ = [];
 
-// -------- persistence (guarded) --------
+ 
 const SAVE_KEY = 'pbx_gp_save';
 let save = { n:[0,0,0], h:[0,0,0] };
 try { const s = JSON.parse(localStorage.getItem(SAVE_KEY)); if (s && s.n && s.h) save = s; } catch(e){}
@@ -113,7 +113,7 @@ const allWon = a => a[0] && a[1] && a[2];
 const hardUnlocked   = () => allWon(save.n);
 const goldenUnlocked = () => allWon(save.h);
 
-// -------- tracks --------
+ 
 const TRACKS = [
   { name:'Highway',    len:36000, road:'#666a70',
     curve:s => 150*Math.sin(s/1000) + 90*Math.sin(s/420+1.3) + 45*Math.sin(s/190) },
@@ -129,7 +129,7 @@ function roadCenter(s){
 }
 function roadSlope(s){ return (roadCenter(s+12) - roadCenter(s-12)) / 24; }
 
-// -------- input --------
+ 
 const keys = {};
 addEventListener('keydown', e => {
   if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key)) e.preventDefault();
@@ -137,7 +137,7 @@ addEventListener('keydown', e => {
   if ((e.key === 'r' || e.key === 'R') && (state === 'race' || state === 'count')) (bossMode ? beginBossRace() : startRace(trackIdx));
   if (state === 'intro' && (e.key === 'Enter' || e.key === ' ')) advanceIntroPhase();
   if (cine && (e.key === 'Enter' || e.key === ' ')) skipCine();
-  if (state === 'replay'){                       // keyboard mirrors the on-screen buttons
+  if (state === 'replay'){                        
     if (e.key === ' '){ rpPlay.onclick(); }
     if (e.key === 'r' || e.key === 'R'){ replay.i = 0; replay.acc = 0; replay.playing = true; syncReplayUI(); }
     if (e.key === 'Escape' || e.key === 'Enter') exitReplay();
@@ -157,19 +157,19 @@ const kDown  = () => keys['ArrowDown'] || keys['s'] || keys['S'];
 const kLeft  = () => keys['ArrowLeft'] || keys['a'] || keys['A'];
 const kRight = () => keys['ArrowRight']|| keys['d'] || keys['D'];
 
-// ============================== GAME STATE ==============================
-let state = 'menu';          // menu | count | race | over
+ 
+let state = 'menu';           
 let hardMode = false, useGolden = false;
 let countT = 0, goT = 0, raceT = 0;
 let player, ais = [], civs = [], toasts = [];
 let civTimer = 0, finishedCount = 0, playerRank = 0, raceId = 0;
 const rnd = Math.random;
 
-// Top speed of the fastest regular rival, as a fraction of the player's maximum.
-// The helicopter boss is pegged just above this — see BOSS_EDGE.
+ 
+ 
 const TOP_AI = 0.995;
-// How much faster than that fastest car the helicopter flies, by race phase.
-// Kept deliberately small: it should out-pace the best car, not outclass the player.
+ 
+ 
 const BOSS_EDGE = [0.005, 0.010, 0.015];
 
 const BASE = { max:720, accel:300, brake:520, revMax:360, lat:265 };
@@ -193,7 +193,7 @@ function startRace(t){
     w:26, l:50, color: (useGolden && goldenUnlocked()) ? '#e8b923' : '#e33232',
     ang:0, tang:0, heading:0, slip:0, spinKind:'', latV:0, kickX:0, boostT:0, padBoost:0, pspin:0, invuln:0, finished:false
   };
-  // ranked field: 0.5%, 1%, 2%, 3%... slower than the PLAYER's top speed
+   
   const mults  = hardMode ? [TOP_AI,TOP_AI,0.99,0.99,0.98,0.98,0.98]
                           : [TOP_AI,0.99,0.98,0.97,0.96,0.95,0.94];
   const skills = hardMode ? [1,1,0.95,0.95,0.9,0.9,0.9]
@@ -216,7 +216,7 @@ function startRace(t){
 
 function toast(txt, col){ toasts.push({ txt, col: col||'#ffd23f', t:2.2 }); }
 
-// -------- particles (sparks / smoke / dust) --------
+ 
 let parts = [];
 function emit(s, wx, n, type){
   for (let i = 0; i < n; i++){
@@ -230,9 +230,9 @@ function emit(s, wx, n, type){
   }
 }
 
-// ============================== UPDATE ==============================
+ 
 function effMax(){
-  // pad boost is modest; the spin boost is still the bigger prize
+   
   const m = Math.max(player.padBoost > 0 ? 1.07 : 1, player.boostT > 0 ? 1.10 : 1);
   return player.stats.max * m;
 }
@@ -240,11 +240,11 @@ function effMax(){
 function respawnPlayer(){
   recEvent = 2;
   player.spinKind = 'crash';
-  player.pspin = 1.1;   // spin-out animation, then reset in update
+  player.pspin = 1.1;    
 }
 function finishRespawn(){
   if (player.spinKind === 'over'){
-    // oversteer spin: gather yourself where you stopped
+     
     player.heading = 0; player.ang = 0; player.speed = 0; player.slip = 0;
     player.invuln = 1; player.pspin = 0;
     player.x = Math.max(-HALF+20, Math.min(HALF-20, player.x));
@@ -273,8 +273,8 @@ function updatePlayer(dt){
   if (p.invuln > 0) p.invuln -= dt;
   if (p.boostT > 0) p.boostT -= dt;
 
-  // held by the police, or mid-arrest: no driving input (escape mashing is separate)
-  const held = (cine && cine.type === 'arrest');   // moving capture leaves you driving
+   
+  const held = (cine && cine.type === 'arrest');    
   const locked = state !== 'race' || p.finished || held;
   let steer = 0;
   if (!locked){
@@ -286,34 +286,34 @@ function updatePlayer(dt){
   } else {
     p.speed -= Math.sign(p.speed)*Math.min(Math.abs(p.speed), 200*dt);
   }
-  // steering rotates the CAR; the car's heading is what moves it
-  const sf = Math.min(1, Math.abs(p.speed)/200);       // no yaw at standstill
+   
+  const sf = Math.min(1, Math.abs(p.speed)/200);        
   p.heading += steer * (1.4 + Math.abs(p.speed)*0.0016) * sf * dt;
-  if (!steer) p.heading -= Math.sign(p.heading)*Math.min(Math.abs(p.heading), 0.55*dt); // wheels self-center
+  if (!steer) p.heading -= Math.sign(p.heading)*Math.min(Math.abs(p.heading), 0.55*dt);  
   p.heading = Math.max(-0.95, Math.min(0.95, p.heading));
-  // oversteer: sustained hard steering at speed breaks traction and spins you out
+   
   if (steer && Math.abs(p.speed) > 520){
     p.slip += (Math.abs(p.speed) - 520)/260 * 1.6 * dt;
-    if (p.slip > 0.45 && rnd() < 0.6) emit(p.s - 24, roadCenter(p.s)+p.x, 1, 'smoke'); // tires screaming
+    if (p.slip > 0.45 && rnd() < 0.6) emit(p.s - 24, roadCenter(p.s)+p.x, 1, 'smoke');  
   } else p.slip = Math.max(0, p.slip - 2*dt);
   if (p.slip >= 1){
     p.slip = 0; p.spinKind = 'over'; p.pspin = 1.25;
     toast('OVERSTEER!', '#ff9b2f');
     return;
   }
-  p.ang = p.heading + steer*0.05*sf;                   // sprite follows direction of travel
+  p.ang = p.heading + steer*0.05*sf;                    
   p.latV = Math.sin(p.heading)*p.speed;
-  p.tang = 0;                               // sprite rotates from input/spins only
-  p.x += p.kickX*dt; p.kickX *= Math.exp(-3*dt);   // collision knock-back
-  p.x = Math.max(-HALF-60, Math.min(HALF+60, p.x)); // constrained to road + shoulder
+  p.tang = 0;                                
+  p.x += p.kickX*dt; p.kickX *= Math.exp(-3*dt);    
+  p.x = Math.max(-HALF-60, Math.min(HALF+60, p.x));  
 
-  // grass slows you down (and kicks up dust)
+   
   if (Math.abs(p.x) > HALF){
     if (p.speed > 300) p.speed -= (p.speed-280)*2.6*dt;
     if (Math.abs(p.speed) > 180 && rnd() < 0.5) emit(p.s - 20, roadCenter(p.s)+p.x, 1, 'dust');
   }
 
-  // the road defines layout only; the car travels along its own heading
+   
   const oldC = roadCenter(p.s);
   p.s += Math.cos(p.heading)*p.speed*dt;
   if (p.s < -420) p.s = -420;
@@ -325,43 +325,43 @@ function updatePlayer(dt){
 function updateAI(a, dt){
   if (a.finished){ a.speed = Math.max(0, a.speed - 300*dt); a.s += a.speed*dt; return; }
   if (a.mode === 'spin'){
-    // free 360° rotation, momentum carries the car (any direction, incl. backwards)
+     
     a.ang += a.spinV*dt;
     a.spinV *= Math.exp(-1.1*dt);
     a.vs *= Math.exp(-0.9*dt);
     a.vx *= Math.exp(-1.4*dt);
     a.s += a.vs*dt;
     a.x += a.vx*dt;
-    if (Math.abs(a.x) > HALF+80){ a.x = Math.sign(a.x)*(HALF+80); a.vx *= -0.4; } // soft grass bounce
+    if (Math.abs(a.x) > HALF+80){ a.x = Math.sign(a.x)*(HALF+80); a.vx *= -0.4; }  
     a.speed = a.vs;
     if (rnd() < 0.4) emit(a.s, roadCenter(a.s)+a.x, 1, 'smoke');
-    // control regained only once rotation and sliding have died down
+     
     if (Math.abs(a.spinV) < 0.6 + 0.5*a.skill && Math.hypot(a.vs, a.vx) < 160 + 90*a.skill) a.mode = 'recover';
     return;
   }
   if (a.mode === 'recover'){
-    // turn back toward racing direction gradually — no snapping
+     
     let d = -a.ang;
     while (d > Math.PI) d -= 2*Math.PI;
     while (d < -Math.PI) d += 2*Math.PI;
     a.ang += Math.sign(d)*Math.min(Math.abs(d), (2.2 + 1.6*a.skill)*dt);
-    // creep along current heading while realigning (may briefly drive backwards)
+     
     a.speed = Math.min(a.speed + (140 + 120*a.skill)*dt, 220 + 130*a.skill);
     a.s += Math.cos(a.ang)*a.speed*dt;
     a.x += Math.sin(a.ang)*a.speed*dt;
     a.x = Math.max(-HALF+24, Math.min(HALF-24, a.x));
-    if (Math.abs(d) < 0.05){ a.ang = 0; a.spinV = 0; a.mode = 'race'; } // resume racing
+    if (Math.abs(d) < 0.05){ a.ang = 0; a.spinV = 0; a.mode = 'race'; }  
     return;
   }
   const locked = state !== 'race';
   let tgt = locked ? 0 : a.target;
-  // AI brakes for corners — skilled drivers carry far more speed through
+   
   tgt *= 1 / (1 + Math.abs(roadSlope(a.s))*(0.9 - 0.55*a.skill));
 
-  // mild rubber-band so easy AI stays in the show
+   
   if (!locked && a.skill < 0.8 && player.s - a.s > 3000) tgt *= 1.1;
 
-  // racing line: skilled drivers cut toward the inside of the upcoming corner
+   
   const ins = Math.atan(roadSlope(a.s + 180)) * 90 * a.skill;
   a.desiredX = Math.max(-HALF+30, Math.min(HALF-30, a.lane*(1 - 0.5*a.skill) + ins));
   const all = [player, ...ais, ...civs];
@@ -378,7 +378,7 @@ function updateAI(a, dt){
   const dx = Math.max(-230*dt, Math.min(230*dt, a.desiredX - a.x));
   a.x += dx;
   a.x = Math.max(-HALF+24, Math.min(HALF-24, a.x));
-  // heading = road tangent + lane-change tilt, smoothed (visible, stable cornering)
+   
   const tilt = Math.max(-0.16, Math.min(0.16, (a.desiredX - a.x)*0.004));
   const hdg = Math.atan(roadSlope(a.s)) + tilt;
   a.ang += (hdg - a.ang) * Math.min(1, 8*dt);
@@ -391,50 +391,50 @@ function spawnCiv(){
   const lanes = [-127,-42,42,127];
   const cols  = ['#b8b8c0','#7c94a8','#a89b7c','#7ca88a','#9a7ca8','#c4c4a0'];
   const bcols = ['#d94f2b','#2b6fd9','#1d1d22','#e0b02c','#38a05a'];
-  // spawn ahead of whoever leads — including the boss, so it flies through
-  // traffic too (and visibly sails over it) instead of into empty road
+   
+   
   const lead = Math.max(player.s, boss ? boss.s : -Infinity, ...ais.map(a=>a.s));
   civs.push({
     kind:'civ', truck, bike, s: lead + 900 + rnd()*700,
     x: lanes[Math.floor(rnd()*4)] + (bike ? (rnd()-0.5)*40 : 0),
-    // bikes are quick but erratic; trucks/cars keep the old range
+     
     speed: bike ? (150 + rnd()*260) : (180 + rnd()*110),
     vx:0, spinV:0, ang:0,
     w: bike ? 12 : (truck?30:26), l: bike ? 30 : (truck?88:48),
     color: bike ? bcols[Math.floor(rnd()*bcols.length)] : cols[Math.floor(rnd()*cols.length)],
     knocked:false,
-    weave: bike ? (0.5 + rnd()*1.1) : 0,      // lane-splitting wobble
+    weave: bike ? (0.5 + rnd()*1.1) : 0,       
     wph: rnd()*6.28, lean: 0
   });
 }
 function updateCiv(c, dt){
   c.s += c.speed*dt;
-  if (c.bike && !c.knocked){                  // riders weave between lanes
+  if (c.bike && !c.knocked){                   
     c.wph += dt*c.weave;
     const wv = Math.cos(c.wph)*c.weave*46;
     c.x += wv*dt;
     c.x = Math.max(-HALF+14, Math.min(HALF-14, c.x));
-    c.lean += (wv*0.006 - c.lean)*4*dt;       // banks into the weave
+    c.lean += (wv*0.006 - c.lean)*4*dt;        
   } else if (c.bike) c.lean += (0 - c.lean)*3*dt;
-  c.x += c.vx*dt;   c.vx *= Math.exp((c.bike ? -1.6 : -2.5)*dt);   // bikes slide further
+  c.x += c.vx*dt;   c.vx *= Math.exp((c.bike ? -1.6 : -2.5)*dt);    
   c.ang += c.spinV*dt; c.spinV *= Math.exp((c.bike ? -1.4 : -2)*dt);
-  c.tang = Math.atan(roadSlope(c.s)) + (c.lean || 0);   // follow the road's curve visually
+  c.tang = Math.atan(roadSlope(c.s)) + (c.lean || 0);    
   if (c.knocked) c.speed += ((c.bike ? 95 : 140) - c.speed)*0.8*dt;
 }
 
-// ============================== POLICE INTERCEPTORS ==============================
-// Cops are ordinary vehicles: same dimensions, same impulse physics, same renderer.
-// Only their steering brain and their pin/capture rules are new.
+ 
+ 
+ 
 let cops = [], copZones = [], copZone = 0, cine = null, capture = null, sirenT = 0, copIntercepts = 1;
-const COP_TOP  = 0.94;           // settled pace vs player max — catchable, never hopeless
-const COP_MAX  = 5;              // hard cap on live cruisers (perf + fairness)
-const COP_LULL = 2;              // guaranteed quiet seconds between encounters
-let copCalm = 0;                 // counts down the lull
+const COP_TOP  = 0.94;            
+const COP_MAX  = 5;               
+const COP_LULL = 2;               
+let copCalm = 0;                  
 
-// Pursuit zones: recurring stretches across the whole lap. More encounters, and
-// Hard Mode calls in bigger squads.
-// Ambush points are re-rolled every race and jittered, so they are never in the
-// same place twice and the player cannot learn where to expect them.
+ 
+ 
+ 
+ 
 function buildCopZones(){
   copZones = []; copZone = 0;
   const len = TRK.len;
@@ -442,65 +442,65 @@ function buildCopZones(){
   while (f < 0.97){
     const lo = hardMode ? 3 : 2, hi = hardMode ? 5 : 4;
     copZones.push({ s: Math.round(len*f), n: lo + Math.floor(rnd()*(hi-lo+1)), fired: false });
-    f += 0.040 + rnd()*0.055;                   // irregular spacing, never a rhythm
+    f += 0.040 + rnd()*0.055;                    
   }
 }
 
-// Cruisers merge in from the verge: they start off-road on the left or right,
-// well clear of the player, then sweep onto the racing surface.
+ 
+ 
 function spawnCop(side, i, total){
   if (cops.length >= COP_MAX) return;
-  const outside = (HALF + 95 + rnd()*55) * side;      // parked/rolling on the shoulder
-  // Mixed approach so the player can never predict where they'll come from:
-  // some lie in wait down the road and pull out as you reach them, others
-  // slip in from a side road behind. Staggered so a squad never enters as a wall.
+  const outside = (HALF + 95 + rnd()*55) * side;       
+   
+   
+   
   const ahead = rnd() < 0.5;
   const s = ahead ? player.s + (340 + i*120 + rnd()*260)
                   : player.s - (250 + i*135 + rnd()*90);
   cops.push({
     kind:'cop', s, x: outside, speed: player.speed*0.55 + 120,
     w:26, l:50, color:'#20304e', ang:0, tang:0, vx:0,
-    mode:'merge', side, merge: 0.9 + rnd()*0.5,       // seconds spent sweeping on
+    mode:'merge', side, merge: 0.9 + rnd()*0.5,        
     role: ['ram','flank','flank','trail','ram'][i % 5],
     stun:0, cool:0, push:0, wig: rnd()*6.28, life:0,
-    ramT: 1.4 + rnd()*2.2, ramming:0, miss: rnd() < 0.28, // some attempts are fumbled
+    ramT: 1.4 + rnd()*2.2, ramming:0, miss: rnd() < 0.28,  
     intercept:false, holdT:0
   });
 }
 function beginPursuit(n){
-  n = Math.max(2, Math.min(5, n));                    // squads are always 2–5 strong
+  n = Math.max(2, Math.min(5, n));                     
   const room = COP_MAX - cops.length;
   n = Math.min(n, room);
-  if (n < 2) return 0;                                // no room yet — leave the zone armed
-  // split the squad across both verges when there's more than one car
+  if (n < 2) return 0;                                 
+   
   let side = rnd() < 0.5 ? -1 : 1;
   for (let i = 0; i < n; i++){
     spawnCop(side, i, n);
-    if (n > 1 && i % 2 === 0) side = -side;            // alternate flanks
+    if (n > 1 && i % 2 === 0) side = -side;             
   }
-  // NO warning of any kind: no toast, no siren, no cutscene, no camera move.
-  // The first thing the player sees is a cruiser sliding in off the verge.
+   
+   
   sirenT = 0; copCalm = COP_LULL;
-  copIntercepts = 1 + (rnd() < 0.55 ? 1 : 0);   // this squad closes with 1 or 2
-  recEvent = 3;                       // recorded only, shown in replay
+  copIntercepts = 1 + (rnd() < 0.55 ? 1 : 0);    
+  recEvent = 3;                        
   return n;
 }
 
-// ---- squad coordination: only 1-2 cars actively close for a capture ----
-const MAX_INTERCEPT   = 2;     // never more than two closing at once
-const INTERCEPT_NEAR  = 92;    // along-track proximity that counts as "on him"
-const INTERCEPT_LAT   = 60;    // lateral proximity for the same
-const INTERCEPT_HOLD  = 1.5;   // continuous seconds glued before a capture locks in
-const INTERCEPT_RANGE = 430;   // beyond this a car cannot hold the interceptor role
-const CAPTURE_BREAK_S = 230;   // longitudinal gap that shakes an established capture
-const CAPTURE_BREAK_X = 95;    // lateral gap that does the same
+ 
+const MAX_INTERCEPT   = 2;      
+const INTERCEPT_NEAR  = 92;     
+const INTERCEPT_LAT   = 60;     
+const INTERCEPT_HOLD  = 1.5;    
+const INTERCEPT_RANGE = 430;    
+const CAPTURE_BREAK_S = 230;    
+const CAPTURE_BREAK_X = 95;     
 
 function eligibleInterceptor(c){
   return c.stun <= 0 && c.mode !== 'retire' && c.mode !== 'merge' &&
          Math.abs(c.s - player.s) < INTERCEPT_RANGE;
 }
-// Runs once per frame for the whole squad. Promotes the closest eligible cars and
-// demotes any that fall away, so another car naturally takes over the interception.
+ 
+ 
 function updateInterceptors(dt){
   for (const c of cops){
     if (c.intercept && !eligibleInterceptor(c)){ c.intercept = false; c.holdT = 0; }
@@ -516,8 +516,8 @@ function updateInterceptors(dt){
   }
 }
 
-// ---- dialogue validation: every line must describe what is ACTUALLY happening ----
-// Counts cruisers genuinely closing a pincer on the player right now.
+ 
+ 
 function nearestCop(){
   let best = null, bd = 1e9;
   for (const o of cops){
@@ -535,47 +535,47 @@ function countPinners(){
   }
   return n;
 }
-// Single source of truth. Returns false unless THIS car, right now, satisfies the
-// real gameplay conditions the line claims. No timers, no random triggering.
+ 
+ 
 function canPoliceSpeak(c, ev){
-  if (!c || cops.indexOf(c) < 0) return false;              // car must still exist
-  if (c.stun > 0 && ev !== 'broke') return false;            // disabled cars don't talk
-  //   ('broke' is the one exception: a car just shoved aside still radios it in)
-  if (Math.abs(c.x) > HALF + 45) return false;              // must be on the racing surface
+  if (!c || cops.indexOf(c) < 0) return false;               
+  if (c.stun > 0 && ev !== 'broke') return false;             
+   
+  if (Math.abs(c.x) > HALF + 45) return false;               
   if (ev !== 'off' && (c.mode === 'retire' || c.mode === 'merge')) return false;
-  const ds  = player.s - c.s;                               // + = player ahead
+  const ds  = player.s - c.s;                                
   const gap = Math.abs(ds);
-  if (gap > POLICE_RADIO_RANGE) return false;               // OUT OF RADIO RANGE: always silent
-  const inView = ds < 560 && ds > -360;                     // roughly what the camera holds
+  if (gap > POLICE_RADIO_RANGE) return false;                
+  const inView = ds < 560 && ds > -360;                      
   switch (ev){
-    // detection: first acquisition, close enough to see, pursuit actually starting
+     
     case 'spot':  return !c.spotted && gap < 420 && inView && c.mode === 'chase';
-    // closing: actively pursuing AND measurably reducing the gap
+     
     case 'close': return gap < 340 && inView && c.closeRate < -35;
-    // ram: the lunge has actually begun and it is within striking range
+     
     case 'ram':   return c.ramming > 0 && gap < 155;
-    // cut off: a lunge that is crossing laterally to block the player's line
+     
     case 'block': return c.ramming > 0 && gap < 155 && Math.abs(player.x - c.x) > 32;
-    // missed: an attempt genuinely finished without contact
+     
     case 'miss':  return c.ramMissed === true && gap < 320;
-    // getting away: was engaged, gap now large AND still growing
+     
     case 'flee':  return c.wasClose && !c.fledSaid && gap > 330 && c.closeRate > 40;
-    // box in: needs a real multi-car pincer, never a lone car
+     
     case 'box':   return countPinners() >= 2 && capture && capture.t > 0.3 && !capture.on;
-    // capture claims require the capture state to actually be set
+     
     case 'caught':return !!(capture && capture.on);
-    case 'broke': return true;                               // range already enforced above
-    // breaking off: only worth saying while still near enough to have been in it
+    case 'broke': return true;                                
+     
     case 'off':   return c.mode === 'retire';
   }
   return false;
 }
-// EVENT -> VALIDATE -> pick among valid lines -> speak. Randomness only picks wording.
+ 
 function copSay(key, c){
   if (!canPoliceSpeak(c, key)) return false;
   const who = Math.max(1, cops.indexOf(c) + 1);
-  const ev = police_say(key, who, false, c);                 // returns null if on cooldown
-  if (!ev) return false;                                     // skipped, never queued
+  const ev = police_say(key, who, false, c);                  
+  if (!ev) return false;                                      
   if (rec) recRadio = ev;
   return true;
 }
@@ -583,7 +583,7 @@ function copSay(key, c){
 function updateCop(c, dt){
   c.life += dt;
   c.tang = Math.atan(roadSlope(c.s));
-  // arrest staging: cruisers glide into a ring around the stopped car, engines off
+   
   if (cine && cine.type === 'arrest'){
     if (c.slot === undefined) c.slot = cops.indexOf(c);
     const ring = [[62, -46], [-64, -40], [4, 74]][c.slot % 3];
@@ -592,7 +592,7 @@ function updateCop(c, dt){
     c.speed = 0; c.ang = 0; c.stun = 0;
     return;
   }
-  if (c.stun > 0){                       // shaken off after a heavy hit
+  if (c.stun > 0){                        
     c.stun -= dt;
     c.speed = Math.max(0, c.speed - 240*dt);
     c.x += c.vx*dt; c.vx *= Math.exp(-2.4*dt);
@@ -603,73 +603,73 @@ function updateCop(c, dt){
   c.ang = 0;
   if (c.cool > 0) c.cool -= dt;
   const pmax = player.stats.max;
-  const ds = player.s - c.s;             // + = player ahead of the cop
+  const ds = player.s - c.s;              
   const captured = capture && capture.on;
-  // live telemetry the dialogue validator reads: is this car actually closing?
+   
   const gapNow = Math.abs(ds);
   if (c.prevDs === undefined) c.prevDs = gapNow;
-  const dGap = (gapNow - c.prevDs) / Math.max(dt, 1e-6);     // + = falling behind
+  const dGap = (gapNow - c.prevDs) / Math.max(dt, 1e-6);      
   c.closeRate = (c.closeRate || 0)*0.85 + dGap*0.15;
   c.prevDs = gapNow;
   if (gapNow < 300) { c.wasClose = true; c.fledSaid = false; }
 
-  // --- break off: a pursuit doesn't last forever. They peel away and drop back,
-  //     which creates the quiet stretch before the next squad is called in. ---
+   
+   
   if (c.mode !== 'retire' && !captured && c.life > 19 + (c.wig % 5)){
     c.mode = 'retire';
     if (!cops.some(o => o !== c && o.mode !== 'retire')){ copSay('off', c); toast('They broke off the pursuit', '#9fd0a0'); }
   }
   if (c.mode === 'retire'){
-    c.speed += (player.speed*0.55 - c.speed) * 0.6 * dt;   // eases off, never slams the brakes
-    c.x += ((HALF+60)*(c.side||1) - c.x) * 0.5 * dt;       // drifts back toward the verge
+    c.speed += (player.speed*0.55 - c.speed) * 0.6 * dt;    
+    c.x += ((HALF+60)*(c.side||1) - c.x) * 0.5 * dt;        
     c.ang = 0; c.s += c.speed*dt;
     return;
   }
 
-  // --- merge: sweep in off the shoulder onto the racing surface ---
+   
   if (c.mode === 'merge'){
     c.merge -= dt;
-    const tgt = c.side * (HALF - 40);                    // aim for the outside lane
+    const tgt = c.side * (HALF - 40);                     
     c.x += (tgt - c.x) * Math.min(1, 2.6*dt);
     c.ang = Math.max(-0.3, Math.min(0.3, (tgt - c.x) * 0.006));
-    c.speed += (pmax*1.16 - c.speed) * 1.9 * dt;         // hard launch to close the gap
+    c.speed += (pmax*1.16 - c.speed) * 1.9 * dt;          
     c.s += c.speed*dt;
     if (c.merge <= 0 && Math.abs(c.x) < HALF - 18){ c.mode = 'chase'; }
     return;
   }
 
-  // --- target line: intercept where the player WILL be, not where they are ---
+   
   const lead = Math.max(0, Math.min(1.1, ds/520));
   let tx = player.x + (player.latV||0) * lead * 0.55;
-  // roles keep a squad from stacking into one lane
+   
   if (c.role === 'flank') tx += (c.side || 1) * 46;
   if (c.role === 'trail') tx += Math.sin(c.life*0.9) * 55;
 
-  // --- ram cycle: line up, lunge at the player, then peel off and re-arm ---
+   
   if (c.ramming > 0){
     c.ramming -= dt;
-    tx = c.miss ? player.x + (c.side||1)*54 : player.x;  // fumbled runs slide wide
+    tx = c.miss ? player.x + (c.side||1)*54 : player.x;   
     if (c.ramming <= 0){
-      c.ramMissed = !c.ramHit;                            // verified: attempt made, no contact
+      c.ramMissed = !c.ramHit;                             
       if (c.ramMissed) copSay('miss', c);
       c.ramMissed = false;
       c.cool = Math.max(c.cool, 1.1); c.ramT = 2.2 + rnd()*2.6; c.miss = rnd() < 0.28;
     }
   } else if (c.role !== 'trail' && c.cool <= 0 && Math.abs(ds) < 210){
-    c.ramT -= dt;                                        // only lunge from striking range
+    c.ramT -= dt;                                         
     if (c.ramT <= 0){
-      c.ramming = 1.5 + rnd()*0.6; c.ramHit = false; c.ramMissed = false;   // attempt begins
+      c.ramming = 1.5 + rnd()*0.6; c.ramHit = false; c.ramMissed = false;    
       copSay(Math.abs(player.x - c.x) > 32 ? 'block' : 'ram', c);
     }
   }
   if (c.intercept && (captured || (Math.abs(ds) < 90 && c.mode === 'pin' && c.ramming <= 0))){
-    // designated interceptor: sit alongside and squeeze toward the nearest verge
+     
     tx = player.x + (c.x < player.x ? -34 : 34);
   } else if (!c.intercept && Math.abs(ds) < 130 && c.ramming <= 0){
-    // everyone else keeps a working distance instead of magnetically stacking up
+     
     tx = player.x + (c.x < player.x ? -1 : 1) * 82;
   }
-  // don't plough through the racers — brief lateral dodge, same idea as the AI brain
+   
   for (const a of ais){
     if (a.finished || a.mode !== 'race') continue;
     const dd = a.s - c.s;
@@ -677,45 +677,45 @@ function updateCop(c, dt){
       tx = a.x > c.x ? a.x - 95 : a.x + 95; break;
     }
   }
-  tx += Math.sin(c.life*1.6 + c.wig) * 14;                 // slight human weave
+  tx += Math.sin(c.life*1.6 + c.wig) * 14;                  
   tx = Math.max(-HALF+22, Math.min(HALF-22, tx));
 
-  // --- speed: closes gaps, but capped below the player's maximum ---
-  // Closes the gap, then rides alongside matching pace. It can sit on you, but it
-  // cannot *stop* you: capture needs you slowed below 235, so a clean fast lap is safe.
-  // Arrives noticeably quicker, then bleeds that advantage off SLOWLY once engaged —
-  // `spool` decays over ~7s of contact, so there is no sudden braking.
+   
+   
+   
+   
+   
   c.spool = (c.spool === undefined) ? 1 : Math.max(0, c.spool - (Math.abs(ds) < 300 ? dt/7 : -dt*0.5));
   c.spool = Math.min(1, c.spool);
-  const surge = 1 + 0.17*c.spool;                                        // 1.17x fresh → 1.0x engaged
+  const surge = 1 + 0.17*c.spool;                                         
   let want;
-  if (ds > 220)       want = pmax * surge * (1 + Math.min(0.04, ds/14000));  // run-down
-  else if (ds < -160) want = Math.max(player.speed * 0.80, 110);             // overshot, drop back and re-hook
+  if (ds > 220)       want = pmax * surge * (1 + Math.min(0.04, ds/14000));   
+  else if (ds < -160) want = Math.max(player.speed * 0.80, 110);              
   else                want = Math.min(pmax*1.02*surge, Math.max(player.speed + 25, pmax*COP_TOP));
-  if (copSay('flee', c)) c.fledSaid = true;                                  // validated: losing him
-  if (c.ramming > 0)  want = Math.max(want, player.speed + 195);             // lunge drives through
+  if (copSay('flee', c)) c.fledSaid = true;                                   
+  if (c.ramming > 0)  want = Math.max(want, player.speed + 195);              
   if (captured || c.mode === 'pin') want = Math.min(want, Math.max(player.speed, 150));
-  // stamina: after a long stint glued to you it drops back, giving a clean break
+   
   c.push = (c.push || 0) + (Math.abs(ds) < 220 ? dt : -dt*0.7);
   c.push = Math.max(0, Math.min(9, c.push));
   if (c.push >= 8) c.cool = Math.max(c.cool, 2.6);
-  if (c.cool > 0){ want *= 0.80; c.push = Math.max(0, c.push - dt*3); }  // lull after a ram / stint
-  want /= (1 + Math.abs(roadSlope(c.s))*0.55);             // cops brake for corners too
-  const acc = c.ramming > 0 ? 760 : 300;                   // a lunge is a real stab of throttle
+  if (c.cool > 0){ want *= 0.80; c.push = Math.max(0, c.push - dt*3); }   
+  want /= (1 + Math.abs(roadSlope(c.s))*0.55);              
+  const acc = c.ramming > 0 ? 760 : 300;                    
   c.speed += Math.max(-420*dt, Math.min(acc*dt, want - c.speed));
 
-  // --- mode: chase until alongside, then pin; ram when closing from behind ---
+   
   const near = Math.abs(ds) < 95 && Math.abs(player.x - c.x) < 105;
   c.mode = near ? 'pin' : 'chase';
-  if (copSay('spot', c)) c.spotted = true;      // first genuine acquisition only
-  else if (c.spotted) copSay('close', c);       // then only while measurably closing
-  // keep the squad spread out — cruisers nudge away from each other, not into a stack
+  if (copSay('spot', c)) c.spotted = true;       
+  else if (c.spotted) copSay('close', c);        
+   
   for (const o of cops){
     if (o === c) continue;
     if (Math.abs(o.s - c.s) < 70 && Math.abs(o.x - c.x) < 46) tx += (c.x - o.x) * 0.9 || 30;
   }
   tx = Math.max(-HALF+22, Math.min(HALF-22, tx));
-  const rate = c.ramming > 0 ? 380 : 250;              // lunges steer harder
+  const rate = c.ramming > 0 ? 380 : 250;               
   const steer = Math.max(-rate*dt, Math.min(rate*dt, tx - c.x));
   c.x += steer;
   c.x = Math.max(-HALF-30, Math.min(HALF+30, c.x));
@@ -723,23 +723,23 @@ function updateCop(c, dt){
   c.s += c.speed*dt;
 }
 
-// --- capture: only from a believable pin, never a single tap ---
+ 
 function updateCapture(dt){
   const p = player;
-  if (cine && cine.type === 'arrest') return;      // busted: the cutscene owns it now
+  if (cine && cine.type === 'arrest') return;       
   if (!capture) capture = { on:false, t:0, timer:0, esc:0, lastKey:0, busted:false, cop:null };
   if (capture.on){
     capture.timer -= dt;
-    // ---- the capture only holds while an interceptor stays on him ----
+     
     let k = capture.cop;
     const lost = !k || cops.indexOf(k) < 0 || k.stun > 0 ||
                  Math.abs(k.s - p.s) > CAPTURE_BREAK_S || Math.abs(k.x - p.x) > CAPTURE_BREAK_X;
     if (lost){
-      // another interceptor already alongside can take the handover
+       
       const relay = cops.find(c => c !== k && c.intercept && c.stun <= 0 &&
         Math.abs(c.s - p.s) < INTERCEPT_NEAR + 40 && Math.abs(c.x - p.x) < INTERCEPT_LAT + 25);
       if (relay) capture.cop = relay;
-      else {                                   // outdriven — capture breaks, race continues
+      else {                                    
         capture.on = false; capture.t = 0; capture.esc = 0;
         p.invuln = 1.2;
         cine = null;
@@ -749,13 +749,13 @@ function updateCapture(dt){
         return;
       }
     }
-    // escape by swerving: the same steering that shakes them also fills the meter
+     
     const dir = kLeft() ? -1 : (kRight() ? 1 : 0);
     if (dir && dir !== capture.lastKey){ capture.esc += 1; capture.lastKey = dir; }
-    if (capture.esc >= 14){                       // broke free
+    if (capture.esc >= 14){                        
       capture.on = false; capture.t = 0; capture.esc = 0;
       p.invuln = 1.6; p.speed = Math.max(p.speed, 210);
-      const witness = nearestCop();                 // chosen before they get shoved aside
+      const witness = nearestCop();                  
       for (const c of cops){ c.stun = 1.1; c.cool = 2.4; c.vx = (c.x - p.x)*2.2; c.intercept = false; c.holdT = 0; }
       cine = null;
       radioCool = 0; copSay('broke', witness);
@@ -763,20 +763,20 @@ function updateCapture(dt){
       sfx('escape');
       return;
     }
-    if (capture.timer <= 0 && !capture.busted){            // busted — fire once only
+    if (capture.timer <= 0 && !capture.busted){             
       capture.busted = true; startCine('arrest', 4.2); sfx('siren'); recEvent = 5;
     }
-    return;                                                // player keeps driving throughout
+    return;                                                 
   }
-  // ---- moving capture: a designated interceptor glued to him for a short spell ----
-  // No speed requirement: the player can be at full throttle. A car merely passing
-  // close cannot trigger it — the hold must be continuous.
+   
+   
+   
   let holder = null;
   for (const c of cops){
     if (!c.intercept || c.stun > 0){ c.holdT = 0; continue; }
     const onHim = Math.abs(c.s - p.s) < INTERCEPT_NEAR && Math.abs(c.x - p.x) < INTERCEPT_LAT;
     if (onHim) c.holdT = (c.holdT || 0) + dt;
-    else       c.holdT = Math.max(0, (c.holdT || 0) - dt*1.7);   // brief pass-by decays away
+    else       c.holdT = Math.max(0, (c.holdT || 0) - dt*1.7);    
     if (!holder || c.holdT > holder.holdT) holder = c;
   }
   capture.t = holder ? holder.holdT : Math.max(0, capture.t - dt*1.4);
@@ -790,8 +790,8 @@ function updateCapture(dt){
   }
 }
 
-// ============================== CUTSCENES ==============================
-// Reuses the existing camera + renderer: a timer, a camera zoom, and letterbox bars.
+ 
+ 
 function startCine(type, dur){ cine = { type, t: 0, dur, skip: type !== 'capture' }; }
 function cineZoom(){
   if (!cine) return 1;
@@ -815,7 +815,7 @@ function skipCine(){
   if (cine.type === 'arrest'){ cine = null; playerRank = 0; showResults('arrested'); }
   else cine = null;
 }
-// letterbox + captions, drawn crisp over the upscaled scene
+ 
 function drawCine(){
   if (!cine && !(capture && capture.on)) return;
   const c = cine;
@@ -860,7 +860,7 @@ function drawCine(){
       mg.fillText('Enter to skip ▶', W-16, H-22);
     }
   }
-  // capture HUD: timer + escape meter (shown while held, after the cutscene ends)
+   
   if (capture && capture.on && (!c || c.type === 'capture')){
     const bw = 300, bx = (W-bw)/2;
     mg.textAlign = 'center';
@@ -880,17 +880,17 @@ function drawCine(){
   }
 }
 
-// ============================== POLICE RADIO ==============================
-// Compact dispatch panel + synthesised radio chatter. Original design; no logos,
-// no broadcast branding, no recorded speech.
+ 
+ 
+ 
 let radio = null, radioCool = 0, radioNodes = [];
-const RADIO_HOLD = 2.3, RADIO_GAP = 2.6;      // seconds on screen / minimum spacing
-// Hard cut-off: a cruiser further than this along the track is simply out of radio
-// contact. No text, no chatter — regardless of what it is doing.
+const RADIO_HOLD = 2.3, RADIO_GAP = 2.6;       
+ 
+ 
 const POLICE_RADIO_RANGE = 520;
 
-// Lines are keyed by situation. NOTHING here may hint at an ambush before it lands —
-// every key below only fires once a cruiser is already on track and engaging.
+ 
+ 
 const RADIO_LINES = {
   spot:   ['There he is.', 'Target ahead.', 'Got eyes on him.', 'That’s our car.'],
   close:  ['Closing fast.', 'Moving in.', 'Right behind him.', 'Tightening up.'],
@@ -904,20 +904,20 @@ const RADIO_LINES = {
   off:    ['Breaking off.', 'Standing down.', 'That’s us done.']
 };
 
-// A transmission = a short static burst, then 2–4 wordless syllables, then squelch.
-// Syllable shapes are picked per-message so no two sound identical, and they are
-// deliberately non-linguistic: pitch-swept blips through a bandpass, nothing more.
+ 
+ 
+ 
 function radioChatter(seed){
   const ac = audioCtx(); if (!ac) return;
   radioStop();
   try {
     const t0 = ac.currentTime;
     const bus = ac.createGain(); bus.gain.value = 0.9;
-    const band = ac.createBiquadFilter();          // telephone/PTT character
+    const band = ac.createBiquadFilter();           
     band.type = 'bandpass'; band.frequency.value = 1500; band.Q.value = 1.6;
     band.connect(ac.destination); bus.connect(band);
     radioNodes.push(bus, band);
-    // click + static burst (mic keying)
+     
     if (noiseBuf || musicBus()){
       const st = ac.createBufferSource(); st.buffer = noiseBuf;
       const sg = ac.createGain();
@@ -926,17 +926,17 @@ function radioChatter(seed){
       st.connect(sg); sg.connect(bus); st.start(t0); st.stop(t0 + 0.14);
       radioNodes.push(st);
     }
-    // wordless syllables
+     
     let t = t0 + 0.11;
     const n = 2 + (seed % 3);
     for (let i = 0; i < n; i++){
       const r  = ((seed * 37 + i * 101) % 100) / 100;
       const dur = 0.09 + r*0.10;
-      const f0  = 150 + r*130;                       // vocal-ish fundamental
+      const f0  = 150 + r*130;                        
       const o = ac.createOscillator(), gn = ac.createGain();
       o.type = i % 2 ? 'square' : 'sawtooth';
       o.frequency.setValueAtTime(f0, t);
-      o.frequency.linearRampToValueAtTime(f0 * (0.72 + r*0.6), t + dur);   // syllable contour
+      o.frequency.linearRampToValueAtTime(f0 * (0.72 + r*0.6), t + dur);    
       gn.gain.setValueAtTime(0.0001, t);
       gn.gain.exponentialRampToValueAtTime(0.075, t + 0.02);
       gn.gain.exponentialRampToValueAtTime(0.0001, t + dur);
@@ -945,7 +945,7 @@ function radioChatter(seed){
       radioNodes.push(o);
       t += dur + 0.035 + r*0.05;
     }
-    // squelch tail
+     
     const sq = ac.createOscillator(), sg2 = ac.createGain();
     sq.type = 'square'; sq.frequency.value = 2100;
     sg2.gain.setValueAtTime(0.035, t + 0.02);
@@ -958,23 +958,23 @@ function radioStop(){
   for (const n of radioNodes){ try { n.stop && n.stop(); n.disconnect && n.disconnect(); } catch(e){} }
   radioNodes.length = 0;
 }
-// `who` is the cruiser index (1-based) so the panel names a consistent officer
+ 
 function police_say(key, who, silent, cop){
   if (radioCool > 0 || !RADIO_LINES[key]) return;
   const lines = RADIO_LINES[key];
   const seed = (Math.floor(rnd()*1000) + key.length*7) | 0;
   const txt = lines[seed % lines.length];
   radio = { who: who || 1, txt, t: RADIO_HOLD, seed, cop: cop || null };
-  radioCool = RADIO_GAP;                        // one voice at a time, with spacing
+  radioCool = RADIO_GAP;                         
   if (!silent) radioChatter(seed);
   return { k:key, w:radio.who, i:seed % lines.length, s:seed };
 }
 function updateRadio(dt){
   if (radioCool > 0) radioCool -= dt;
   if (!radio) return;
-  // A message describes the present moment only. If the officer who sent it drops
-  // out of range (or is gone), cut the text and the chatter immediately — never
-  // let an outdated transmission finish playing. (Replay is authoritative, skipped.)
+   
+   
+   
   if (state !== 'replay' && radio.cop){
     const c = radio.cop;
     if (cops.indexOf(c) < 0 || Math.abs(c.s - player.s) > POLICE_RADIO_RANGE){
@@ -982,12 +982,12 @@ function updateRadio(dt){
     }
   }
   radio.t -= dt;
-  if (radio.t <= 0){ radio = null; radioStop(); }     // audio ends with the message
+  if (radio.t <= 0){ radio = null; radioStop(); }      
 }
-// compact dispatch panel, lower-left, clear of the speed/rank/progress readouts
+ 
 function drawRadio(){
   if (!radio) return;
-  const a = Math.min(1, Math.min(radio.t, RADIO_HOLD - radio.t + 0.25) * 4);  // fade in/out
+  const a = Math.min(1, Math.min(radio.t, RADIO_HOLD - radio.t + 0.25) * 4);   
   if (a <= 0) return;
   mg.save();
   mg.globalAlpha = Math.max(0, Math.min(1, a));
@@ -999,15 +999,15 @@ function drawRadio(){
   const w = Math.min(W - 40, lw + tw + 26), h = 30;
   const x = 20, y = H - 118;
   mg.fillStyle = 'rgba(9,13,22,0.9)';  mg.fillRect(x, y, w, h);
-  mg.fillStyle = '#2f4a78';            mg.fillRect(x, y, 3, h);        // channel stripe
+  mg.fillStyle = '#2f4a78';            mg.fillRect(x, y, 3, h);         
   mg.strokeStyle = 'rgba(120,160,220,0.5)'; mg.lineWidth = 1; mg.strokeRect(x+0.5, y+0.5, w-1, h-1);
-  mg.fillStyle = '#16233c';            mg.fillRect(x+3, y+1, lw, h-2); // speaker chip
+  mg.fillStyle = '#16233c';            mg.fillRect(x+3, y+1, lw, h-2);  
   mg.textAlign = 'left'; mg.textBaseline = 'middle';
   mg.font = 'bold 12px Segoe UI, Arial'; mg.fillStyle = '#7fb2ff';
   mg.fillText(label, x + 11, y + h/2 + 1);
   mg.font = '13px Segoe UI, Arial'; mg.fillStyle = '#e8eefb';
   mg.fillText(radio.txt, x + lw + 14, y + h/2 + 1);
-  // live transmission tick
+   
   if (Math.floor(radio.t*9) & 1){
     mg.fillStyle = '#ff5a5a';
     mg.beginPath(); mg.arc(x + w - 9, y + 8, 2.6, 0, 7); mg.fill();
@@ -1016,11 +1016,11 @@ function drawRadio(){
   mg.restore();
 }
 
-// ============================== RACE RECORDER / REPLAY ==============================
-// Records compact numeric snapshots (no video, no images) and plays them back
-// through the EXISTING renderer and camera by re-populating the same globals.
+ 
+ 
+ 
 let rec = null, recAcc = 0, recNextId = 1, recEvent = 0, recRadio = null, replay = null;
-const REC_HZ = 30, REC_MAX = 3000;          // ~100s cap, then it simply stops growing
+const REC_HZ = 30, REC_MAX = 3000;           
 
 function recStart(){
   rec = { reg:{}, f:[], track:trackIdx, hard:hardMode, boss:bossMode };
@@ -1047,19 +1047,19 @@ function recSample(dt){
   for (const o of cops) put(o);
   const fr = { a, t:+raceT.toFixed(2), sp:Math.round(Math.abs(player.speed)),
                iv: player.invuln > 0 ? 1 : 0, e: recEvent };
-  if (recRadio){ fr.r = recRadio; recRadio = null; }   // dialogue replays verbatim
+  if (recRadio){ fr.r = recRadio; recRadio = null; }    
   if (bossMode && boss) fr.b = [Math.round(boss.s), Math.round(boss.x),
                                 +boss.alt.toFixed(2), +boss.bank.toFixed(2), +boss.rot.toFixed(2)];
   rec.f.push(fr);
   recEvent = 0;
 }
-// event codes surfaced as replay captions
+ 
 const REC_EV = { 1:'IMPACT', 2:'SPUN OUT', 3:'POLICE', 4:'CAPTURED', 5:'ARRESTED', 6:'BOOST' };
 
 function enterReplay(){
   if (!rec || rec.f.length < 2) return;
   replay = { i:0, acc:0, playing:true, rate:1, evT:0, evName:'' };
-  // replay renders the recorded race; it must not touch progression
+   
   resultsEl.classList.add('hidden');
   replayBar.classList.remove('hidden');
   stopMusic(); stopRotor();
@@ -1071,7 +1071,7 @@ function exitReplay(){
   replay = null;
   replayBar.classList.add('hidden');
   resultsEl.classList.remove('hidden');
-  state = 'over';                        // straight back to the results screen
+  state = 'over';                         
 }
 function applyReplayFrame(k){
   const fr = rec.f[k]; if (!fr) return;
@@ -1093,7 +1093,7 @@ function applyReplayFrame(k){
   if (fr.b){ boss = { s:fr.b[0], x:fr.b[1], alt:fr.b[2], bank:fr.b[3], rot:fr.b[4],
                       phase:'cruise', ramp:0, pace:0 }; }
   if (fr.e && REC_EV[fr.e]){ replay.evT = 1.1; replay.evName = REC_EV[fr.e]; }
-  if (fr.r){                                    // same officer, same words, same chatter
+  if (fr.r){                                     
     const L = RADIO_LINES[fr.r.k];
     if (L){ radio = { who: fr.r.w, txt: L[fr.r.i % L.length], t: RADIO_HOLD, seed: fr.r.s };
             radioCool = RADIO_GAP; radioChatter(fr.r.s); }
@@ -1119,7 +1119,7 @@ function drawReplayHUD(){
   mg.font = 'bold 12px Segoe UI, Arial';
   const info = (fr.t||0).toFixed(1) + 's  ·  ' + replay.rate + '×' + (replay.playing ? '' : '  ·  PAUSED');
   mg.strokeText(info, 20, 52); mg.fillStyle = '#cfd6e4'; mg.fillText(info, 20, 52);
-  // progress bar
+   
   const bw = 300, bx = W - bw - 20, by = 30;
   mg.fillStyle = 'rgba(0,0,0,0.5)'; mg.fillRect(bx-3, by-3, bw+6, 12);
   mg.fillStyle = '#3a4152'; mg.fillRect(bx, by, bw, 6);
@@ -1134,13 +1134,13 @@ function drawReplayHUD(){
   }
 }
 
-// ============================== COLLISIONS ==============================
+ 
 function overlap(a, b){
   const ds = Math.abs(a.s - b.s), dx = Math.abs(a.x - b.x);
   return ds < (a.l + b.l)/2 && dx < (a.w + b.w)/2 + 3;
 }
-// --- impulse physics: mass, impact normal, restitution, torque ---
-// bikes are featherweights; cruisers are a touch heavier than a race car
+ 
+ 
 function massOf(c){ return c.truck ? 2.4 : (c.bike ? 0.32 : (c.kind === 'cop' ? 1.25 : 1)); }
 function velOf(c){
   if (c.kind === 'ai')  return c.mode === 'spin' ? {s:c.vs, x:c.vx} : {s:c.speed, x:0};
@@ -1149,14 +1149,14 @@ function velOf(c){
   return {s:Math.cos(c.heading || 0)*c.speed, x:c.latV + c.kickX};
 }
 function impact(A, B){
-  // impact normal from center offsets (angle of collision)
+   
   let ns = A.s - B.s, nx = A.x - B.x;
   const L = Math.hypot(ns, nx) || 1; ns /= L; nx /= L;
   const va = velOf(A), vb = velOf(B);
-  const rel = (va.s - vb.s)*ns + (va.x - vb.x)*nx;   // closing speed along normal
+  const rel = (va.s - vb.s)*ns + (va.x - vb.x)*nx;    
   const ma = massOf(A), mb = massOf(B);
-  const j = rel < 0 ? -(1 + 0.4)*rel / (1/ma + 1/mb) : 0;  // restitution 0.4
-  // positional de-penetration along the axis of least overlap (no sticking/clipping)
+  const j = rel < 0 ? -(1 + 0.4)*rel / (1/ma + 1/mb) : 0;   
+   
   const overS = (A.l + B.l)/2 - Math.abs(A.s - B.s);
   const overX = (A.w + B.w)/2 + 3 - Math.abs(A.x - B.x);
   if (overX < overS){
@@ -1171,16 +1171,16 @@ function impact(A, B){
 function applyImpulse(c, j, ns, nx, sgn){
   const m = massOf(c);
   const js = sgn*j*ns/m, jx = sgn*j*nx/m;
-  // off-center hits induce rotation: side impulse on the ends, forward impulse on the flanks
+   
   const torque = (jx*Math.sign(ns || 1)*0.9 + js*Math.sign(nx || 1)*0.5) * 0.012;
   if (c.kind === 'civ'){
-    // light bikes get flung and highsided rather than shunted
+     
     const k = c.bike ? 1.5 : 1;
     c.speed = Math.max(-140, c.speed + js*k);
     c.vx += jx*k; c.spinV += torque*(c.bike ? 3.2 : 1); c.knocked = true;
     if (c.bike) c.weave = 0;
   } else if (c.kind === 'cop'){
-    // takes hits like any car; a big one shakes it off the pursuit for a moment
+     
     c.speed = Math.max(0, c.speed + js*0.85);
     c.vx += jx*0.5;
     if (j > 300){ c.stun = Math.max(c.stun, 0.9); c.cool = 2.2; }
@@ -1189,12 +1189,12 @@ function applyImpulse(c, j, ns, nx, sgn){
     else {
       c.speed = Math.max(0, c.speed + js*0.85);
       c.x += jx*0.05;
-      if (j > 330){  // hard hit knocks a racing AI into a physical spin
+      if (j > 330){   
         c.mode = 'spin'; c.vs = c.speed; c.vx = jx*0.8;
         c.spinV = Math.max(-9, Math.min(9, torque*6)) || 3;
       }
     }
-  } else { // player
+  } else {  
     c.speed += js*0.9;
     c.kickX += jx*0.9;
   }
@@ -1203,8 +1203,8 @@ function spinOut(a, hitter){
   const dv = Math.max(0, hitter.speed - a.speed);
   const dir = Math.sign(a.x - hitter.x) || (rnd() < 0.5 ? 1 : -1);
   a.mode = 'spin';
-  a.spinV = dir * Math.min(10, 4 + dv*0.012 + rnd()*2); // rad/s — full rotations
-  a.vs = a.speed * 0.85;                                 // momentum preserved
+  a.spinV = dir * Math.min(10, 4 + dv*0.012 + rnd()*2);  
+  a.vs = a.speed * 0.85;                                  
   a.vx = dir * (80 + dv*0.4);
   emit(a.s, roadCenter(a.s)+a.x, 8, 'smoke');
 }
@@ -1217,7 +1217,7 @@ function handleCollisions(){
       const A = bodies[i], B = bodies[k];
       if (!overlap(A, B)) continue;
       if ((A === p || B === p) && (p.invuln > 0 || p.pspin > 0)) continue;
-      // gameplay rule: player ramming a racing AI at speed = spin attempt
+       
       const other = A === p ? B : (B === p ? A : null);
       if (other && other.kind === 'ai' && other.mode === 'race' && p.speed - other.speed > 90){
         if (rnd() < 0.72){
@@ -1231,7 +1231,7 @@ function handleCollisions(){
         }
         continue;
       }
-      // physical resolution for everything else
+       
       const r = impact(A, B);
       if (r.j > 0){
         applyImpulse(A, r.j, r.ns, r.nx, +1);
@@ -1239,9 +1239,9 @@ function handleCollisions(){
         if (r.j > 60){
           const ms = (A.s + B.s)/2, mx = roadCenter(ms) + (A.x + B.x)/2;
           emit(ms, mx, Math.min(12, 2 + Math.floor(r.j/45)), 'spark');
-          if (r.j > 200 && (A === p || B === p)) recEvent = 1;   // notable impact
+          if (r.j > 200 && (A === p || B === p)) recEvent = 1;    
         }
-        // record genuine cop-on-player contact so "Missed!" can never be a lie
+         
         if (A === p || B === p){
           const cop = A === p ? B : A;
           if (cop.kind === 'cop' && cop.ramming > 0) cop.ramHit = true;
@@ -1251,12 +1251,12 @@ function handleCollisions(){
   }
 }
 
-// ============================== RACE FLOW ==============================
+ 
 function checkFinish(){
   for (const a of ais){
     if (!a.finished && a.s >= TRK.len){ a.finished = true; finishedCount++; }
   }
-  if (cine && cine.type === 'arrest') return;      // busted: no crossing the line
+  if (cine && cine.type === 'arrest') return;       
   if (!player.finished && player.s >= TRK.len){
     player.finished = true;
     playerRank = 1 + finishedCount + (bossMode && boss && boss.s >= TRK.len ? 1 : 0);
@@ -1268,7 +1268,7 @@ function checkFinish(){
 function showResults(reason){
   state = 'over';
   stopMusic();
-  // only offer the replay when there is actually a recording to play
+   
   const rb = document.getElementById('btnReplay');
   if (rb) rb.disabled = !(rec && rec.f.length > 30);
   if (reason === 'arrested'){
@@ -1326,15 +1326,15 @@ function update(dt){
     if (goT > 0) goT -= dt;
     civTimer -= dt;
     if (civTimer <= 0 && civs.length < 10){ spawnCiv(); civTimer = 2 + rnd()*2.2; }
-    // police only patrol the normal circuits — the boss duel stays a clean 1v1
+     
     if (!bossMode && !player.finished){
-      copCalm -= dt;                       // short breather of clean racing between squads
+      copCalm -= dt;                        
       for (const z of copZones){
         const active = cops.filter(c => c.mode !== 'retire').length;
         if (!z.fired && player.s > z.s && copCalm <= 0 && active <= 2){
-          if (beginPursuit(z.n)) z.fired = true;     // only consume the zone on a real spawn
-          else copCalm = 1.5;                        // no room yet — retry shortly, don't spin
-          break;                                     // one squad call per frame, max
+          if (beginPursuit(z.n)) z.fired = true;      
+          else copCalm = 1.5;                         
+          break;                                      
         }
       }
     }
@@ -1348,7 +1348,7 @@ function update(dt){
   civs = civs.filter(c => c.s > minS - 900 && Math.abs(c.x) < HALF + 260);
   if (state === 'race' && !player.finished) updateInterceptors(dt);
   for (const c of cops) updateCop(c, dt);
-  // retire cruisers left far behind, so the pursuit stays cheap and finite
+   
   cops = cops.filter(c => player.s - c.s < 1400 && c.s - player.s < 1800);
   if (state === 'race' && cops.length && !player.finished) updateCapture(dt);
   else if (capture && capture.on && (!cops.length || player.finished)){ capture.on = false; cine = null; }
@@ -1356,7 +1356,7 @@ function update(dt){
   if (state === 'race') handleCollisions();
   checkFinish();
   updateRadio(dt);
-  if (state === 'race') recSample(dt);          // lightweight state capture
+  if (state === 'race') recSample(dt);           
   for (const t of toasts) t.t -= dt;
   toasts = toasts.filter(t => t.t > 0);
   for (const q of parts){
@@ -1367,7 +1367,7 @@ function update(dt){
   if (parts.length > 220) parts.splice(0, parts.length - 220);
 }
 
-// ============================== RENDER ==============================
+ 
 function rr(x, y, w, h, r){
   g.beginPath();
   g.moveTo(x+r, y);
@@ -1388,58 +1388,58 @@ function drawRoad(time){
     const s = player.s + (PLAYER_Y - y);
     const c = roadCenter(s) - cx + W/2;
     const L = c - HALF, R = c + HALF;
-    // side surfaces
+     
     if (trackIdx === 0){
       g.fillStyle = (Math.floor(s/120)&1) ? '#3f8a33' : '#377c2c';
       g.fillRect(0, y, W, step);
-      g.fillStyle = '#4b9440'; g.fillRect(L-26, y, 26, step); g.fillRect(R, y, 26, step); // mowed strip
+      g.fillStyle = '#4b9440'; g.fillRect(L-26, y, 26, step); g.fillRect(R, y, 26, step);  
     } else if (trackIdx === 1){
-      g.fillStyle = '#e6d096'; g.fillRect(0, y, Math.max(0,L), step);           // sand
-      g.fillStyle = ((((s%16)+16)%16) < 3) ? '#8f6b42' : '#b98d5a';             // boardwalk planks
+      g.fillStyle = '#e6d096'; g.fillRect(0, y, Math.max(0,L), step);            
+      g.fillStyle = ((((s%16)+16)%16) < 3) ? '#8f6b42' : '#b98d5a';              
       g.fillRect(L-46, y, 34, step);
       const wv = (Math.floor((s + time*140)/90)&1);
-      g.fillStyle = wv ? '#2f7fb8' : '#2a72a6';                                  // water
+      g.fillStyle = wv ? '#2f7fb8' : '#2a72a6';                                   
       g.fillRect(Math.min(W,R), y, W - Math.min(W,R), step);
-      g.fillStyle = '#d9c184'; g.fillRect(Math.min(W,R), y, 14, step);           // wet sand strip
-      if ((((s + time*140) % 90) + 90) % 90 < 12){                               // surf foam
+      g.fillStyle = '#d9c184'; g.fillRect(Math.min(W,R), y, 14, step);            
+      if ((((s + time*140) % 90) + 90) % 90 < 12){                                
         g.fillStyle = 'rgba(255,255,255,0.75)'; g.fillRect(Math.min(W,R)+12, y, 6, step);
       }
     } else {
       g.fillStyle = (Math.floor(s/150)&1) ? '#585b60' : '#525558';
       g.fillRect(0, y, W, step);
-      g.fillStyle = '#3c3e42'; g.fillRect(L-20, y, 20, step); g.fillRect(R, y, 20, step); // gutters
+      g.fillStyle = '#3c3e42'; g.fillRect(L-20, y, 20, step); g.fillRect(R, y, 20, step);  
     }
-    // road
+     
     g.fillStyle = TRK.road;
     g.fillRect(L, y, HALF*2, step);
-    if ((Math.floor(s/40)&3) === 0){ g.fillStyle = 'rgba(0,0,0,0.05)'; g.fillRect(L, y, HALF*2, step); } // wear bands
-    // rubber laid down in the hard corners
+    if ((Math.floor(s/40)&3) === 0){ g.fillStyle = 'rgba(0,0,0,0.05)'; g.fillRect(L, y, HALF*2, step); }  
+     
     if (Math.abs(roadSlope(s)) > 0.5){
       g.fillStyle = 'rgba(25,25,28,0.30)';
       g.fillRect(c-64, y, 5, step); g.fillRect(c+59, y, 5, step);
     }
-    // edges
+     
     g.fillStyle = '#e8e8e8';
     g.fillRect(L+3, y, 5, step); g.fillRect(R-8, y, 5, step);
-    if (trackIdx === 0){ // guardrails
+    if (trackIdx === 0){  
       g.fillStyle = '#9aa0a8'; g.fillRect(L-16, y, 5, step); g.fillRect(R+11, y, 5, step);
     }
-    // lane dashes
+     
     const m = ((s % 80) + 80) % 80;
     if (m < 44){
       g.fillStyle = '#d8d8d8';
       for (const lx of [-85, 0, 85]) g.fillRect(c+lx-2, y, 4, step);
     }
     if (trackIdx === 2){
-      const cw = ((s % 2600) + 2600) % 2600;      // crosswalks
+      const cw = ((s % 2600) + 2600) % 2600;       
       if (cw < 64){
         g.fillStyle = 'rgba(240,240,240,0.85)';
         for (let lx = L+14; lx < R-14; lx += 30) g.fillRect(lx, y, 18, step);
       }
-      const mh = ((s % 730) + 730) % 730;         // manholes
+      const mh = ((s % 730) + 730) % 730;          
       if (mh < 10){ g.fillStyle = '#33363b'; g.beginPath(); g.ellipse(c+42, y+2, 7, 4, 0, 0, 7); g.fill(); }
     }
-    // start / finish checkers
+     
     const isStart = s > -28 && s < 0, isFin = s > TRK.len && s < TRK.len+28;
     if (isStart || isFin){
       for (let x = L+8; x < R-8; x += 20){
@@ -1458,17 +1458,17 @@ function drawScenery(cx, time){
     const s = k*150, y = PLAYER_Y - (s - player.s);
     const c = roadCenter(s) - cx + W/2;
     const r1 = prand(k), r2 = prand(k+9000);
-    if (trackIdx === 0){ // highway: trees, signs, guardrail posts
+    if (trackIdx === 0){  
       const off = HALF + 60 + r1*140;
       drawTree(c - off, y, r1); drawTree(c + off*0.9 + 30, y+40, r2);
       if (k % 7 === 0) drawSign(c + HALF + 42, y - 60);
       g.fillStyle = '#6d7278';
       g.fillRect(c-HALF-16, y, 4, 8); g.fillRect(c+HALF+12, y, 4, 8);
-    } else if (trackIdx === 1){ // beach: swaying palms, umbrellas, buoys
+    } else if (trackIdx === 1){  
       drawPalm(c - HALF - 70 - r1*130, y, r1, time);
       if (k % 4 === 1) drawUmbrella(c - HALF - 130 - r2*120, y + 50, r2);
       if (k % 3 === 0) drawBuoy(c + HALF + 80 + r2*160, y + 30);
-    } else { // city: buildings + streetlamps
+    } else {  
       drawBuilding(c - HALF - 30, y, -1, k);
       drawBuilding(c + HALF + 30, y,  1, k+500);
       if (k % 4 === 0){ drawLamp(c - HALF - 8, y); drawLamp(c + HALF + 8, y+70); }
@@ -1502,7 +1502,7 @@ function drawPalm(x, y, r, time){
     g.quadraticCurveTo(x+2+Math.cos(a)*14, y-14+Math.sin(a)*10, x+2+Math.cos(a)*22, y-14+Math.sin(a)*16+4);
     g.stroke();
   }
-  g.fillStyle = '#6b4a26'; g.beginPath(); g.arc(x+4, y-12, 3, 0, 7); g.fill(); // coconut
+  g.fillStyle = '#6b4a26'; g.beginPath(); g.arc(x+4, y-12, 3, 0, 7); g.fill();  
 }
 function drawBuoy(x, y){
   g.fillStyle = '#e04040'; g.beginPath(); g.arc(x, y, 6, 0, 7); g.fill();
@@ -1518,7 +1518,7 @@ function drawUmbrella(x, y, r){
     g.beginPath(); g.moveTo(x, y);
     g.lineTo(x + Math.cos(i*2.1 + r)*15, y + Math.sin(i*2.1 + r)*15); g.stroke();
   }
-  g.fillStyle = '#f4e9c9'; g.fillRect(x+18, y-4, 22, 10); // towel
+  g.fillStyle = '#f4e9c9'; g.fillRect(x+18, y-4, 22, 10);  
 }
 function drawLamp(x, y){
   g.fillStyle = 'rgba(0,0,0,0.3)'; g.fillRect(x+3, y+3, 4, 10);
@@ -1528,15 +1528,15 @@ function drawLamp(x, y){
 function drawBuilding(x, y, side, k){
   const r = prand(k), wd = 60 + r*90, ht = 150;
   const bx = side < 0 ? x - wd : x;
-  g.fillStyle = 'rgba(0,0,0,0.32)'; g.fillRect(bx+10, y - ht/2 + 12, wd, ht);   // cast shadow
+  g.fillStyle = 'rgba(0,0,0,0.32)'; g.fillRect(bx+10, y - ht/2 + 12, wd, ht);    
   const shade = 40 + Math.floor(r*30);
   g.fillStyle = 'rgb(' + shade + ',' + (shade+2) + ',' + (shade+8) + ')';
   g.fillRect(bx, y - ht/2, wd, ht);
   g.strokeStyle = 'rgba(0,0,0,0.4)'; g.lineWidth = 2;
   g.strokeRect(bx+1, y - ht/2 + 1, wd-2, ht-2);
-  g.fillStyle = 'rgba(255,255,255,0.06)'; g.fillRect(bx+4, y - ht/2 + 4, wd-8, 8); // roof edge light
-  if (r > 0.4){ g.fillStyle = '#2c2f36'; g.fillRect(bx + wd*0.2, y - 20, 14, 14); }         // AC unit
-  if (r > 0.7){ g.fillStyle = '#5b6069'; g.beginPath(); g.arc(bx + wd*0.7, y+18, 9, 0, 7); g.fill(); } // water tank
+  g.fillStyle = 'rgba(255,255,255,0.06)'; g.fillRect(bx+4, y - ht/2 + 4, wd-8, 8);  
+  if (r > 0.4){ g.fillStyle = '#2c2f36'; g.fillRect(bx + wd*0.2, y - 20, 14, 14); }          
+  if (r > 0.7){ g.fillStyle = '#5b6069'; g.beginPath(); g.arc(bx + wd*0.7, y+18, 9, 0, 7); g.fill(); }  
   g.fillStyle = 'rgba(255,238,150,0.5)';
   for (let wy = 0; wy < 5; wy++) for (let wx = 0; wx < Math.floor(wd/22); wx++){
     if (prand(k*31 + wy*7 + wx) > 0.45) g.fillRect(bx + 6 + wx*22, y - ht/2 + 10 + wy*28, 10, 14);
@@ -1549,34 +1549,34 @@ function drawCar(c, sx, sy){
   g.translate(Math.round(sx), Math.round(sy));
   g.rotate((c.ang||0) + (c.tang||0));
   const w = c.w, l = c.l;
-  // directional sun shadow (light from upper-left)
+   
   g.fillStyle = 'rgba(0,0,0,0.35)';
   g.beginPath(); g.ellipse(5, 7, w*0.60, l*0.52, 0, 0, 7); g.fill();
   g.lineWidth = 2; g.strokeStyle = 'rgba(10,10,14,0.55)';
   if (c.bike){
-    g.fillStyle = '#15151a';                                            // wheels
+    g.fillStyle = '#15151a';                                             
     g.fillRect(-2, -l/2, 4, 9); g.fillRect(-2, l/2-9, 4, 9);
-    g.fillStyle = c.color; rr(-w/2, -l*0.24, w, l*0.48, 3); g.fill(); g.stroke();  // tank/fairing
-    g.fillStyle = '#2b2f36'; g.fillRect(-w/2+1, l*0.10, w-2, 7);        // seat
-    g.fillStyle = '#3a4250'; g.fillRect(-w/2-3, -l*0.20, 3, 4); g.fillRect(w/2, -l*0.20, 3, 4); // bars
-    g.fillStyle = '#2f3742'; rr(-w/2+1, -l*0.10, w-2, 13, 3); g.fill(); // rider torso
-    g.fillStyle = '#d8dde6'; g.beginPath(); g.arc(0, -l*0.12, 4.5, 0, 7); g.fill();  // helmet
-    g.fillStyle = '#1b1f27'; g.fillRect(-3.5, -l*0.15, 7, 3);           // visor
-    g.fillStyle = '#fff3b8'; g.fillRect(-2, -l/2-1, 4, 3);              // headlight
-    g.fillStyle = '#e04040'; g.fillRect(-2, l/2-2, 4, 2);               // taillight
+    g.fillStyle = c.color; rr(-w/2, -l*0.24, w, l*0.48, 3); g.fill(); g.stroke();   
+    g.fillStyle = '#2b2f36'; g.fillRect(-w/2+1, l*0.10, w-2, 7);         
+    g.fillStyle = '#3a4250'; g.fillRect(-w/2-3, -l*0.20, 3, 4); g.fillRect(w/2, -l*0.20, 3, 4);  
+    g.fillStyle = '#2f3742'; rr(-w/2+1, -l*0.10, w-2, 13, 3); g.fill();  
+    g.fillStyle = '#d8dde6'; g.beginPath(); g.arc(0, -l*0.12, 4.5, 0, 7); g.fill();   
+    g.fillStyle = '#1b1f27'; g.fillRect(-3.5, -l*0.15, 7, 3);            
+    g.fillStyle = '#fff3b8'; g.fillRect(-2, -l/2-1, 4, 3);               
+    g.fillStyle = '#e04040'; g.fillRect(-2, l/2-2, 4, 2);                
   } else if (c.truck){
-    g.fillStyle = '#98a0a8'; rr(-w/2, -l/2+18, w, l-18, 4); g.fill(); g.stroke();  // trailer
-    g.fillStyle = 'rgba(255,255,255,0.10)'; g.fillRect(-w/2+3, -l/2+21, w-6, 5);   // trailer sheen
-    g.fillStyle = c.color;   rr(-w/2+2, -l/2, w-4, 18, 4); g.fill(); g.stroke();   // cab
-    g.fillStyle = '#222a33'; g.fillRect(-w/2+4, -l/2+3, w-8, 6);                   // windshield
-    g.fillStyle = '#fff3b8'; g.fillRect(-w/2+3, -l/2, 4, 3); g.fillRect(w/2-7, -l/2, 4, 3);   // headlights
-    g.fillStyle = '#d23c3c'; g.fillRect(-w/2+3, l/2-3, 5, 3); g.fillRect(w/2-8, l/2-3, 5, 3); // taillights
+    g.fillStyle = '#98a0a8'; rr(-w/2, -l/2+18, w, l-18, 4); g.fill(); g.stroke();   
+    g.fillStyle = 'rgba(255,255,255,0.10)'; g.fillRect(-w/2+3, -l/2+21, w-6, 5);    
+    g.fillStyle = c.color;   rr(-w/2+2, -l/2, w-4, 18, 4); g.fill(); g.stroke();    
+    g.fillStyle = '#222a33'; g.fillRect(-w/2+4, -l/2+3, w-8, 6);                    
+    g.fillStyle = '#fff3b8'; g.fillRect(-w/2+3, -l/2, 4, 3); g.fillRect(w/2-7, -l/2, 4, 3);    
+    g.fillStyle = '#d23c3c'; g.fillRect(-w/2+3, l/2-3, 5, 3); g.fillRect(w/2-8, l/2-3, 5, 3);  
   } else {
-    // wheels
+     
     g.fillStyle = '#15151a';
     for (const [wx, wy] of [[-w/2-1,-l/2+6],[w/2-4,-l/2+6],[-w/2-1,l/2-14],[w/2-4,l/2-14]]) g.fillRect(wx, wy, 5, 10);
     if (c.kind === 'player'){
-      // sporty tapered body with outline
+       
       g.fillStyle = c.color;
       g.beginPath();
       g.moveTo(-w*0.30, -l/2); g.lineTo(w*0.30, -l/2);
@@ -1584,27 +1584,27 @@ function drawCar(c, sx, sy){
       g.lineTo(-w/2, l/2-3); g.lineTo(-w/2, -l/2+14);
       g.closePath(); g.fill(); g.stroke();
       g.fillStyle = golden ? '#fff3c0' : '#ffffff';
-      g.fillRect(-3, -l/2+2, 6, l-8);                                         // racing stripe
-      g.fillStyle = 'rgba(255,255,255,0.22)'; g.fillRect(-w/2+2, -l/2+13, 3, l-18); // flank highlight
-      g.fillStyle = '#1c2733'; rr(-w*0.30, -l*0.16, w*0.60, l*0.34, 4); g.fill();   // cockpit
-      g.fillStyle = 'rgba(160,210,255,0.35)'; g.fillRect(-w*0.26, -l*0.14, w*0.52, 3); // glass glint
-      g.fillStyle = '#22262e'; g.fillRect(-w/2-3, -l*0.10, 3, 6); g.fillRect(w/2, -l*0.10, 3, 6); // mirrors
-      g.fillStyle = '#fff3b8'; g.fillRect(-w*0.28, -l/2, 5, 3); g.fillRect(w*0.28-5, -l/2, 5, 3); // headlights
-      g.fillStyle = '#e04040'; g.fillRect(-w*0.30, l/2-11, 5, 3); g.fillRect(w*0.30-5, l/2-11, 5, 3); // taillights
+      g.fillRect(-3, -l/2+2, 6, l-8);                                          
+      g.fillStyle = 'rgba(255,255,255,0.22)'; g.fillRect(-w/2+2, -l/2+13, 3, l-18);  
+      g.fillStyle = '#1c2733'; rr(-w*0.30, -l*0.16, w*0.60, l*0.34, 4); g.fill();    
+      g.fillStyle = 'rgba(160,210,255,0.35)'; g.fillRect(-w*0.26, -l*0.14, w*0.52, 3);  
+      g.fillStyle = '#22262e'; g.fillRect(-w/2-3, -l*0.10, 3, 6); g.fillRect(w/2, -l*0.10, 3, 6);  
+      g.fillStyle = '#fff3b8'; g.fillRect(-w*0.28, -l/2, 5, 3); g.fillRect(w*0.28-5, -l/2, 5, 3);  
+      g.fillStyle = '#e04040'; g.fillRect(-w*0.30, l/2-11, 5, 3); g.fillRect(w*0.30-5, l/2-11, 5, 3);  
       g.fillStyle = golden ? '#b8860b' : '#8f1f1f';
-      g.fillRect(-w*0.30, l/2-8, 4, 5); g.fillRect(w*0.30-4, l/2-8, 4, 5);    // spoiler struts
+      g.fillRect(-w*0.30, l/2-8, 4, 5); g.fillRect(w*0.30-4, l/2-8, 4, 5);     
       g.fillStyle = golden ? '#ffd700' : '#c0392b';
-      g.fillRect(-w*0.62, l/2-4, w*1.24, 6);                                  // spoiler wing
+      g.fillRect(-w*0.62, l/2-4, w*1.24, 6);                                   
     } else if (c.kind === 'cop'){
-      // same silhouette as a rival car, wearing a livery + lightbar
+       
       g.fillStyle = c.color; rr(-w/2, -l/2, w, l, 6); g.fill(); g.stroke();
-      g.fillStyle = '#eef2f8'; g.fillRect(-w/2, -l*0.16, w, l*0.34);                    // white door panel
+      g.fillStyle = '#eef2f8'; g.fillRect(-w/2, -l*0.16, w, l*0.34);                     
       g.fillStyle = '#20304e'; g.fillRect(-w/2, -l*0.16, w, 2); g.fillRect(-w/2, l*0.17, w, 2);
       g.fillStyle = '#1b2a44'; g.font = 'bold 7px Arial'; g.textAlign = 'center';
       g.fillText('POLICE', 0, l*0.05);
-      g.fillStyle = '#222a33'; rr(-w*0.34, -l*0.30, w*0.68, l*0.13, 3); g.fill();       // windshield
-      g.fillStyle = '#2a323c'; rr(-w*0.34, l*0.22, w*0.68, l*0.16, 3); g.fill();        // rear window
-      const blue = (Math.floor(sirenT*7) & 1);                                          // alternating bar
+      g.fillStyle = '#222a33'; rr(-w*0.34, -l*0.30, w*0.68, l*0.13, 3); g.fill();        
+      g.fillStyle = '#2a323c'; rr(-w*0.34, l*0.22, w*0.68, l*0.16, 3); g.fill();         
+      const blue = (Math.floor(sirenT*7) & 1);                                           
       g.fillStyle = '#0d1626'; g.fillRect(-w*0.42, -l*0.06, w*0.84, 6);
       g.fillStyle = blue ? '#3d8bff' : '#2a3350'; g.fillRect(-w*0.40, -l*0.05, w*0.38, 4);
       g.fillStyle = blue ? '#2a3350' : '#ff4040'; g.fillRect(w*0.02,  -l*0.05, w*0.38, 4);
@@ -1612,16 +1612,16 @@ function drawCar(c, sx, sy){
       g.fillStyle = '#d23c3c'; g.fillRect(-w/2+2, l/2-3, 4, 3); g.fillRect(w/2-6, l/2-3, 4, 3);
     } else {
       g.fillStyle = c.color; rr(-w/2, -l/2, w, l, 6); g.fill(); g.stroke();
-      g.fillStyle = 'rgba(255,255,255,0.18)'; g.fillRect(-w/2+3, -l/2+5, 3, l-12);      // flank highlight
-      g.fillStyle = '#222a33'; rr(-w*0.34, -l*0.30, w*0.68, l*0.24, 3); g.fill();       // windshield
-      g.fillStyle = 'rgba(160,210,255,0.30)'; g.fillRect(-w*0.30, -l*0.28, w*0.60, 3);  // glass glint
-      g.fillStyle = '#2a323c'; rr(-w*0.34, l*0.10, w*0.68, l*0.20, 3); g.fill();        // rear window
-      g.fillStyle = '#fff3b8'; g.fillRect(-w/2+2, -l/2, 4, 3); g.fillRect(w/2-6, -l/2, 4, 3);   // headlights
-      g.fillStyle = '#d23c3c'; g.fillRect(-w/2+2, l/2-3, 4, 3); g.fillRect(w/2-6, l/2-3, 4, 3); // taillights
+      g.fillStyle = 'rgba(255,255,255,0.18)'; g.fillRect(-w/2+3, -l/2+5, 3, l-12);       
+      g.fillStyle = '#222a33'; rr(-w*0.34, -l*0.30, w*0.68, l*0.24, 3); g.fill();        
+      g.fillStyle = 'rgba(160,210,255,0.30)'; g.fillRect(-w*0.30, -l*0.28, w*0.60, 3);   
+      g.fillStyle = '#2a323c'; rr(-w*0.34, l*0.10, w*0.68, l*0.20, 3); g.fill();         
+      g.fillStyle = '#fff3b8'; g.fillRect(-w/2+2, -l/2, 4, 3); g.fillRect(w/2-6, -l/2, 4, 3);    
+      g.fillStyle = '#d23c3c'; g.fillRect(-w/2+2, l/2-3, 4, 3); g.fillRect(w/2-6, l/2-3, 4, 3);  
       if (c.kind === 'ai'){ g.fillStyle = 'rgba(0,0,0,0.35)'; g.fillRect(-w*0.4, l/2-5, w*0.8, 3); }
     }
   }
-  // boost flames (two-tone flicker; pad boost burns blue and longer)
+   
   if (c === player && (player.boostT > 0 || player.padBoost > 0) && player.speed > 100){
     const pad = player.padBoost > 0, len = pad ? 18 : 12;
     g.fillStyle = pad ? 'rgba(40,170,255,0.85)' : 'rgba(255,140,20,0.85)';
@@ -1646,7 +1646,7 @@ function drawParticles(cx){
     } else if (q.type === 'smoke'){
       g.fillStyle = 'rgba(190,190,200,' + (0.35*f).toFixed(3) + ')';
       g.beginPath(); g.arc(sx, sy, 6 + (1-f)*14, 0, 7); g.fill();
-    } else { // dust
+    } else {  
       g.fillStyle = 'rgba(210,190,140,' + (0.5*f).toFixed(3) + ')';
       g.beginPath(); g.arc(sx, sy, 3 + (1-f)*6, 0, 7); g.fill();
     }
@@ -1661,7 +1661,7 @@ function glow(x, y, r, rgb, a){
 }
 function drawLighting(time, drawable){
   const cx = camX();
-  if (trackIdx === 2){ // City: night — ambient dark + lamp pools + head/taillights
+  if (trackIdx === 2){  
     g.fillStyle = 'rgba(13,16,44,0.45)'; g.fillRect(0, 0, W, H);
     g.globalCompositeOperation = 'lighter';
     const k0 = Math.floor((player.s + PLAYER_Y - H)/150), k1 = Math.ceil((player.s + PLAYER_Y)/150);
@@ -1675,17 +1675,17 @@ function drawLighting(time, drawable){
     for (const d of drawable){
       const hd = (d.c.ang||0) + (d.c.tang||0);
       g.save(); g.translate(d.sx, d.sy); g.rotate(hd);
-      glow(0, -d.c.l/2-30, 70, '255,240,190', 0.35);   // headlight throw
-      glow(0,  d.c.l/2+2, 16, '255,60,60', 0.5);       // taillight glow
+      glow(0, -d.c.l/2-30, 70, '255,240,190', 0.35);    
+      glow(0,  d.c.l/2+2, 16, '255,60,60', 0.5);        
       g.restore();
     }
-    if (bossMode && boss){                             // boss searchlight
+    if (bossMode && boss){                              
       const bsy = PLAYER_Y - (boss.s - player.s);
       const bsx = roadCenter(boss.s) + boss.x - cx + W/2;
       if (bsy > -140 && bsy < H+140) glow(bsx, bsy, 120, '255,255,215', 0.30);
     }
     g.globalCompositeOperation = 'source-over';
-  } else if (trackIdx === 0){ // Highway: dusk tint + soft headlights
+  } else if (trackIdx === 0){  
     g.fillStyle = 'rgba(80,50,90,0.14)'; g.fillRect(0, 0, W, H);
     g.globalCompositeOperation = 'lighter';
     for (const d of drawable){
@@ -1695,7 +1695,7 @@ function drawLighting(time, drawable){
       g.restore();
     }
     g.globalCompositeOperation = 'source-over';
-  } else { // Beach: warm sun + animated glints on the water
+  } else {  
     g.fillStyle = 'rgba(255,236,170,0.07)'; g.fillRect(0, 0, W, H);
     g.globalCompositeOperation = 'lighter';
     const k0 = Math.floor((player.s - 170)/150), k1 = Math.ceil((player.s + PLAYER_Y)/150);
@@ -1710,8 +1710,8 @@ function drawLighting(time, drawable){
   }
 }
 
-// Two officers step out and walk the driver to the cruiser. Deliberately plain:
-// simple figures, no weapons, no violence — it just reads as "you got caught".
+ 
+ 
 function drawArrest(cx, time){
   const t = cine.t;
   const psx = roadCenter(player.s) + player.x - cx + W/2, psy = PLAYER_Y;
@@ -1719,24 +1719,24 @@ function drawArrest(cx, time){
   const officer = (ox, oy, flip) => {
     g.save(); g.translate(ox, oy); g.scale(flip, 1);
     g.fillStyle = 'rgba(0,0,0,0.32)'; g.beginPath(); g.ellipse(2, 12, 9, 4, 0, 0, 7); g.fill();
-    g.fillStyle = '#1b2a44'; g.fillRect(-4, -2, 3, 14); g.fillRect(1, -2, 3, 14);   // legs
-    g.fillStyle = '#24365a'; rr(-6, -16, 12, 16, 3); g.fill();                       // torso
-    g.fillStyle = '#eef2f8'; g.fillRect(-6, -12, 12, 3);                             // belt line
-    g.fillStyle = '#e8b48a'; g.beginPath(); g.arc(0, -21, 5, 0, 7); g.fill();        // head
-    g.fillStyle = '#16233c'; g.fillRect(-5, -25, 10, 4); g.fillRect(-6, -22, 12, 2); // cap
+    g.fillStyle = '#1b2a44'; g.fillRect(-4, -2, 3, 14); g.fillRect(1, -2, 3, 14);    
+    g.fillStyle = '#24365a'; rr(-6, -16, 12, 16, 3); g.fill();                        
+    g.fillStyle = '#eef2f8'; g.fillRect(-6, -12, 12, 3);                              
+    g.fillStyle = '#e8b48a'; g.beginPath(); g.arc(0, -21, 5, 0, 7); g.fill();         
+    g.fillStyle = '#16233c'; g.fillRect(-5, -25, 10, 4); g.fillRect(-6, -22, 12, 2);  
     g.restore();
   };
-  // one at each flank, converging on the car
+   
   officer(psx - 34 + walk*16, psy + 6, 1);
   officer(psx + 34 - walk*16, psy - 4, -1);
-  if (t > 2.0){                       // driver stood beside the car, hands behind back
+  if (t > 2.0){                        
     const a = Math.min(1, (t - 2.0)/0.6);
     g.globalAlpha = a;
     g.save(); g.translate(psx + 20, psy + 26);
     g.fillStyle = 'rgba(0,0,0,0.32)'; g.beginPath(); g.ellipse(2, 12, 8, 4, 0, 0, 7); g.fill();
     g.fillStyle = '#2b2f3a'; g.fillRect(-4, -2, 3, 14); g.fillRect(1, -2, 3, 14);
     g.fillStyle = '#7a2f3a'; rr(-6, -16, 12, 16, 3); g.fill();
-    g.fillStyle = '#c9ccd4'; g.fillRect(-7, -8, 3, 4); g.fillRect(4, -8, 3, 4);      // cuffed hands
+    g.fillStyle = '#c9ccd4'; g.fillRect(-7, -8, 3, 4); g.fillRect(4, -8, 3, 4);       
     g.fillStyle = '#e8b48a'; g.beginPath(); g.arc(0, -21, 5, 0, 7); g.fill();
     g.restore();
     g.globalAlpha = 1;
@@ -1762,7 +1762,7 @@ function rank(){
 
 function drawHUD(){
   const p = player;
-  // speed
+   
   const mph = Math.round(Math.abs(p.speed)/4);
   g.textAlign = 'left';
   g.font = 'bold 44px Segoe UI, Arial';
@@ -1770,7 +1770,7 @@ function drawHUD(){
   g.strokeText(mph, 20, H-24); g.fillStyle = '#fff'; g.fillText(mph, 20, H-24);
   g.font = 'bold 16px Segoe UI, Arial';
   g.strokeText('MPH', 22, H-72); g.fillStyle = '#aab4c8'; g.fillText('MPH', 22, H-72);
-  // position
+   
   const r = p.finished ? playerRank : rank();
   const tot = bossMode ? 2 : 8;
   g.textAlign = 'right';
@@ -1778,7 +1778,7 @@ function drawHUD(){
   g.strokeText(r + '/' + tot, W-20, H-24);
   g.fillStyle = r === 1 ? '#ffd23f' : '#fff';
   g.fillText(r + '/' + tot, W-20, H-24);
-  // progress bar
+   
   const bx = 200, bw = 400;
   g.fillStyle = 'rgba(0,0,0,0.45)'; rr(bx-4, 12, bw+8, 16, 8); g.fill();
   g.fillStyle = '#3a4152'; g.fillRect(bx, 16, bw, 8);
@@ -1797,7 +1797,7 @@ function drawHUD(){
   g.lineWidth = 3;
   g.strokeText(TRK.name + (hardMode ? ' · HARD' : ''), W/2, 44);
   g.fillStyle = '#cfd6e4'; g.fillText(TRK.name + (hardMode ? ' · HARD' : ''), W/2, 44);
-  // boost indicator
+   
   if (p.padBoost > 0 || p.boostT > 0){
     const pad = p.padBoost > 0;
     g.font = 'bold 20px Segoe UI, Arial';
@@ -1808,7 +1808,7 @@ function drawHUD(){
     g.fillStyle = pad ? '#5fe0ff' : '#ff9b2f';
     g.fillText(s, W/2, 74);
   }
-  // boss difficulty meter
+   
   if (bossMode && boss){
     const r = boss.ramp, bx2 = W-150, by2 = 66;
     g.textAlign = 'right'; g.font = 'bold 11px Segoe UI, Arial';
@@ -1817,7 +1817,7 @@ function drawHUD(){
     g.fillStyle = 'rgba(0,0,0,0.45)'; g.fillRect(bx2-2, by2, 134, 10);
     g.fillStyle = r > 0.75 ? '#ff4040' : (r > 0.4 ? '#ff9b2f' : '#8fd0ff');
     g.fillRect(bx2, by2+2, 130*r, 6);
-    // live gap — the heart of the battle
+     
     const gp = player.s - boss.s, ahead = gp >= 0;
     g.font = 'bold 15px Segoe UI, Arial';
     const gt = (ahead ? '+' : '') + (gp/60).toFixed(1) + 's';
@@ -1825,7 +1825,7 @@ function drawHUD(){
     g.fillStyle = ahead ? '#7df07d' : '#ff6f6f';
     g.fillText(gt, W-20, by2+30);
   }
-  // toasts
+   
   let ty = 110;
   for (const t of toasts){
     g.font = 'bold 18px Segoe UI, Arial';
@@ -1834,7 +1834,7 @@ function drawHUD(){
     g.fillStyle = t.col; g.fillText(t.txt, W/2, ty);
     g.globalAlpha = 1; ty += 26;
   }
-  // countdown
+   
   if (state === 'count'){
     const n = Math.min(3, Math.ceil(countT));
     g.font = 'bold 110px Segoe UI, Arial';
@@ -1850,9 +1850,9 @@ function drawHUD(){
 }
 
 function render(time){
-  // scene pass -> half-res backbuffer (pixel-art)
+   
   g = vg;
-  // cutscenes borrow the same camera: scale about the player's screen position
+   
   const z = cineZoom();
   vg.setTransform(0.5*z, 0, 0, 0.5*z, 0.5*(W/2)*(1-z), 0.5*PLAYER_Y*(1-z));
   drawRoad(time);
@@ -1868,7 +1868,7 @@ function render(time){
   drawable.sort((a, b) => a.sy - b.sy);
   labelQ.length = 0;
   for (const d of drawable){
-    if (d.c === player && player.invuln > 0 && Math.floor(time*10)%2) continue; // blink
+    if (d.c === player && player.invuln > 0 && Math.floor(time*10)%2) continue;  
     drawCar(d.c, d.sx, d.sy);
     if (d.c.kind === 'player') labelQ.push(['You', d.sx, d.sy - 38, true]);
     else if (d.c.kind === 'ai') labelQ.push(['Not You', d.sx, d.sy - 36, false]);
@@ -1886,7 +1886,7 @@ function render(time){
   drawParticles(cx);
   drawLighting(time, drawable);
   vg.setTransform(1, 0, 0, 1, 0, 0);
-  // upscale crisp, then crisp full-res UI on top
+   
   g = mg;
   mg.imageSmoothingEnabled = false;
   mg.drawImage(view, 0, 0, W, H);
@@ -1896,11 +1896,11 @@ function render(time){
   drawCine();
 }
 
-// ============================== SECRET BOSS ==============================
+ 
 let bossMode = false, boss = null, bombs = [], intro = null, pads = [], padT = 0;
 const BOSS_LINE = "You are good, but you are no match for me and MY HELICOPTER!!!!!! Hahahahaha";
 
-// ---- tiny WebAudio sfx (created on user gesture; fails silently) ----
+ 
 let AC = null, rotorNodes = null;
 function audioCtx(){
   try {
@@ -1923,7 +1923,7 @@ function tone(f, t0, d, type, vol){
 function sfx(name){
   if (name === 'evil') [0, 0.18, 0.36, 0.6, 0.78].forEach((t,i) => tone(240 - i*28, t, 0.22, 'square', 0.06));
   if (name === 'boom'){ tone(70, 0, 0.5, 'sawtooth', 0.14); tone(45, 0, 0.7, 'square', 0.11); }
-  // two-tone siren wail, and a bright sting when you break the pin
+   
   if (name === 'siren') for (let i = 0; i < 4; i++){ tone(740, i*0.34, 0.16, 'square', 0.05); tone(560, i*0.34+0.17, 0.16, 'square', 0.05); }
   if (name === 'escape'){ tone(520, 0, 0.10, 'square', 0.07); tone(780, 0.08, 0.14, 'square', 0.07); }
 }
@@ -1944,9 +1944,9 @@ function stopRotor(){
   if (rotorNodes){ try { rotorNodes.forEach(n => n.stop()); } catch(e){} rotorNodes = null; }
 }
 
-// ---- original racing track: fast punk-energy loop, fully procedural ----
+ 
 let musicOn = true, musicPlaying = false, mNext = 0, mBar = 0, mGain = null, noiseBuf = null;
-const BEAT = 60/172, BAR = BEAT*4;   // 172 BPM
+const BEAT = 60/172, BAR = BEAT*4;    
 function musicBus(){
   const ac = audioCtx(); if (!ac) return null;
   if (!mGain){ mGain = ac.createGain(); mGain.gain.value = 0.75; mGain.connect(ac.destination); }
@@ -1957,7 +1957,7 @@ function musicBus(){
   }
   return ac;
 }
-function nHit(t, freq, dur, vol, band){       // noise percussion (snare / hats)
+function nHit(t, freq, dur, vol, band){        
   try {
     const src = AC.createBufferSource(); src.buffer = noiseBuf;
     const f = AC.createBiquadFilter(); f.type = band ? 'bandpass' : 'highpass'; f.frequency.value = freq;
@@ -1968,7 +1968,7 @@ function nHit(t, freq, dur, vol, band){       // noise percussion (snare / hats)
     src.start(t); src.stop(t + dur + 0.02);
   } catch(e){}
 }
-function kickN(t){                            // punchy kick
+function kickN(t){                             
   try {
     const o = AC.createOscillator(), ga = AC.createGain();
     o.type = 'sine';
@@ -1979,7 +1979,7 @@ function kickN(t){                            // punchy kick
     o.connect(ga); ga.connect(mGain); o.start(t); o.stop(t + 0.2);
   } catch(e){}
 }
-function bassN(t, f, d){                      // driving eighth-note bass
+function bassN(t, f, d){                       
   try {
     const o = AC.createOscillator(), fl = AC.createBiquadFilter(), ga = AC.createGain();
     o.type = 'sawtooth'; o.frequency.value = f;
@@ -1989,7 +1989,7 @@ function bassN(t, f, d){                      // driving eighth-note bass
     o.connect(fl); fl.connect(ga); ga.connect(mGain); o.start(t); o.stop(t + d + 0.02);
   } catch(e){}
 }
-function chordN(t, f){                        // distorted power-chord stab
+function chordN(t, f){                         
   try {
     for (const m of [1, 1.5, 2]){
       const o = AC.createOscillator(), fl = AC.createBiquadFilter(), ga = AC.createGain();
@@ -2002,17 +2002,17 @@ function chordN(t, f){                        // distorted power-chord stab
   } catch(e){}
 }
 function scheduleBar(t0){
-  const prog = [82.41, 82.41, 65.41, 73.42, 82.41, 98.00, 73.42, 65.41]; // E E C D E G D C
+  const prog = [82.41, 82.41, 65.41, 73.42, 82.41, 98.00, 73.42, 65.41];  
   const root = prog[mBar % prog.length];
   for (let i = 0; i < 8; i++){
     const t = t0 + i*BEAT/2;
-    nHit(t, 7500, 0.045, i % 2 ? 0.05 : 0.08, false);            // hats on every 8th
-    if (i === 0 || i === 4 || (mBar % 2 && i === 3)) kickN(t);   // kick with pushes
-    if (i === 2 || i === 6) nHit(t, 1900, 0.12, 0.22, true);     // backbeat snare
-    bassN(t, root * (i === 7 ? 1.5 : 1), BEAT/2*0.92);           // relentless bass
+    nHit(t, 7500, 0.045, i % 2 ? 0.05 : 0.08, false);             
+    if (i === 0 || i === 4 || (mBar % 2 && i === 3)) kickN(t);    
+    if (i === 2 || i === 6) nHit(t, 1900, 0.12, 0.22, true);      
+    bassN(t, root * (i === 7 ? 1.5 : 1), BEAT/2*0.92);            
   }
   chordN(t0, root*2); chordN(t0 + BEAT*1.5, root*2);
-  if (mBar % 4 === 3) chordN(t0 + BEAT*3, root*3);               // turnaround accent
+  if (mBar % 4 === 3) chordN(t0 + BEAT*3, root*3);                
   mBar++;
 }
 function startMusic(){
@@ -2023,7 +2023,7 @@ function startMusic(){
 function stopMusic(){ musicPlaying = false; }
 function updateMusic(){
   if (!musicPlaying || !AC || !mGain) return;
-  if (AC.currentTime > mNext + BAR) mNext = AC.currentTime + 0.05;   // resync after tab sleep
+  if (AC.currentTime > mNext + BAR) mNext = AC.currentTime + 0.05;    
   while (AC.currentTime > mNext - 0.18){ scheduleBar(mNext); mNext += BAR; }
 }
 
@@ -2039,30 +2039,30 @@ function advanceIntroPhase(){
   if (intro.phase >= 3){ intro = null; beginBossRace(); }
 }
 function beginBossRace(){
-  startRace(2);                 // City at night is the boss arena (also resets boss state)
-  ais.length = 0;               // just You and one very smug helicopter
+  startRace(2);                  
+  ais.length = 0;                
   bossMode = true;
   boss = { s: -80, x: 0, speed: 0, alt: 1, phase: 'cruise', pt: 0, rot: 0, lane: 0,
            done: false, ramp: 0, bank: 0, pace: 0, vx: 0, overT: 0 };
-  // boss-only booster pads: a handful, placed at the exit of the hardest corners
-  // so they reward a good line out of a turn rather than sitting on easy straights
+   
+   
   pads = [];
-  const MIN_GAP = 4200;                       // never back-to-back boosts
+  const MIN_GAP = 4200;                        
   let lastS = -Infinity;
   for (let s = 2200; s < TRK.len - 1500; s += 100){
     if (s - lastS < MIN_GAP) continue;
     const here = Math.abs(roadSlope(s)), ahead = Math.abs(roadSlope(s + 500));
-    // corner exit: still loaded up here, opening out just ahead
+     
     if (here > 0.55 && ahead < here*0.45){
       pads.push({ s: s + 160, x: Math.max(-110, Math.min(110, roadSlope(s)*140)), used: 0 });
       lastS = s;
     }
   }
-  if (pads.length > 5) pads.length = 5;       // hard cap: opportunities, not a chain
+  if (pads.length > 5) pads.length = 5;        
   startRotor();
 }
 
-// difficulty ramps 0 -> 1 across the race: easier opening, true boss finish
+ 
 function bossRamp(){
   return Math.max(0, Math.min(1, (player.s / TRK.len) * 1.15));
 }
@@ -2071,9 +2071,9 @@ function updatePads(dt){
   for (const pd of pads){
     if (pd.used > 0){ pd.used -= dt; continue; }
     if (Math.abs(p.s - pd.s) < 30 && Math.abs(p.x - pd.x) < 40 && p.pspin <= 0){
-      pd.used = 999;                     // one use per pad, per race
+      pd.used = 999;                      
       p.boostT = Math.max(p.boostT, 3);
-      p.padBoost = 3;                    // 3s of a modest lift
+      p.padBoost = 3;                     
       emit(pd.s, roadCenter(pd.s)+pd.x, 8, 'spark');
       toast('BOOST PAD! +7% for 3s', '#5fe0ff');
       tone(660, 0, 0.10, 'square', 0.07); tone(990, 0.06, 0.12, 'square', 0.06);
@@ -2092,7 +2092,7 @@ function drawPads(cx){
     g.fillRect(sx-34, sy-22, 68, 44);
     g.strokeStyle = live ? 'rgba(160,240,255,0.9)' : 'rgba(120,130,140,0.4)';
     g.lineWidth = 2; g.strokeRect(sx-34, sy-22, 68, 44);
-    if (live){                                    // chevrons pointing down-track
+    if (live){                                     
       g.fillStyle = 'rgba(230,250,255,' + (0.5 + 0.5*pulse).toFixed(2) + ')';
       for (let i = 0; i < 3; i++){
         const yy = sy + 12 - i*13;
@@ -2103,85 +2103,85 @@ function drawPads(cx){
   }
 }
 
-// ---- boss AI: fast cruise -> telegraphed swoop at your lane -> bomb -> climb ----
+ 
 function updateBoss(dt){
   const b = boss;
   b.rot += dt * (state === 'race' ? 42 : 18);
   if (state !== 'race') return;
   b.pt += dt;
-  b.ramp += (bossRamp() - b.ramp) * 1.5 * dt;   // smoothed difficulty curve
+  b.ramp += (bossRamp() - b.ramp) * 1.5 * dt;    
   const r = b.ramp;
 
-  // --- airspeed is pegged to the PLAYER'S MAXIMUM, by phase ---
-  //  phase 1 (r<1/3): 98.5-99.5%   phase 2: 99.5-100.5%   phase 3: 100-101%
-  // It is never permanently slower. What makes it beatable is that it now has to
-  // FLY THE TRACK: like you, it bleeds speed through corners (see cornerEff),
-  // so the race is decided by who carries more speed through the turns.
+   
+   
+   
+   
+   
   const pmax = player.stats.max;
-  const gap = b.s - player.s;                                   // + = boss ahead
-  // NO rubber-banding: airspeed depends only on race phase, never on the gap.
-  // It does not slow down when ahead, speed up when behind, or brake for anything.
+  const gap = b.s - player.s;                                    
+   
+   
   const ph = r < 1/3 ? 0 : (r < 2/3 ? 1 : 2);
-  // always a shade quicker than the quickest car on the grid (never slower)
+   
   const pace = pmax * (TOP_AI + BOSS_EDGE[ph]);
   b.pace = pace;
-  // full throttle in every phase — the attack dive costs it nothing in speed
+   
   const cruiseV = pace, climbV = pace, swoopV = pace;
-  const react   = 1.0 + 1.4*r;                  // reaction / steering rate multiplier
-  if (b.phase === 'cruise'){          // flies above the road, ignores corners
-    // strategic line: hugs the inside of the coming corner, and once it's ahead
-    // it slides across to block the line the player wants
-    // free of lane discipline: it cuts wide over the scenery when that's shorter
+  const react   = 1.0 + 1.4*r;                   
+  if (b.phase === 'cruise'){           
+     
+     
+     
     const inside = Math.atan(roadSlope(b.s + 260)) * 265;
     const block  = (gap > 0 ? player.x : 0) * (0.25 + 0.75*r);
     b.lane = inside*(0.5 + 0.5*r) + block + Math.sin(raceT * 0.8) * 130 * (1 - 0.75*r);
     b.alt += (1 - b.alt) * 2 * dt;
-    b.speed += (cruiseV - b.speed) * (1.9 + 0.9*r) * dt;   // turbine pickup
-    if (b.pt > 4.6 - 1.6*r){ b.phase = 'swoop'; b.pt = 0; }   // attacks more often later
-  } else if (b.phase === 'swoop'){    // dives — this is your chance to gain ground
+    b.speed += (cruiseV - b.speed) * (1.9 + 0.9*r) * dt;    
+    if (b.pt > 4.6 - 1.6*r){ b.phase = 'swoop'; b.pt = 0; }    
+  } else if (b.phase === 'swoop'){     
     b.lane = player.x;
     b.alt += (0.3 - b.alt) * 3 * dt;
     b.speed += (swoopV - b.speed) * 2.6 * dt;
-    if (b.pt > 3.2 - 0.9*r){          // telegraph shortens as the race heats up
-      // bombardier leads the target; aim tightens with the ramp
+    if (b.pt > 3.2 - 0.9*r){           
+       
       const lead = Math.max(420, player.speed*2.2) * (1 - 0.28*r);
       const err  = (rnd()-0.5) * 90 * (1 - r);
       bombs.push({ s: player.s + lead, x: player.x + err, t: 0, boomed: false, hit: false });
       b.phase = 'climb'; b.pt = 0;
     }
-  } else {                            // climb back to cruise
+  } else {                             
     b.alt += (1 - b.alt) * 2.5 * dt;
-    b.speed += (climbV - b.speed) * 2.8 * dt;   // snaps back to pace out of the dive
+    b.speed += (climbV - b.speed) * 2.8 * dt;    
     if (b.pt > 1.4 - 0.4*r){ b.phase = 'cruise'; b.pt = 0; }
   }
-  // ---------------- AERIAL FLIGHT MODEL (not the car AI) ----------------
-  // It never brakes, dodges or queues for ground traffic: no vehicle is ever
-  // consulted here. It simply flies over anything in its way.
-  // Smooth inertial drift toward the target line instead of car-like snapping.
+   
+   
+   
+   
   const accel = 380 + 340*react;
   b.vx = (b.vx || 0) + Math.max(-accel*dt, Math.min(accel*dt, (b.lane - b.x)*3.2 - b.vx*1.5));
   b.vx = Math.max(-560, Math.min(560, b.vx));
   b.x += b.vx * dt;
-  // not bound by lanes — free to fly wide over grass, sand, water or rooftops
+   
   const AIR = HALF + 150;
   if (Math.abs(b.x) > AIR){ b.x = Math.sign(b.x)*AIR; b.vx *= -0.25; }
 
-  // altitude advantage: it lifts to clear any traffic it happens to overfly
+   
   let over = 0;
   for (const c of civs){
     if (Math.abs(c.s - b.s) < 150 && Math.abs(c.x - b.x) < 70){ over = 1; break; }
   }
   b.overT = Math.max(0, (b.overT || 0) + (over ? dt*4 : -dt*2));
   b.overT = Math.min(1, b.overT);
-  b.alt = Math.min(1.45, b.alt + b.overT*0.9*dt*4);   // pops up over traffic, never slows
+  b.alt = Math.min(1.45, b.alt + b.overT*0.9*dt*4);    
 
-  // Its airspeed NEVER drops — but a banked rotor converts part of that airspeed
-  // into turning instead of forward progress. This is flight geometry, not braking,
-  // and it is the boss's only handicap. Banking skill improves with the ramp.
+   
+   
+   
   const bend = Math.abs(roadSlope(b.s + 200)*0.6 + roadSlope(b.s)*0.4);
   const k = 1.41 - 0.29*r;
   const cornerEff = 1 / (1 + bend*k);
-  b.bank += (Math.atan(roadSlope(b.s + 200)) - b.bank) * (5 + 4*r) * dt;   // leans into it
+  b.bank += (Math.atan(roadSlope(b.s + 200)) - b.bank) * (5 + 4*r) * dt;    
   b.s += b.speed * cornerEff * dt;
   if (!b.done && b.s >= TRK.len){ b.done = true; toast('The helicopter crossed the line!', '#ff6f6f'); }
 }
@@ -2206,18 +2206,18 @@ function updateBombs(dt){
   bombs = bombs.filter(bm => bm.t < 12 && bm.s > player.s - 900);
 }
 
-// ---- boss race drawing ----
+ 
 function drawBombs(cx){
   for (const bm of bombs){
     const sy = PLAYER_Y - (bm.s - player.s);
     if (sy < -40 || sy > H+40) continue;
     const sx = roadCenter(bm.s) + bm.x - cx + W/2;
-    if (!bm.boomed){ // falling: target ring + shrinking bomb
+    if (!bm.boomed){  
       g.strokeStyle = 'rgba(255,80,80,0.85)'; g.lineWidth = 2;
       g.beginPath(); g.arc(sx, sy, 15, 0, 7); g.stroke();
       g.fillStyle = '#1d1d22';
       g.beginPath(); g.arc(sx, sy, 4 + (1 - bm.t/1.5)*7, 0, 7); g.fill();
-    } else if (bm.t < 12){ // burning crater
+    } else if (bm.t < 12){  
       g.fillStyle = '#26221f'; g.beginPath(); g.ellipse(sx, sy, 16, 10, 0, 0, 7); g.fill();
       g.fillStyle = 'rgba(255,' + (120 + Math.floor(rnd()*80)) + ',30,0.85)';
       g.beginPath(); g.arc(sx + (rnd()-0.5)*6, sy - 2 - rnd()*4, 4 + rnd()*4, 0, 7); g.fill();
@@ -2229,36 +2229,36 @@ function drawHeli(cx){
   const sy = PLAYER_Y - (b.s - player.s);
   if (sy < -140 || sy > H+140) return null;
   const sx = roadCenter(b.s) + b.x - cx + W/2;
-  // ground shadow drifts with altitude
+   
   g.fillStyle = 'rgba(0,0,0,' + (0.38 - 0.16*b.alt).toFixed(2) + ')';
   g.beginPath(); g.ellipse(sx + 10 + 20*b.alt, sy + 14 + 26*b.alt, 22, 34, 0, 0, 7); g.fill();
   const sc = 1 + 0.4*b.alt;
   g.save(); g.translate(Math.round(sx), Math.round(sy)); g.rotate(b.bank || 0); g.scale(sc, sc);
   g.lineWidth = 2; g.strokeStyle = 'rgba(10,10,14,0.55)';
-  g.fillStyle = '#23262c'; g.fillRect(-16, -20, 3, 40); g.fillRect(13, -20, 3, 40);  // skids
-  g.fillStyle = '#31502c'; g.fillRect(-3, 18, 6, 30);                                // tail boom
-  g.fillStyle = '#3c6a3f'; g.fillRect(-8, 44, 16, 5);                                // stabilizer
+  g.fillStyle = '#23262c'; g.fillRect(-16, -20, 3, 40); g.fillRect(13, -20, 3, 40);   
+  g.fillStyle = '#31502c'; g.fillRect(-3, 18, 6, 30);                                 
+  g.fillStyle = '#3c6a3f'; g.fillRect(-8, 44, 16, 5);                                 
   const tr = b.rot * 2;
   g.strokeStyle = '#cfd6e4';
   g.beginPath(); g.moveTo(-Math.cos(tr)*10, 48 - Math.sin(tr)*3); g.lineTo(Math.cos(tr)*10, 48 + Math.sin(tr)*3); g.stroke();
   g.fillStyle = '#3c6a3f'; g.beginPath(); g.ellipse(0, 0, 13, 22, 0, 0, 7); g.fill();
   g.strokeStyle = 'rgba(10,10,14,0.55)'; g.stroke();
-  g.fillStyle = '#9fd4ff'; g.beginPath(); g.ellipse(0, -10, 8, 9, 0, 0, 7); g.fill(); // cockpit
+  g.fillStyle = '#9fd4ff'; g.beginPath(); g.ellipse(0, -10, 8, 9, 0, 0, 7); g.fill();  
   g.fillStyle = 'rgba(255,255,255,0.5)'; g.fillRect(-5, -15, 10, 3);
-  g.fillStyle = 'rgba(210,220,230,0.14)'; g.beginPath(); g.arc(0, -2, 34, 0, 7); g.fill(); // rotor disc
+  g.fillStyle = 'rgba(210,220,230,0.14)'; g.beginPath(); g.arc(0, -2, 34, 0, 7); g.fill();  
   g.strokeStyle = 'rgba(235,240,245,0.9)'; g.lineWidth = 3;
   const a = b.rot;
   g.beginPath(); g.moveTo(-Math.cos(a)*34, -2 - Math.sin(a)*34); g.lineTo(Math.cos(a)*34, -2 + Math.sin(a)*34); g.stroke();
   g.beginPath(); g.moveTo(Math.sin(a)*34, -2 - Math.cos(a)*34); g.lineTo(-Math.sin(a)*34, -2 + Math.cos(a)*34); g.stroke();
   g.restore();
-  if (b.phase === 'swoop' && (Math.floor(b.rot*0.8) & 1)){ // incoming warning
+  if (b.phase === 'swoop' && (Math.floor(b.rot*0.8) & 1)){  
     g.fillStyle = '#ff4040'; g.font = 'bold 26px Segoe UI, Arial'; g.textAlign = 'center';
     g.fillText('!', sx, sy - 52*sc);
   }
   return { sx, sy: sy - 10 };
 }
 
-// ---- intro cutscene ----
+ 
 function wrapLines(ctx, text, maxW){
   const words = text.split(' '), lines = []; let cur = '';
   for (const w of words){
@@ -2272,14 +2272,14 @@ function wrapLines(ctx, text, maxW){
 function drawDude(x, y, t){
   const bob = Math.sin(t*2.2)*1.5;
   g.fillStyle = 'rgba(0,0,0,0.35)'; g.beginPath(); g.ellipse(x, y+2, 15, 5, 0, 0, 7); g.fill();
-  g.fillStyle = '#23262e'; g.fillRect(x-9, y-20, 7, 20); g.fillRect(x+2, y-20, 7, 20);   // legs
-  g.fillStyle = '#5a2d82'; rr(x-12, y-50+bob, 24, 32, 5); g.fill();                      // suit
+  g.fillStyle = '#23262e'; g.fillRect(x-9, y-20, 7, 20); g.fillRect(x+2, y-20, 7, 20);    
+  g.fillStyle = '#5a2d82'; rr(x-12, y-50+bob, 24, 32, 5); g.fill();                       
   g.strokeStyle = 'rgba(10,10,14,0.5)'; g.lineWidth = 2; g.stroke();
-  g.fillStyle = '#48226b'; g.fillRect(x-12, y-40+bob, 24, 8);                            // crossed arms
-  g.fillStyle = '#e8b48a'; g.beginPath(); g.arc(x, y-59+bob, 10, 0, 7); g.fill();        // head
-  g.fillStyle = '#1a1a1a'; g.fillRect(x-10, y-70+bob, 20, 7);                            // slick hair
-  g.fillStyle = '#111'; g.fillRect(x-8, y-61+bob, 16, 4);                                // shades
-  g.fillStyle = '#fff'; g.fillRect(x-4, y-53+bob, 9, 2);                                 // grin
+  g.fillStyle = '#48226b'; g.fillRect(x-12, y-40+bob, 24, 8);                             
+  g.fillStyle = '#e8b48a'; g.beginPath(); g.arc(x, y-59+bob, 10, 0, 7); g.fill();         
+  g.fillStyle = '#1a1a1a'; g.fillRect(x-10, y-70+bob, 20, 7);                             
+  g.fillStyle = '#111'; g.fillRect(x-8, y-61+bob, 16, 4);                                 
+  g.fillStyle = '#fff'; g.fillRect(x-4, y-53+bob, 9, 2);                                  
 }
 function drawIntroHeli(x, y, rot){
   const h = Math.max(0, 430 - y);
@@ -2305,8 +2305,8 @@ function renderIntro(dt, time){
   const durs = [6.4, 1.7, 2.8];
   if (intro.t > durs[intro.phase]){ advanceIntroPhase(); if (!intro) return; }
   g = vg; vg.setTransform(0.5, 0, 0, 0.5, 0, 0);
-  if (intro.phase === 2){ const sh = 2 + intro.t*2; vg.translate((rnd()-0.5)*sh, (rnd()-0.5)*sh); } // rumble
-  // night sky, stars, skyline
+  if (intro.phase === 2){ const sh = 2 + intro.t*2; vg.translate((rnd()-0.5)*sh, (rnd()-0.5)*sh); }  
+   
   g.fillStyle = '#0b0e1e'; g.fillRect(-8, -8, W+16, H+16);
   for (let i = 0; i < 60; i++){
     g.fillStyle = 'rgba(255,255,255,' + (0.25 + prand(i)*0.5).toFixed(2) + ')';
@@ -2318,23 +2318,23 @@ function renderIntro(dt, time){
     g.fillStyle = 'rgba(255,238,150,0.35)';
     for (let wy = 0; wy < 4; wy++) if (prand(i*13+wy) > 0.5) g.fillRect(bx+8, 380-bh+10+wy*24, 8, 10);
   }
-  // tarmac + helipad
+   
   g.fillStyle = '#2c2e33'; g.fillRect(-8, 380, W+16, H-380+16);
   g.strokeStyle = '#c9cf60'; g.lineWidth = 4; g.beginPath(); g.arc(590, 428, 66, 0, 7); g.stroke();
   g.fillStyle = '#c9cf60'; g.font = 'bold 44px Segoe UI, Arial'; g.textAlign = 'center'; g.fillText('H', 590, 444);
-  // helicopter (rotor spins up, then lifts off)
+   
   let hy = 400, rot = time*3;
   if (intro.phase === 1) rot = time*(4 + intro.t*10);
   if (intro.phase === 2){ rot = time*46; const f = intro.t/2.8; hy = 400 - f*f*200; }
   drawIntroHeli(590, hy, rot);
-  // the boss himself
+   
   if (intro.phase === 0) drawDude(250, 452, time);
   else if (intro.phase === 1) drawDude(250 + (556-250)*Math.min(1, intro.t/1.7), 452, time);
   vg.setTransform(1, 0, 0, 1, 0, 0);
   g = mg;
   mg.imageSmoothingEnabled = false;
   mg.drawImage(view, 0, 0, W, H);
-  // crisp overlays
+   
   if (intro.phase === 0){
     mg.font = 'bold 17px Segoe UI, Arial';
     const lines = wrapLines(mg, BOSS_LINE, 384);
@@ -2358,7 +2358,7 @@ function renderIntro(dt, time){
   mg.fillText('Enter / click to skip ▶', W/2, H-16);
 }
 
-// ============================== MENU / UI ==============================
+ 
 const menuEl = document.getElementById('menu'), resultsEl = document.getElementById('results');
 const resPlace = document.getElementById('resPlace'), resSub = document.getElementById('resSub'),
       resUnlocks = document.getElementById('resUnlocks');
@@ -2391,7 +2391,7 @@ const btnReset = document.getElementById('btnReset');
 let resetArm = 0;
 btnReset.onclick = () => {
   if (Date.now() < resetArm){
-    save = { n:[0,0,0], h:[0,0,0] };                 // wipes wins, unlocks, boss achievement
+    save = { n:[0,0,0], h:[0,0,0] };                  
     try { localStorage.removeItem(SAVE_KEY); } catch(e){}
     hardMode = false; useGolden = false; goldenChk.checked = false;
     musicOn = true; resetArm = 0;
@@ -2408,7 +2408,7 @@ btnReset.onclick = () => {
     }, 3200);
   }
 };
-// ---- replay controls (reuse the existing button styling) ----
+ 
 const replayBar = document.getElementById('replayBar');
 const rpPlay = document.getElementById('rpPlay'), rpSlow = document.getElementById('rpSlow'),
       rpFast = document.getElementById('rpFast');
@@ -2421,7 +2421,7 @@ function syncReplayUI(){
 document.getElementById('btnReplay').onclick = enterReplay;
 rpPlay.onclick = () => {
   if (!replay) return;
-  if (!replay.playing && replay.i >= rec.f.length - 1) replay.i = 0;   // replay from the top
+  if (!replay.playing && replay.i >= rec.f.length - 1) replay.i = 0;    
   replay.playing = !replay.playing; syncReplayUI();
 };
 document.getElementById('rpRestart').onclick = () => {
@@ -2443,7 +2443,7 @@ document.getElementById('btnMenu').onclick  = () => {
 };
 refreshMenu();
 
-// ============================== MAIN LOOP ==============================
+ 
 let last = performance.now();
 function frame(now){
   const dt = Math.min(0.05, (now - last)/1000);
