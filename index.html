@@ -35,6 +35,8 @@
     --rust: #ff5a4d;
     --lime: #b6e33f;
     --laser: #4d7cff;
+    --castle: #7ce0d6;
+    --sandwich: #ffb347;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
@@ -120,6 +122,8 @@
   .cab.c8:hover { border-color: var(--rust);   box-shadow: 0 8px 0 rgba(0,0,0,0.35), 0 0 26px rgba(255,90,77,0.4); }
   .cab.c9:hover { border-color: var(--lime);   box-shadow: 0 8px 0 rgba(0,0,0,0.35), 0 0 26px rgba(182,227,63,0.4); }
   .cab.c10:hover { border-color: var(--laser); box-shadow: 0 8px 0 rgba(0,0,0,0.35), 0 0 26px rgba(77,124,255,0.45); }
+  .cab.c11:hover { border-color: var(--castle); box-shadow: 0 8px 0 rgba(0,0,0,0.35), 0 0 26px rgba(124,224,214,0.4); }
+  .cab.c12:hover { border-color: var(--sandwich); box-shadow: 0 8px 0 rgba(0,0,0,0.35), 0 0 26px rgba(255,179,71,0.4); }
 
   .screen {
      
@@ -144,6 +148,8 @@
   .c8 .screen { background: linear-gradient(160deg, #6b2f22, #c2703a); }
   .c9 .screen { background: linear-gradient(160deg, #1b2b14, #4a7a1f); }
   .c10 .screen { background: linear-gradient(160deg, #101a33, #2a3f8f); }
+  .c11 .screen { background: linear-gradient(160deg, #101c22, #1f4a52); }
+  .c12 .screen { background: linear-gradient(160deg, #33240f, #8f6a1f); }
 
   .cab h2 {
     font-size: clamp(1rem, 2.6vw, 1.15rem);
@@ -165,6 +171,8 @@
   .c8 h2 { color: var(--rust); }
   .c9 h2 { color: var(--lime); }
   .c10 h2 { color: var(--laser); }
+  .c11 h2 { color: var(--castle); }
+  .c12 h2 { color: var(--sandwich); }
 
   .cab p {
     color: var(--dim);
@@ -283,6 +291,20 @@
       <div class="screen" aria-hidden="true">🎯</div>
       <h2>Stickman Laser Tag</h2>
       <p>Top-down laser tag. Survive fifteen waves across four arenas, then spend the coins on six laser guns — from a pulse pistol to a twin-barrelled minigun you carry into every match.</p>
+      <span class="players">1 Player</span>
+    </a>
+
+    <a class="cab c11" href="games/castle-chaos.html">
+      <div class="screen" aria-hidden="true">🏰</div>
+      <h2>Castle Chaos</h2>
+      <p>One huge castle, explored in any order. Sneak past a blind Warden that hunts you by sound, find five hidden marks, and uncover five endings — including one that is not in the castle at all.</p>
+      <span class="players">1 Player</span>
+    </a>
+
+    <a class="cab c12" href="games/the-dumb-game.html">
+      <div class="screen" aria-hidden="true">🥪</div>
+      <h2>The Dumb Game</h2>
+      <p>Open-world comedy sandbox. Drive cars, take dumb jobs, do dumber side quests, upset a crowd of people who refuse to move — and find out what happens if you walk off the edge of the map.</p>
       <span class="players">1 Player</span>
     </a>
   </main>
