@@ -1,0 +1,2006 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>
+window.CreatorDNA = Object.freeze({
+  creator: "Coolbros1418",
+  game: "The Dumb Game",
+  gameId: "the-dumb-game",
+  originId: "CDNA-O-846PZ-2AP0B",
+  conceptId: "CDNA-C-3HQQT-95M3B",
+  version: "6.3.0",
+  conceptDate: "2026-09-04T21:55:46Z",
+  released: "2026-09-06T14:22:18Z",
+  fingerprint: "65f06d221039459ca1b592c380684f35341ae46794446548fe3fbadc958896ce",
+  signature: "l1obntt8wz+svhybT3O7BmBCZiNRbB7cvixMWRjZDsmB5Uso7/4v2cQ6SoECo0+auMw2bffSHCT2UtH69wSiDw==",
+  publicKeyId: "f4e07b5fe705eb901a670d5d3845f0b61f2b1ff6aa73145eeb18404aa2f664f0",
+  algorithm: "Ed25519 over the canonical record JSON; SHA-256 for the fingerprint",
+  verify: "Ed25519 signature over the canonical Creator DNA record; check it with the Coolbros1418 public key."
+});
+</script>
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no,viewport-fit=cover">
+<title>The Dumb Game</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:#0c0e12;overflow:hidden;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:#fff;touch-action:none;user-select:none}
+#wrap{position:fixed;inset:0;display:flex;align-items:center;justify-content:center}
+canvas{display:block;max-width:100%;max-height:100%;background:#7cb342;box-shadow:0 0 60px rgba(0,0,0,.6)}
+</style>
+</head>
+<body>
+<div id="wrap"><canvas id="c" width="960" height="540"></canvas></div>
+<script>
+(()=>{
+const CV=document.getElementById('c'),X=CV.getContext('2d');
+const W=960,H=540;
+const clamp=(v,a,b)=>v<a?a:v>b?b:v, rnd=(a,b)=>a+Math.random()*(b-a), ri=(a,b)=>Math.floor(rnd(a,b+1));
+const pick=a=>a[Math.floor(Math.random()*a.length)], dist2=(a,b)=>{const dx=a.x-b.x,dy=a.y-b.y;return dx*dx+dy*dy};
+const lerp=(a,b,t)=>a+(b-a)*t;
+
+ 
+const SV={m:{},
+ get(k,d){try{const v=localStorage.getItem(k);return v==null?(this.m[k]??d):JSON.parse(v)}catch(e){return this.m[k]??d}},
+ set(k,v){this.m[k]=v;try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+
+ 
+let AC=null,eng=null,engG=null;
+function ac(){if(!AC){try{AC=new (window.AudioContext||window.webkitAudioContext)()}catch(e){}}return AC}
+function snd(f,d,t,v,f2){
+  const a=ac();if(!a)return;
+  try{const o=a.createOscillator(),g=a.createGain();o.type=t||'square';o.frequency.setValueAtTime(f,a.currentTime);
+  if(f2)o.frequency.exponentialRampToValueAtTime(f2,a.currentTime+d);
+  g.gain.setValueAtTime(v||.05,a.currentTime);g.gain.exponentialRampToValueAtTime(.0001,a.currentTime+d);
+  o.connect(g);g.connect(a.destination);o.start();o.stop(a.currentTime+d)}catch(e){}
+}
+function engine(on,pitch){
+  const a=ac();if(!a)return;
+  try{
+    if(on&&!eng){eng=a.createOscillator();engG=a.createGain();eng.type='sawtooth';engG.gain.value=.018;
+      eng.connect(engG);engG.connect(a.destination);eng.start()}
+    if(eng)eng.frequency.setTargetAtTime(60+pitch*90,a.currentTime,.08);
+    if(!on&&eng){eng.stop();eng=null;engG=null}
+  }catch(e){}
+}
+const sfx={talk:()=>snd(520,.05,'square',.03),ok:()=>snd(760,.12,'triangle',.05),
+  bad:()=>snd(140,.2,'sawtooth',.05),bump:()=>snd(90,.12,'square',.06),
+  sting:()=>{snd(180,.5,'sawtooth',.05,90);setTimeout(()=>snd(240,.6,'sawtooth',.04,120),120)},
+  pick:()=>snd(880,.1,'triangle',.05),horn:()=>snd(300,.25,'square',.05,290),
+  door:()=>snd(200,.15,'sine',.05,320)};
+
+ 
+const key={};let actPress=false,touch=false,mapToggle=false,closePress=false,quitPress=false,respawnPress=false,questQuitPress=false,yesPress=false,noPress=false;
+addEventListener('keydown',e=>{
+  if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown',' '].includes(e.key))e.preventDefault();
+  if(!key[e.code]&&(e.code==='KeyE'||e.code==='Space'||e.code==='Enter'))actPress=true;
+  if(!key[e.code]&&e.code==='KeyM')mapToggle=true;
+  if(e.code==='KeyQ'||e.code==='Escape')closePress=true;
+  if(!key[e.code]&&e.code==='KeyX')quitPress=true;
+  if(!key[e.code]&&e.code==='KeyR')respawnPress=true;
+  if(!key[e.code]&&e.code==='KeyC')questQuitPress=true;
+  if(!key[e.code]&&e.code==='KeyY')yesPress=true;
+  if(!key[e.code]&&e.code==='KeyN')noPress=true;
+  key[e.code]=1;ac();
+},{passive:false});
+addEventListener('keyup',e=>key[e.code]=0);
+let stick={id:null,ox:0,oy:0,x:0,y:0,on:false};
+function cpos(e){const r=CV.getBoundingClientRect();return{x:(e.clientX-r.left)*W/r.width,y:(e.clientY-r.top)*H/r.height}}
+CV.addEventListener('pointerdown',e=>{
+  touch=e.pointerType!=='mouse'||touch;ac();const p=cpos(e);
+  if(quitAsk){
+    if(p.y>H/2+20&&p.y<H/2+60){if(p.x>W/2-150&&p.x<W/2-20){if(quitAsk==='quest')questQuit();else jobQuit()}
+      else if(p.x>W/2+20&&p.x<W/2+150)quitAsk=false}
+    else quitAsk=false;
+    return;
+  }
+  if(!cs&&!dlg&&!shop&&!bigmap&&p.x>12&&p.x<118&&p.y>H-44&&p.y<H-16){respawnHome();return}
+  if(job&&job.btn){const [bx,by,bw,bh]=job.btn;
+    if(p.x>bx&&p.x<bx+bw&&p.y>by&&p.y<by+bh){quitAsk='job';return}}
+  if(aq&&aq.btn){const [bx,by,bw,bh]=aq.btn;
+    if(p.x>bx&&p.x<bx+bw&&p.y>by&&p.y<by+bh){quitAsk='quest';return}}
+  if(shop){
+    if(p.y>H-56||p.x>W-90&&p.y<70){shop=null;return}
+    const i=Math.floor((p.y-104)/30);if(i>=0&&i<9){const t=shop.top+i;if(t<shopRows().length){if(shop.i===t)shopAct();else shop.i=t}}
+    return;
+  }
+  if(bigmap){
+    const m=MAPS.town,mw=W-120,mh=H-140,mx=60,my=86,sx=mw/m.w,sy=mh/m.h;
+    let best=null,bd=22;
+    for(const n of npcs){const ic=npcIcon(n);if(!ic)continue;
+      const d=Math.hypot(mx+n.x*sx-p.x,my+n.y*sy-p.y);
+      if(d<bd){bd=d;best=(n.j?'JOB — '+JOBS[n.j].title:n.shop?'SHOP — FASHION?':'SIDE QUEST — '+(QUESTS[n.q]&&QUESTS[n.q].title||'?'))}}
+    for(const o of objs)if(o.poi){const d=Math.hypot(mx+o.x*sx-p.x,my+o.y*sy-p.y);if(d<bd){bd=d;best='SHOP — FASHION?'}}
+    if(best){mapInfo=best;return}
+    bigmap=false;mapInfo=null;return;
+  }
+  if(p.x<W*.5&&e.pointerType!=='mouse'){stick={id:e.pointerId,ox:p.x,oy:p.y,x:0,y:0,on:true}}
+  else actPress=true;
+});
+CV.addEventListener('pointermove',e=>{if(stick.on&&stick.id===e.pointerId){const p=cpos(e);
+  let dx=p.x-stick.ox,dy=p.y-stick.oy,m=Math.hypot(dx,dy);if(m>60){dx*=60/m;dy*=60/m}stick.x=dx/60;stick.y=dy/60}});
+const rel=e=>{if(stick.id===e.pointerId)stick={id:null,ox:0,oy:0,x:0,y:0,on:false}};
+CV.addEventListener('pointerup',rel);CV.addEventListener('pointercancel',rel);
+function axis(){
+  let x=0,y=0;
+  if(key.ArrowLeft||key.KeyA)x--;if(key.ArrowRight||key.KeyD)x++;
+  if(key.ArrowUp||key.KeyW)y--;if(key.ArrowDown||key.KeyS)y++;
+  if(stick.on){x+=stick.x;y+=stick.y}
+  const m=Math.hypot(x,y);if(m>1){x/=m;y/=m}
+  return{x,y,m:Math.min(1,m)};
+}
+
+ 
+function rr(x,y,w,h,r){X.beginPath();X.moveTo(x+r,y);X.arcTo(x+w,y,x+w,y+h,r);X.arcTo(x+w,y+h,x,y+h,r);X.arcTo(x,y+h,x,y,r);X.arcTo(x,y,x+w,y,r);X.closePath()}
+function box(x,y,w,h,c,r){X.fillStyle=c;rr(x,y,w,h,r||3);X.fill()}
+function txt(t,x,y,s,c,al,wt){X.fillStyle=c;X.font=(wt||700)+' '+s+'px system-ui,sans-serif';X.textAlign=al||'left';X.fillText(t,x,y)}
+function shadow(x,y,w){X.fillStyle='rgba(0,0,0,.18)';X.beginPath();X.ellipse(x,y,w,w*.4,0,0,7);X.fill()}
+
+const K={
+ building:{s:1,d:o=>{box(o.x,o.y+8,o.w,o.h-8,o.col||'#c9b49a',4);box(o.x,o.y,o.w,18,o.roof||'#8d5b4c',3);
+   X.fillStyle='rgba(0,0,0,.12)';for(let i=0;i<Math.floor(o.w/60);i++)X.fillRect(o.x+18+i*60,o.y+34,26,20);
+   if(o.label)txt(o.label,o.x+o.w/2,o.y+o.h-12,13,'rgba(0,0,0,.5)','center',800)}},
+ house:{s:1,d:o=>{box(o.x,o.y+14,o.w,o.h-14,o.col||'#e7d3b3',4);
+   X.fillStyle=o.roof||'#a8503f';X.beginPath();X.moveTo(o.x-6,o.y+16);X.lineTo(o.x+o.w/2,o.y-8);X.lineTo(o.x+o.w+6,o.y+16);X.closePath();X.fill();
+   X.fillStyle='#7fb3d5';X.fillRect(o.x+16,o.y+34,24,20);X.fillRect(o.x+o.w-40,o.y+34,24,20);
+   if(o.label)txt(o.label,o.x+o.w/2,o.y+o.h-10,12,'rgba(0,0,0,.45)','center',800)}},
+ tree:{s:1,r:1,d:o=>{shadow(o.x+o.w/2,o.y+o.h-2,o.w*.45);X.fillStyle='#6b4a2f';X.fillRect(o.x+o.w/2-5,o.y+o.h-22,10,22);
+   X.fillStyle=o.col||'#3f7d2e';X.beginPath();X.arc(o.x+o.w/2,o.y+o.h-34,o.w*.5,0,7);X.arc(o.x+o.w*.28,o.y+o.h-24,o.w*.32,0,7);X.arc(o.x+o.w*.72,o.y+o.h-26,o.w*.34,0,7);X.fill()}},
+ bush:{s:0,p:.6,d:o=>{X.fillStyle='#3f7d2e';X.beginPath();X.arc(o.x+14,o.y+14,15,0,7);X.arc(o.x+28,o.y+16,13,0,7);X.arc(o.x+20,o.y+6,12,0,7);X.fill()}},
+ cart:{s:0,p:1.4,i:'PUSH',d:o=>{X.strokeStyle='#b9c0c9';X.lineWidth=4;X.beginPath();X.moveTo(o.x,o.y);X.lineTo(o.x+o.w,o.y+4);X.lineTo(o.x+o.w-8,o.y+o.h-8);X.lineTo(o.x+6,o.y+o.h-8);X.closePath();X.stroke();
+   X.lineWidth=1;X.fillStyle='#555';X.beginPath();X.arc(o.x+10,o.y+o.h-2,5,0,7);X.arc(o.x+o.w-12,o.y+o.h-2,5,0,7);X.fill()}},
+ dumpster:{s:1,d:o=>{box(o.x,o.y,o.w,o.h,'#3f6d4a',3);box(o.x-3,o.y-5,o.w+6,8,'#2f5238',2);X.fillStyle='rgba(0,0,0,.2)';X.fillRect(o.x+6,o.y+10,o.w-12,4)}},
+ barrier:{s:0,p:1.1,d:o=>{box(o.x,o.y,o.w,o.h,'#f4732a',2);X.fillStyle='#fff';for(let i=0;i<o.w;i+=16)X.fillRect(o.x+i,o.y,7,o.h)}},
+ crate:{s:0,p:1,d:o=>{box(o.x,o.y,o.w,o.h,'#b98a52',2);X.strokeStyle='#8a5f34';X.strokeRect(o.x+.5,o.y+.5,o.w-1,o.h-1);
+   X.beginPath();X.moveTo(o.x,o.y);X.lineTo(o.x+o.w,o.y+o.h);X.moveTo(o.x+o.w,o.y);X.lineTo(o.x,o.y+o.h);X.stroke()}},
+ tire:{s:0,p:1.2,d:o=>{X.fillStyle='#2b2b2b';X.beginPath();X.arc(o.x+12,o.y+12,12,0,7);X.fill();X.fillStyle='#555';X.beginPath();X.arc(o.x+12,o.y+12,5,0,7);X.fill()}},
+ sock:{s:0,i:'TAKE',d:o=>{box(o.x,o.y,18,12,o.real?'#f0f0f0':'#e8e8e8',5);X.fillStyle='#c9c9c9';X.fillRect(o.x+2,o.y+2,14,3)}},
+ tv:{s:1,d:o=>{box(o.x,o.y,o.w,o.h,'#2b2d42',3);box(o.x+3,o.y+3,o.w-6,o.h-8,'#6c9dc9',2)}},
+ moviecam:{s:1,d:o=>{X.strokeStyle='#8d99ae';X.lineWidth=3;X.beginPath();X.moveTo(o.x+20,o.y+16);X.lineTo(o.x+8,o.y+46);
+   X.moveTo(o.x+20,o.y+16);X.lineTo(o.x+32,o.y+46);X.moveTo(o.x+20,o.y+16);X.lineTo(o.x+20,o.y+46);X.stroke();X.lineWidth=1;
+   box(o.x+4,o.y-6,34,24,'#1d1d20',3);X.fillStyle='#3d405b';X.beginPath();X.arc(o.x+13,o.y-8,7,0,7);X.arc(o.x+29,o.y-8,7,0,7);X.fill();
+   box(o.x+36,o.y+2,10,8,'#2b2d42',2)}},
+ studiolight:{s:1,d:o=>{X.fillStyle='rgba(255,240,180,.13)';X.beginPath();X.arc(o.x+12,o.y+6,120,0,7);X.fill();
+   X.strokeStyle='#8d99ae';X.lineWidth=3;X.beginPath();X.moveTo(o.x+12,o.y+10);X.lineTo(o.x+4,o.y+44);X.moveTo(o.x+12,o.y+10);X.lineTo(o.x+20,o.y+44);X.stroke();X.lineWidth=1;
+   box(o.x,o.y-8,24,20,'#c9c9c9',3);X.fillStyle='#ffe9a8';X.fillRect(o.x+3,o.y-5,18,14)}},
+ clapper:{s:0,i:'LOOK',d:o=>{box(o.x,o.y+6,30,18,'#1d1d20',2);X.fillStyle='#f1f1f1';
+   for(let i=0;i<4;i++)X.fillRect(o.x+2+i*7,o.y,5,6);box(o.x,o.y,30,6,'#2b2d42',1)}},
+ invdog:{s:0,i:'LISTEN',d:o=>{X.fillStyle='rgba(255,255,255,.10)';X.beginPath();X.ellipse(o.x+15,o.y+16,16,9,0,0,7);X.fill();
+   if(Math.sin(tt*3)>.7)txt('woof',o.x+15,o.y-4,11,'rgba(255,255,255,.5)','center',700)}},
+ bill:{s:0,p:.7,i:'TAKE',d:o=>{box(o.x,o.y,22,12,'#8ac926',2);txt('$1',o.x+11,o.y+9,8,'#123','center',900)}},
+ hydrant:{s:0,p:.8,d:o=>{box(o.x+3,o.y+4,12,18,'#c1121f',3);box(o.x,o.y+8,18,5,'#c1121f',2);box(o.x+5,o.y,8,6,'#c1121f',2)}},
+ tower:{s:1,d:o=>{X.strokeStyle='#e0a33f';X.lineWidth=6;X.beginPath();X.moveTo(o.x+10,o.y+o.h);X.lineTo(o.x+10,o.y);X.lineTo(o.x+o.w,o.y+8);X.stroke();X.lineWidth=1;
+   box(o.x+o.w-14,o.y+8,10,26,'#8a5f34',2)}},
+ barn:{s:1,d:o=>{box(o.x,o.y+18,o.w,o.h-18,'#b5443c',4);X.fillStyle='#8f342e';X.beginPath();X.moveTo(o.x-8,o.y+20);X.lineTo(o.x+o.w/2,o.y-10);X.lineTo(o.x+o.w+8,o.y+20);X.closePath();X.fill();
+   X.fillStyle='#e8e0d0';X.fillRect(o.x+o.w/2-22,o.y+o.h-52,44,52);X.fillStyle='#b5443c';X.fillRect(o.x+o.w/2-2,o.y+o.h-52,4,52)}},
+ cone2:{s:0,p:1.3,i:'PUSH',d:o=>{X.fillStyle='#f4732a';X.beginPath();X.moveTo(o.x+12,o.y);X.lineTo(o.x+24,o.y+26);X.lineTo(o.x,o.y+26);X.closePath();X.fill();X.fillStyle='#fff';X.fillRect(o.x+4,o.y+14,16,5)}},
+ fence:{s:1,d:o=>{X.fillStyle='#b08d5b';X.fillRect(o.x,o.y,o.w,o.h);X.fillStyle='rgba(0,0,0,.15)';
+   if(o.w>o.h)for(let i=0;i<o.w;i+=22)X.fillRect(o.x+i,o.y,4,o.h);else for(let i=0;i<o.h;i+=22)X.fillRect(o.x,o.y+i,o.w,4)}},
+ wall:{s:1,d:o=>box(o.x,o.y,o.w,o.h,o.col||'#8f8776',2)},
+ bench:{s:1,d:o=>{box(o.x,o.y+8,o.w,10,'#a5643c');box(o.x,o.y,o.w,7,'#8c522f');X.fillStyle='#6d4526';X.fillRect(o.x+5,o.y+18,6,8);X.fillRect(o.x+o.w-11,o.y+18,6,8)}},
+ pump:{s:1,d:o=>{box(o.x,o.y,o.w,o.h,'#d8d8d8',3);box(o.x+4,o.y+5,o.w-8,12,'#e63946',2);X.fillStyle='#333';X.fillRect(o.x+o.w-6,o.y+18,4,14)}},
+ vending:{s:1,d:o=>{box(o.x,o.y,o.w,o.h,'#c1121f',3);box(o.x+4,o.y+5,o.w-16,o.h-14,'#2b2d42',2);
+   X.fillStyle='#ffca3a';for(let r=0;r<3;r++)for(let c=0;c<2;c++)X.fillRect(o.x+8+c*10,o.y+9+r*12,7,8)}},
+ trash:{s:0,p:1,d:o=>{box(o.x,o.y,o.w,o.h,'#5d7a52',3);box(o.x-2,o.y-4,o.w+4,6,'#3f5638',2)}},
+ pole:{s:1,d:o=>{box(o.x,o.y,o.w,o.h,'#9aa0a6',2);box(o.x-6,o.y-8,o.w+12,8,'#6b7075',2)}},
+ rock:{s:1,d:o=>{X.fillStyle='#8b8b86';X.beginPath();X.ellipse(o.x+o.w/2,o.y+o.h/2,o.w/2,o.h/2,0,0,7);X.fill()}},
+ pond:{s:1,d:o=>{X.fillStyle='#4aa3c7';X.beginPath();X.ellipse(o.x+o.w/2,o.y+o.h/2,o.w/2,o.h/2,0,0,7);X.fill();
+   X.fillStyle='rgba(255,255,255,.25)';X.beginPath();X.ellipse(o.x+o.w*.35,o.y+o.h*.35,o.w*.16,o.h*.1,0,0,7);X.fill()}},
+ sign:{s:0,p:.5,i:'READ',d:o=>{X.fillStyle='#8a6a4a';X.fillRect(o.x+o.w/2-3,o.y+16,6,o.h-16);box(o.x,o.y,o.w,20,'#f1f1f1',3);
+   txt(o.text||'',o.x+o.w/2,o.y+14,9,'#222','center',800)}},
+ chairprop:{s:0,p:1.2,d:o=>{X.fillStyle=o.col||'#a5643c';X.fillRect(o.x+2,o.y,5,20);X.fillRect(o.x,o.y+12,16,5);X.fillRect(o.x+2,o.y+17,3,8);X.fillRect(o.x+11,o.y+17,3,8)}},
+ boxprop:{s:0,p:1,d:o=>{box(o.x,o.y,o.w,o.h,'#c08b52',2);X.strokeStyle='#8a5f34';X.strokeRect(o.x+.5,o.y+.5,o.w-1,o.h-1)}},
+ sandpile:{s:1,d:o=>{for(let i=0;i<14;i++){const sx=o.x+(i%5)*22+((i/5|0)%2)*10,sy=o.y+(i/5|0)*11;
+   box(sx,sy,26,14,'#e6c07b',3);X.fillStyle='#8fbf5b';X.fillRect(sx+2,sy+5,22,3)}}},
+ sandwich:{s:0,i:'TAKE',d:o=>{box(o.x,o.y,26,16,'#e6c07b',3);X.fillStyle='#8fbf5b';X.fillRect(o.x+2,o.y+6,22,3);X.fillStyle='#d95d39';X.fillRect(o.x+2,o.y+9,22,3)}},
+ door:{s:0,i:'ENTER',d:o=>{box(o.x,o.y,o.w,o.h,o.col||'#5b3a29',3);X.fillStyle='#ffca3a';X.beginPath();X.arc(o.x+o.w-6,o.y+o.h/2,2.5,0,7);X.fill();
+   if(o.label&&Math.abs(P.x-o.x)<160&&Math.abs(P.y-o.y)<140){
+     X.fillStyle='rgba(20,22,28,.7)';rr(o.x+o.w/2-o.label.length*3.4-6,o.y-24,o.label.length*6.8+12,16,4);X.fill();
+     txt(o.label,o.x+o.w/2,o.y-12,10,'#fff','center',800)}}},
+ manhole:{s:0,i:'OPEN',d:o=>{X.fillStyle='#4a4a4a';X.beginPath();X.ellipse(o.x+16,o.y+8,17,9,0,0,7);X.fill();X.strokeStyle='#666';X.beginPath();X.ellipse(o.x+16,o.y+8,12,6,0,0,7);X.stroke()}},
+ button:{s:0,i:'PRESS',d:o=>{box(o.x,o.y,20,16,'#3d405b',3);X.fillStyle='#e63946';X.beginPath();X.arc(o.x+10,o.y+8,5,0,7);X.fill()}},
+ flower:{s:0,d:o=>{for(let i=0;i<5;i++){X.fillStyle=['#ff595e','#ffca3a','#fff'][i%3];X.beginPath();X.arc(o.x+i*9,o.y+(i%2)*6,3,0,7);X.fill()}}},
+ rug:{s:0,d:o=>box(o.x,o.y,o.w,o.h,o.col||'#9b5f5f',6)},
+ bed:{s:1,d:o=>{box(o.x,o.y,o.w,o.h,'#c9c2b6',4);box(o.x+3,o.y+3,o.w-6,18,'#fff',3);box(o.x+3,o.y+22,o.w-6,o.h-25,'#5a7bb8',3)}},
+ counter:{s:1,d:o=>{box(o.x,o.y,o.w,o.h,'#a5804d',3);box(o.x,o.y,o.w,7,'#c49a5f',3)}},
+ shelf:{s:1,d:o=>{box(o.x,o.y,o.w,o.h,'#8a7f6d',2);X.fillStyle='rgba(255,255,255,.35)';for(let i=0;i<o.w;i+=18)X.fillRect(o.x+3+i,o.y+4,12,o.h-8)}},
+ pc:{s:1,d:o=>{box(o.x,o.y,o.w,o.h,'#2b2d42',3);box(o.x+3,o.y+3,o.w-6,o.h-10,'#4cc9f0',2)}},
+ lamp:{s:0,d:o=>{X.fillStyle='rgba(255,220,120,.16)';X.beginPath();X.arc(o.x+8,o.y+8,60,0,7);X.fill();box(o.x+5,o.y,6,26,'#888',2);box(o.x,o.y-6,16,8,'#ffca3a',3)}},
+ face:{s:0,d:o=>{box(o.x,o.y,o.w,o.h,'#8d99ae',18);X.fillStyle='#2b2d42';
+   X.beginPath();X.arc(o.x+o.w*.3,o.y+o.h*.4,o.w*.07,0,7);X.arc(o.x+o.w*.7,o.y+o.h*.4,o.w*.07,0,7);X.fill();
+   X.strokeStyle='#2b2d42';X.lineWidth=6;X.beginPath();X.moveTo(o.x+o.w*.3,o.y+o.h*.72);X.lineTo(o.x+o.w*.7,o.y+o.h*.72);X.stroke();X.lineWidth=1}}
+};
+
+ 
+function O(k,x,y,w,h,e){return Object.assign({k,x,y,w:w||24,h:h||24},e||{})}
+const ROADS=[
+ {x:0,y:1400,w:7200,h:170,hz:1},{x:300,y:2450,w:6300,h:170,hz:1},{x:0,y:3850,w:7200,h:220,hz:1},
+ {x:1700,y:0,w:170,h:4400},{x:3300,y:200,w:170,h:4200},{x:5000,y:0,w:170,h:4400},
+ {x:1700,y:700,w:3500,h:140,hz:1},{x:820,y:1400,w:140,h:1620}
+];
+const TOWN=[];
+function B(label,x,y,w,h,col,roof){TOWN.push(O('building',x,y,w,h,{label,col,roof}))}
+function HS(x,y,label){TOWN.push(O('house',x,y,190,145,{label,col:pick(['#e7d3b3','#dbe7c9','#e6d3e7','#d8e7ea','#f0e2c0','#e8dcd0']),roof:pick(['#a8503f','#6d8f5a','#7a5b8f','#4f7f8f','#b07f3f'])}))}
+function DR(x,y,to,tx,ty,label){TOWN.push(O('door',x,y,36,26,{to,tx,ty,label}))}
+function SC(k,x,y,w,h,n,e){for(let i=0;i<n;i++)TOWN.push(O(k,x+rnd(0,w),y+rnd(0,h),(e&&e.w)||24,(e&&e.h)||24,Object.assign({},e)))}
+ 
+[[300,300,"GREG'S"],[700,320],[1080,300],[300,700],[700,900,'MIKE'],[1150,760],[1400,300],[1350,1050]].forEach(h=>HS(h[0],h[1],h[2]));
+DR(385,452,'home',403,500,'HOME');
+B('GARAGE',560,560,150,120,'#b6b1a4','#5f5a50');DR(620,682,'garage',638,730,'GARAGE');
+SC('tree',150,1150,1400,180,7,{w:46,h:54});SC('bush',200,500,1300,600,10,{w:40,h:28});
+ 
+B('STORE',2050,950,280,200,'#e0d6bd','#3f6d8f');DR(2170,1142,'store',2188,1190,'STORE');
+B('CHAIRS',2400,950,180,190,'#d9c9c9','#7f4a4a');DR(2470,1132,'chairs',2488,1180,'CHAIRS');
+B('BARBER?',2650,950,220,190,'#cfe0e8','#476b7a');
+B('CAFE',2920,960,240,180,'#e8d8c0','#8f5b3a');
+B('OFFICE',1950,300,300,300,'#c9c9d2','#5a5f6b');
+B('BANK?',2350,320,260,270,'#d8d2c0','#6b5f4a');
+B('MUSEUM',2700,300,380,280,'#dcd6c9','#7a6a55');
+DR(3060,1250,'basement',3078,1300,'BASEMENT');
+B('FASHION?',1950,1180,230,150,'#e8d0e0','#8f5b8f');DR(2050,1332,'shop',2068,1380,'FASHION?');TOWN[TOWN.length-1].poi='SHOP';
+SC('trash',1900,880,1300,40,6,{w:24,h:28});SC('bench',2000,1300,1100,40,5,{w:70,h:26});
+SC('hydrant',1900,1330,1300,30,4,{w:18,h:22});
+ 
+B('MEGA STORE',3550,300,420,260,'#d6c9b4','#4a6b7a');
+B('SHOES',4050,300,300,240,'#e0d0d8','#7a4a6b');
+B('THINGS',4420,300,320,240,'#d0dcd0','#4a7a5a');
+B('MORE THINGS',3600,620,400,200,'#dcd0c0','#7a6a4a');
+SC('cart',3520,920,860,340,9,{w:44,h:40});SC('trash',3500,880,900,30,4,{w:24,h:28});
+ 
+TOWN.push(O('pond',5900,300,420,240));
+SC('bench',5350,250,1450,1000,9,{w:70,h:26});SC('flower',5350,250,1450,1000,10,{w:40,h:20});
+ 
+B('GAS',1000,1700,180,140,'#e8e8e8','#c1121f');
+TOWN.push(O('pump',1250,1750,26,44),O('pump',1310,1750,26,44),O('pump',1370,1750,26,44));
+TOWN.push(O('vending',960,1880,34,50,{secret:1}));
+ 
+B('SCHOOL',2100,1750,600,300,'#e0c9a8','#8f5b3a');
+SC('bench',2100,2120,600,120,4,{w:70,h:26});SC('bush',2750,1750,140,500,5,{w:40,h:28});
+ 
+TOWN.push(O('tower',3600,1780,60,180));
+SC('barrier',3500,1980,850,320,10,{w:60,h:16});SC('crate',3500,1980,850,320,10,{w:34,h:34});
+SC('cone2',3480,1900,900,400,12,{w:24,h:26});SC('tire',3500,2200,800,120,6,{w:24,h:24});
+B('SHED',3980,1760,160,130,'#b0a48c','#6b6152');DR(4050,1882,'coneroom',4068,1930,'SHED');
+ 
+B('WAREHOUSE',5300,1780,360,220,'#b9b09c','#5d5548');DR(5460,1992,'nope',5478,2040,'DO NOT OPEN');
+B('FACTORY',5800,1800,500,260,'#a8a294','#585045');
+SC('dumpster',5250,2080,1300,220,7,{w:60,h:36});SC('tire',5250,2080,1300,220,8,{w:24,h:24});
+ 
+SC('cone2',2020,2680,860,400,8,{w:24,h:26});
+TOWN.push(O('manhole',2450,2860,32,16,{to:'tunnel',tx:2468,ty:2900}));
+ 
+TOWN.push(O('barn',700,2900,260,180));
+TOWN.push(O('fence',320,2780,1260,14),O('fence',320,2780,14,900),O('fence',1566,2780,14,900),O('fence',320,3666,700,14));
+SC('chairprop',400,3200,900,400,6,{w:16,h:26});SC('bush',350,3300,1200,350,8,{w:40,h:28});
+ 
+TOWN.push(O('manhole',6000,3050,32,16,{to:'storage',tx:6018,ty:3090}));
+TOWN.push(O('tree',5560,2860,120,140,{big:1}));DR(5600,2960,'treehouse',5618,3020,'TREE?');
+ 
+[[5700,4150],[5900,4180],[6120,4150]].forEach(h=>TOWN.push(O('house',h[0],h[1],90,70,{col:'#e7d3b3',roof:'#a8503f'})));
+TOWN.push(O('sign',6300,4200,50,44,{text:'TINY TOWN'}));
+TOWN.push(O('invdog',5650,1050,30,26,{}));
+ 
+TOWN.push(O('sign',1600,1340,50,44,{text:'MAIN ST'}),O('sign',3200,1340,50,44,{text:'NOTHING'}),
+ O('sign',900,2500,50,44,{text:'FARM →'}),O('sign',4900,1340,50,44,{text:'PARK ↑'}),
+ O('sign',5200,3900,50,44,{text:'HIGHWAY'}),O('button',4700,2400,20,16,{mystery:1}),
+ O('sock',2222,1210,18,12,{real:1,tag:'realsock'}));
+SC('sock',1900,900,3000,1600,11,{w:18,h:12});
+SC('pole',0,1340,7000,30,14,{w:10,h:40});SC('pole',0,3790,7000,30,10,{w:10,h:40});
+SC('tree',300,150,1300,120,5,{w:46,h:54});
+
+const MAPS={
+ town:{w:7200,h:4400,base:'#7cb342',name:'GREGTOWN',
+  zones:[['#8f949b',950,1650,560,420],['#b9b2a0',1900,880,1300,480],['#6f7480',3480,880,920,400],
+   ['#5da03e',5300,180,1600,1120],['#c9c3b4',2020,1700,880,600],['#a89b7f',3450,1700,950,650],
+   ['#7d8189',5200,1700,1400,650],['#6f7480',2000,2650,900,470],['#8d7b5f',300,2750,1300,950],
+   ['#3f6d2c',5250,2650,1700,1100],['#7a7f86',5600,4110,800,280],['#b9b2a0',1900,250,1300,380]],
+  obj:TOWN,
+  gen:[['tree',5280,2680,1650,1020,34],['tree',5320,200,1560,1080,14],['tree',300,2780,1250,880,10],
+   ['tree',4500,2600,650,900,8],['tree',6600,1300,560,900,9]]
+ },
+ home:{w:520,h:420,base:'#c9b79a',interior:1,name:"GREG'S HOUSE",
+  obj:[O('wall',0,0,520,40,{col:'#8f7f68'}),O('bed',60,90,90,120),O('rug',220,180,140,90,{col:'#8f5f5f'}),
+   O('pc',380,90,70,50),O('shelf',300,60,80,26),O('tv',150,60,60,40),
+   O('door',230,380,36,26,{to:'town',tx:403,ty:500,label:'OUT'}),
+   O('sign',390,240,50,44,{text:'NORMAL'})]},
+ store:{w:900,h:520,base:'#efe6d6',interior:1,name:'THE STORE',
+  obj:[O('wall',0,0,900,36,{col:'#c9b8a0'}),O('counter',120,120,220,60),
+   O('shelf',420,120,160,40),O('shelf',420,220,160,40),O('shelf',620,120,160,40),
+   O('sandpile',600,300,150,60),
+   O('door',420,480,36,26,{to:'town',tx:2188,ty:1190,label:'OUT'}),
+   O('sign',150,320,50,44,{text:'NO SANDWICH'})]},
+ chairs:{w:620,h:460,base:'#d8c9c9',interior:1,name:'???',
+  obj:[O('wall',0,0,620,34,{col:'#a88'}),O('door',290,420,36,26,{to:'town',tx:2488,ty:1180,label:'OUT'})],
+  gen:[['chair37',60,70,500,300,37]]},
+ nope:{w:560,h:420,base:'#b5ab98',interior:1,name:'DO NOT OPEN',
+  obj:[O('wall',0,0,560,34,{col:'#7d7466'}),O('chairprop',270,190,16,26,{normal:1}),
+   O('door',260,380,36,26,{to:'town',tx:5478,ty:2040,label:'OUT'}),O('lamp',272,120,16,26)]},
+ tunnel:{w:1300,h:300,base:'#4a443c',interior:1,name:'TUNNEL',
+  obj:[O('wall',0,0,1300,60,{col:'#332f29'}),O('wall',0,250,1300,50,{col:'#332f29'}),
+   O('door',100,190,36,26,{to:'town',tx:2468,ty:2900,label:'UP'}),
+   O('sign',600,120,50,44,{text:'STILL HERE'}),
+   O('sandwich',1180,150,26,16,{tag:'tunnelsand'}),O('lamp',300,90,16,26),O('lamp',900,90,16,26)]},
+ secret:{w:520,h:380,base:'#26262e',interior:1,name:'???',
+  obj:[O('wall',0,0,520,34,{col:'#15151a'}),O('pc',220,120,80,56),O('face',180,180,160,140),
+   O('door',250,340,36,26,{to:'town',tx:978,ty:1940,label:'OUT'}),
+   O('sign',80,180,50,44,{text:'YOU FOUND IT'})]},
+ garage:{w:560,h:400,base:'#9d998e',interior:1,name:'LOCKED GARAGE',
+  obj:[O('wall',0,0,560,34,{col:'#6f6b62'}),O('tire',80,120,24,24),O('tire',120,150,24,24),
+   O('crate',420,120,34,34),O('button',270,150,20,16,{secretcar:1}),
+   O('door',260,360,36,26,{to:'town',tx:638,ty:730,label:'OUT'}),
+   O('sign',420,220,50,44,{text:'DO NOT PRESS'})]},
+ set:{w:1300,h:720,base:'#2e2e35',interior:1,name:'???',
+  obj:[O('wall',0,0,1300,60,{col:'#1c1c22'}),O('wall',0,660,1300,60,{col:'#1c1c22'}),
+   O('moviecam',760,300,46,52),O('moviecam',900,420,46,52),
+   O('studiolight',620,180,24,52),O('studiolight',1020,200,24,52),O('studiolight',700,560,24,52),
+   O('clapper',700,360,30,24),O('crate',560,520,34,34),O('crate',600,540,34,34),O('boxprop',1140,300,28,28),
+   O('chairprop',1060,380,16,26),O('chairprop',1100,420,16,26),O('chairprop',1020,440,16,26),
+   O('chairprop',1120,480,16,26),O('chairprop',1060,500,16,26),
+   O('rug',820,240,180,120,{col:'#4a4a55'}),
+   O('sign',300,340,50,44,{text:'SET'}),O('sign',1180,600,50,44,{text:'STAGE 7'})]},
+ shop:{w:640,h:420,base:'#efe0ea',interior:1,name:'FASHION?',
+  obj:[O('wall',0,0,640,36,{col:'#c9a8c0'}),O('counter',120,120,200,60),
+   O('shelf',400,110,180,40),O('shelf',400,200,180,40),
+   O('door',300,380,36,26,{to:'town',tx:2068,ty:1380,label:'OUT'}),
+   O('sign',80,280,50,44,{text:'CLOTHES?'})]},
+ basement:{w:700,h:380,base:'#3b3a36',interior:1,name:'SECRET BASEMENT',
+  obj:[O('wall',0,0,700,34,{col:'#26251f'}),O('lamp',340,60,16,26),O('chairprop',330,190,16,26),
+   O('shelf',80,100,120,30),O('crate',540,180,34,34),
+   O('door',330,340,36,26,{to:'town',tx:3078,ty:1300,label:'UP'}),
+   O('sign',120,220,50,44,{text:'JUST A CHAIR'})]},
+ storage:{w:1100,h:400,base:'#4a443c',interior:1,name:'SANDWICH STORAGE',
+  obj:[O('wall',0,0,1100,50,{col:'#332f29'}),O('lamp',300,80,16,26),O('lamp',800,80,16,26),
+   O('sandpile',200,150,150,60),O('sandpile',500,150,150,60),O('sandpile',800,150,150,60),
+   O('door',100,320,36,26,{to:'town',tx:6018,ty:3090,label:'UP'}),
+   O('sign',560,270,50,44,{text:'NOT YOURS'})]},
+ coneroom:{w:460,h:340,base:'#b0a48c',interior:1,name:'THE SHED',
+  obj:[O('wall',0,0,460,34,{col:'#7d7466'}),O('cone2',220,150,24,26,{lone:1}),
+   O('door',210,300,36,26,{to:'town',tx:4068,ty:1930,label:'OUT'})]},
+ treehouse:{w:420,h:320,base:'#6b4f34',interior:1,name:'A TREE',
+  obj:[O('wall',0,0,420,34,{col:'#4a3624'}),O('rug',150,140,110,70,{col:'#5f7f4f'}),
+   O('door',190,280,36,26,{to:'town',tx:5618,ty:3020,label:'DOWN'}),
+   O('sign',300,150,50,44,{text:'MY HOUSE'})]}
+};
+ 
+ROADS.forEach(r=>{
+  MAPS.town.zones.push(['#c3bdaa',r.x-14,r.y-14,r.w+28,r.h+28]);
+  MAPS.town.zones.push(['#5a5f66',r.x,r.y,r.w,r.h]);
+});
+ 
+function buildGen(m){
+  (m.gen||[]).forEach(g=>{
+    const [k,x,y,w,h,n]=g;
+    if(k==='tree')for(let i=0;i<n;i++){const o=O('tree',x+rnd(0,w-50),y+rnd(0,h-50),46,54);
+      if(!m.obj.some(b=>b.k!=='tree'&&Math.abs(b.x-o.x)<100&&Math.abs(b.y-o.y)<100))m.obj.push(o)}
+    if(k==='chair37')for(let i=0;i<n;i++)m.obj.push(O('chairprop',x+(i%9)*54,y+((i/9)|0)*70,16,26,{col:pick(['#a5643c','#8f5b3a','#b57a4a'])}));
+  });
+}
+for(const k in MAPS)buildGen(MAPS[k]);
+ 
+MAPS.town.obj=MAPS.town.obj.filter(o=>{
+  if(['door','manhole','sign','pole','button'].includes(o.k))return true;
+  return !ROADS.some(r=>o.x+o.w>r.x-6&&o.x<r.x+r.w+6&&o.y+o.h>r.y-6&&o.y<r.y+r.h+6);
+});
+
+ 
+const NPCS=[
+ {id:'dave',name:'Dave',map:'town',x:820,y:520,col:'#81b29a',beh:'stand',
+  talk:()=>[['Dave','"Nice weather."'],['Greg','"It\'s raining."'],['Dave','"I know."']]},
+ {id:'linda',name:'Linda',map:'town',x:1200,y:900,col:'#e07a5f',beh:'stand',q:'chicken'},
+ {id:'chicken1',name:'Chicken',map:'town',x:1240,y:940,col:'#f6f6f6',bird:1,beh:'stand',
+  talk:()=>{if(Q.st('chicken')==='active'&&!F.gotChicken){F.gotChicken=1;saveF();return[['Chicken','"..."'],['Greg','"Found you."']]}
+    return[['Chicken','"..."']]}},
+ {id:'rob',name:'Rob',map:'town',x:2100,y:1250,col:'#9b8bd6',beh:'look',q:'chair'},
+ {id:'mike',name:'Mike',map:'town',x:800,y:1100,col:'#f2cc8f',beh:'stand',q:'chair2'},
+ {id:'sandra',name:'Sandra',map:'town',x:2150,y:2800,col:'#c9ada7',beh:'stand',q:'parking'},
+ {id:'terry',name:'Terry',map:'town',x:2600,y:1250,col:'#7f9cc9',beh:'wander',q:'sand2'},
+ {id:'bud',name:'Farmer Bud',map:'town',x:900,y:3150,col:'#a3b18a',beh:'stand',q:'goat'},
+ {id:'goat',name:'Goat',map:'town',x:1000,y:3250,col:'#e8e2d4',goat:1,beh:'follow',
+  talk:()=>{if(Q.st('goat4')==='active'){F.goatjob=1;saveF()}return[['Goat','"BAAA."'],['Greg','"Confirmed."']]}},
+ {id:'phil',name:'Postman Phil',map:'town',x:2400,y:1300,col:'#5a8fc9',beh:'walk',path:[[2400,1300],[3000,1300]],q:'box'},
+ {id:'doris',name:'Doris',map:'town',x:5800,y:700,col:'#d6a2e8',beh:'sit',q:'box2'},
+ {id:'kid',name:'Kid',map:'town',x:5500,y:520,col:'#ffca3a',beh:'sit',
+  talk:()=>[['Kid','"banana"'],['Greg','"What?"'],['Kid','"banana"']]},
+ {id:'bushguy',name:'???',map:'town',x:6300,y:1100,col:'#3f7d2e',beh:'stand',hide:1,
+  talk:()=>{F.bush=1;saveF();return[['???','"You can\'t see me."'],['Greg','"I can."'],['???','"Impressive."']]}},
+ {id:'cashier',name:'Cashier',map:'store',x:230,y:200,col:'#f2cc8f',beh:'stand',apron:1,
+  talk:()=>{if(!F.storeScene){F.storeScene=1;saveF();return CUT.store}
+    return[['Cashier','"Still decorative."']]}},
+ {id:'sci',name:'Scientist',map:'town',x:4200,y:1250,col:'#eef2f5',beh:'wander',coat:1,
+  talk:()=>{const n=(F.sci=(F.sci||0)+1);saveF();
+   if(n===1)return[['Scientist','"We know why you\'re doing this."'],['Greg','"Why?"'],['Scientist','"We forgot."']];
+   if(n===2)return[['Scientist','"We remembered."'],['Greg','"And?"'],['Scientist','"We forgot again."']];
+   return[['Scientist','"Please stop asking."']]}},
+ {id:'jog',name:'Jogger',map:'town',x:5600,y:1550,col:'#ff924c',beh:'circle',
+  talk:()=>[['Jogger','"Can\'t stop. Sorry."'],['Greg','"You did stop."'],['Jogger','"Ugh."']]},
+ {id:'sitter',name:'Man',map:'town',x:5900,y:950,col:'#8d99ae',beh:'sit',
+  talk:()=>[['Man','"I\'m just going to sit here."'],['Greg','"Okay."'],['Man','"Thank you."']]},
+ {id:'old',name:'Old Man',map:'town',x:1200,y:1900,col:'#b0a8a0',beh:'stand',
+  talk:()=>[['Old Man','"I\'ve been here since 6."'],['Greg','"Waiting for what?"'],['Old Man','"6."']]},
+ {id:'dog',name:'Dog',map:'town',x:2000,y:1650,col:'#8a6a4a',dog:1,beh:'wander',
+  talk:()=>[['Dog','"..."'],['Greg','"Right."']]},
+ {id:'karl',name:'Karl',map:'town',x:3450,y:2600,col:'#457b9d',beh:'stand',
+  talk:()=>[['Karl','"I park here."'],['Greg','"This is the road."'],['Karl','"Yes."']]},
+ {id:'cameraman',name:'Cameraman',map:'set',x:800,y:360,col:'#3d405b',beh:'stand',cos:['normalhat'],
+  talk:()=>{if(!F.pdSeen){F.pdSeen=1;saveF();cut(CUT.projectdumb);return[]}return[['Cameraman','"Still filming."']]}},
+ {id:'director',name:'Director',map:'set',x:960,y:300,col:'#6b705c',beh:'sit',cos:['bigshades'],
+  talk:()=>[['Director','"We\'re on take 48 now."'],['Greg','"Sorry."'],['Director','"It\'s fine."']]},
+ {id:'aud1',name:'Audience',map:'set',x:1040,y:390,col:'#e07a5f',beh:'sit',cos:['duck'],talk:()=>[['Audience','"Shhh."']]},
+ {id:'aud2',name:'Audience',map:'set',x:1090,y:430,col:'#81b29a',beh:'sit',talk:()=>[['Audience','"He\'s taller in person."']]},
+ {id:'aud3',name:'Audience',map:'set',x:1010,y:450,col:'#f2cc8f',beh:'stand',snack:1,talk:()=>[['Audience','"..."'],['Greg','"Are those my snacks?"'],['Audience','"No."']]},
+ {id:'aud4',name:'Audience',map:'set',x:1110,y:490,col:'#9b8bd6',beh:'sit',talk:()=>[['Audience','"Do the sandwich part again."']]},
+ {id:'aud5',name:'Audience',map:'set',x:1050,y:510,col:'#c9ada7',beh:'stand',cos:['cowboy'],talk:()=>[['Audience','"I only came for the goat."']]},
+ {id:'aud6',name:'Audience',map:'set',x:960,y:520,col:'#7f9cc9',beh:'sit',snack:1,talk:()=>[['Audience','"*eating*"']]},
+ {id:'boom',name:'Boom Operator',map:'set',x:720,y:440,col:'#a3b18a',beh:'stand',cos:['helmet'],
+  talk:()=>[['Boom Operator','"Can you say something?"'],['Greg','"Something."'],['Boom Operator','"Perfect."']]},
+ {id:'devguy',name:'Guy In Room',map:'secret',x:120,y:200,col:'#4cc9f0',beh:'stand',
+  talk:()=>[['Guy In Room','"You weren\'t supposed to find this."'],['Greg','"Sorry."'],['Guy In Room','"It\'s fine. Take a spoon."'],
+   ['','',()=>{give('One Spoon');own('spoon')}]]},
+ {id:'chef',name:'Chef',map:'town',x:2980,y:1050,col:'#fff',beh:'wander',
+  talk:()=>[['Chef','"I make sandwiches."'],['Greg','"Great."'],['Chef','"I make them badly."']]},
+ {id:'fashion',name:'Fashion Person',map:'shop',x:220,y:200,col:'#d6a2e8',beh:'stand',shop:1,
+  talk:()=>{openShop();return[]}},
+ {id:'treeman',name:'Tree Person',map:'treehouse',x:120,y:150,col:'#6d8f5a',beh:'stand',
+  talk:()=>[['Tree Person','"I live in a tree."'],['Greg','"Why?"'],['Tree Person','"Rent."']]},
+ {id:'coneguy',name:'Worker',map:'town',x:3560,y:2050,col:'#ff924c',beh:'stand',q:'cone'},
+ {id:'remoteguy',name:'Ron',map:'town',x:2740,y:1080,col:'#c9a27f',beh:'stand',q:'remote'},
+ {id:'dogless',name:'Marge',map:'town',x:5450,y:900,col:'#e8b4c8',beh:'stand',q:'invdog'},
+ {id:'sockguy',name:'Sock Man',map:'town',x:1950,y:1250,col:'#9aa0d6',beh:'stand',q:'sock'},
+ {id:'helpguy',name:'Nervous Guy',map:'town',x:4500,y:1300,col:'#b0c9a8',beh:'stand',q:'help'},
+ {id:'pkgguy',name:'Suspicious Man',map:'town',x:5300,y:2500,col:'#6d6875',beh:'stand',q:'pkg'},
+ {id:'pkgguy2',name:'Other Man',map:'town',x:900,y:2500,col:'#7f6f8f',beh:'stand',q:'pkg2'},
+ {id:'chairman',name:'Seated Man',map:'town',x:6400,y:600,col:'#a8a8c9',beh:'stand',q:'chairman'},
+ {id:'buttonlady',name:'Button Lady',map:'town',x:4650,y:2450,col:'#d6c9a2',beh:'stand',q:'button'},
+ {id:'goatboss',name:'Goat In A Tie',map:'town',x:5900,y:1900,col:'#e8e2d4',goat:1,beh:'stand',q:'goat5',tie:1},
+ {id:'hatguy',name:'Hat Guy',map:'town',x:2600,y:520,col:'#c9a27f',beh:'stand',q:'hat',cos:['cowboy']},
+ {id:'pigeonp',name:'Pigeon Person',map:'town',x:5600,y:520,col:'#a8b0c9',beh:'stand',q:'pigeon'},
+ {id:'pigeon',name:'Pigeon',map:'town',x:5760,y:420,col:'#9aa0b6',bird:1,beh:'wander',
+  talk:()=>{if(Q.st('pigeon')==='active'){F.pigeon=1;saveF()}return[['Pigeon','"..."'],['Greg','"So that\'s a no."']]}},
+ {id:'guyfinder',name:'Person',map:'town',x:2900,y:1300,col:'#8d99ae',beh:'stand',q:'findguy'},
+ {id:'susguy1',name:'Suspicious Guy',map:'town',x:3600,y:1250,col:'#3d405b',beh:'stand',sus:1,cos:['bigshades']},
+ {id:'susguy2',name:'Suspicious Guy',map:'town',x:1400,y:2500,col:'#3d405b',beh:'stand',sus:1,cos:['tophat']},
+ {id:'susguy3',name:'Suspicious Guy',map:'town',x:6100,y:2500,col:'#3d405b',beh:'stand',sus:1,cos:['mustache']},
+ {id:'driverq',name:'Driver',map:'town',x:2350,y:2750,col:'#e07a5f',beh:'stand',q:'parkspace'},
+ {id:'boxman',name:'Box Man',map:'town',x:2750,y:1300,col:'#c08b52',beh:'stand',q:'emptybox'},
+ {id:'boxrecv',name:'Receiver',map:'town',x:5500,y:1900,col:'#a3b18a',beh:'stand',q:'emptybox2'},
+ {id:'sender',name:'Sender',map:'town',x:1250,y:1300,col:'#7f9cc9',beh:'stand',q:'wrongpkg'},
+ {id:'recipient',name:'Recipient',map:'town',x:6000,y:1000,col:'#d6a2e8',beh:'stand',q:'wrongpkg2'},
+ {id:'forget',name:'Forgetful Man',map:'town',x:2170,y:2860,col:'#b0a8a0',beh:'stand',q:'lostcar'},
+ {id:'busyp',name:'Busy Person',map:'town',x:2050,y:400,col:'#3d405b',beh:'phone',q:'busy',cos:['briefcase']},
+ {id:'worried',name:'Worried Man',map:'town',x:2900,y:1650,col:'#a8c9b0',beh:'stand',q:'noise'},
+ {id:'noiseguy',name:'Noise Guy',map:'town',x:3050,y:1600,col:'#6d6875',beh:'stand',
+  talk:()=>{if(Q.st('noise')==='active'){F.noise=1;saveF()}return[['Noise Guy','"BRRRRRT."'],['Greg','"..."'],['Noise Guy','"That\'s just me."']]}},
+ {id:'chairfan',name:'Chair Enthusiast',map:'town',x:1050,y:900,col:'#a5643c',beh:'stand',q:'chairs3'},
+ {id:'goatowner',name:'Goat Owner',map:'town',x:1350,y:3300,col:'#a3b18a',beh:'stand',q:'wronggoat'},
+ {id:'btnfan',name:'Button Enjoyer',map:'town',x:4550,y:2520,col:'#d6c9a2',beh:'stand',q:'button2'},
+ {id:'disp2',name:'Dispatcher 2',map:'town',x:5350,y:2250,col:'#f4a261',beh:'stand',q:'selfdeliver'},
+ {id:'manager',name:'Manager',map:'town',x:2200,y:1780,col:'#3d405b',beh:'stand',q:'meeting',cos:['normalglasses']},
+ {id:'inspector',name:'Inspector',map:'town',x:1980,y:1000,col:'#eef2f5',beh:'stand',q:'sandinspect',coat:1},
+  
+ {id:'dispatch',name:'Dispatcher',map:'town',x:2200,y:1650,col:'#f4a261',beh:'stand',j:'taxi'},
+ {id:'boss',name:'Warehouse Boss',map:'town',x:5400,y:2100,col:'#8d99ae',beh:'stand',j:'delivery'},
+ {id:'sani',name:'Sanitation Chief',map:'town',x:1500,y:2600,col:'#5d7a52',beh:'stand',j:'trash'},
+ {id:'lotguy',name:'Lot Guy',map:'town',x:2600,y:2700,col:'#c9c9a2',beh:'stand',j:'parkjob'},
+ {id:'chickperson',name:'Chicken Person',map:'town',x:1100,y:3400,col:'#e6c07b',beh:'stand',j:'chickens'},
+ {id:'foreman',name:'Foreman',map:'town',x:3700,y:1900,col:'#ff924c',beh:'stand',j:'construction'},
+ {id:'pizza',name:'Pizza Manager',map:'town',x:3000,y:1050,col:'#e63946',beh:'stand',j:'pizza'},
+ {id:'mech',name:'Mechanic',map:'town',x:1150,y:1880,col:'#6b705c',beh:'stand',j:'cartest'}
+];
+ 
+const ARCH=[
+ ['Tourist','#ffca3a',[['"Is this the town?"'],['"We drove four hours."'],['"Where is the attraction?"']]],
+ ['Student','#7f9cc9',[['"I have a test."'],['"I did not study."'],['"It\'s fine."']]],
+ ['Worker','#ff924c',[['"We\'re building something."'],['"Nobody knows what."'],['"Union rules."']]],
+ ['Business Person','#3d405b',[['"I\'m extremely busy."'],['"I am walking somewhere."'],['"Quarterly."']]],
+ ['Old Person','#b0a8a0',[['"Back in my day, this was also here."'],['"You look tall."'],['"Hm."']]],
+ ['Kid','#8ac926',[['"I\'m not supposed to talk to you."'],['"But I am."'],['"Bye."']]],
+ ['Delivery Worker','#5a8fc9',[['"Package."'],['"Not for you."'],['"Move."']]],
+ ['Jogger','#e07a5f',[['"Great pace today."'],['"I am standing still."'],['"Great pace."']]],
+ ['Mechanic','#6b705c',[['"Your car makes a noise."'],['"You don\'t have a car?"'],['"It still makes a noise."']]],
+ ['Farmer','#a3b18a',[['"Seen my goat?"'],['"Everyone has."'],['"That\'s the problem."']]],
+ ['Strange Guy','#9b8bd6',[['"I know things."'],['"Not useful things."'],['"But things."']]],
+ ['Person With A Chair','#c9a27f',[['"I\'m carrying a chair."'],['"Don\'t ask."'],['"It\'s not for sitting."']]],
+ ['Cashier','#f2cc8f',[['"We\'re closed."'],['"We were never open."'],['"Have a nice day."']]],
+ ['Tourist','#e8b4c8',[['"I took a photo of a wall."'],['"It was a good wall."']]]
+];
+const NPC_COS=['cowboy','helmet','bigshades','verysmall','mustache','duck','plant','briefcase','sh_npc','sh_emp','boots','tinyglasses','normalhat'];
+const SPOTS=[[300,300,1300,1000],[1900,250,1300,1100],[3450,250,1300,1000],[5300,200,1550,1100],
+ [950,1650,550,400],[2020,1700,880,600],[3450,1700,900,600],[5200,1700,1350,600],
+ [2000,2650,880,450],[350,2780,1200,850],[5300,2700,1500,900],[1900,1250,1300,120],[3400,1250,1500,120]];
+function ambientLines(n){
+  const a=ARCH[n.arch];
+  if(Math.random()<.32){const r=reactLine();if(r)return r}
+  const l=a[2];
+  return l.map(x=>[n.name,x[0]]);
+}
+function reactLine(){
+  const o=[];
+  if(F.crowdSeen)o.push([['Person','"Wasn\'t that the guy who just stood there?"'],['Greg','"..."']]);
+  if(F.crash)o.push([['Person','"I saw what you did to that trash can."'],['Greg','"It moved first."']]);
+  if(F.jobsDone>0)o.push([['Person','"You have a job now?"'],['Greg','"Several."'],['Person','"Wow."']]);
+  if(Q.count()>=3)o.push([['Person','"You\'re the one who helps people."'],['Greg','"Apparently."']]);
+  if(F.projectdumb&&Math.random()<.5)o.push([['Person','"Hey, weren\'t you supposed to be filming something?"'],['Greg','"...No."'],['Person','"Okay."']]);
+  if(F.stole)o.push([['Person','"That\'s not your car."'],['Greg','"It is now."'],['Person','"Fair."']]);
+  const eq=eqList();
+  if(eq.length){
+    const c=COSI[pick(eq)];
+    if(c.c==='hat')o.push([['Person','"Nice hat."'],['Greg','"Thanks."'],['Person','"Why?"'],['Greg','"It was $'+c.p+'."'],['Person','"Fair enough."']]);
+    if(c.id==='floatsand')o.push([['Person','"Is that a sandwich?"'],['Greg','"..."'],['Person','"Okay."']]);
+    if(c.id==='sh_npc')o.push([['Person','"Are you one of us?"'],['Greg','"No."'],['Person','"Okay."']]);
+    if(c.c==='shoes')o.push([['Person','"Those are shoes."'],['Greg','"Yes."']]);
+    if(c.c==='acc')o.push([['Person','"Why are you carrying that?"'],['Greg','"It came with the outfit."']]);
+  }
+  return o.length?pick(o):null;
+}
+(function populate(){
+  let i=0;
+  SPOTS.forEach(sp=>{
+    const n=sp[4]||6;
+    for(let k=0;k<n;k++,i++){
+      const a=ri(0,ARCH.length-1);
+      const npc={id:'amb'+i,name:ARCH[a][0],map:'town',arch:a,col:ARCH[a][1],
+        x:sp[0]+rnd(0,sp[2]),y:sp[1]+rnd(0,sp[3]),
+        beh:pick(['wander','stand','stand','phone','sit','walk2','pair']),ambient:1,
+        cos:Math.random()<.45?[pick(NPC_COS)].concat(Math.random()<.3?[pick(NPC_COS)]:[]):null};
+      npc.talk=()=>ambientLines(npc);
+      NPCS.push(npc);
+    }
+  });
+})();
+
+
+ 
+const COS=[
+  
+ {id:'cone',n:'TRAFFIC CONE HAT',c:'hat',p:25,d:'"It was $25."',dr:(x,h)=>{X.fillStyle='#f4732a';X.beginPath();X.moveTo(x,h-30);X.lineTo(x+11,h-8);X.lineTo(x-11,h-8);X.closePath();X.fill();X.fillStyle='#fff';X.fillRect(x-8,h-19,16,4)}},
+ {id:'party',n:'TINY PARTY HAT',c:'hat',p:5,d:'"For tiny parties."',dr:(x,h)=>{X.fillStyle='#e63946';X.beginPath();X.moveTo(x+2,h-19);X.lineTo(x+7,h-8);X.lineTo(x-3,h-8);X.closePath();X.fill()}},
+ {id:'cowboy',n:'GIANT COWBOY HAT',c:'hat',p:100,d:'"Yeehaw, probably."',dr:(x,h)=>{X.fillStyle='#8a5f34';X.beginPath();X.ellipse(x,h-9,26,7,0,0,7);X.fill();box(x-9,h-24,18,15,'#8a5f34',3)}},
+ {id:'banana',n:'BANANA HAT',c:'hat',p:25,d:'"A banana. On your head."',dr:(x,h)=>{X.strokeStyle='#ffd63d';X.lineWidth=7;X.lineCap='round';X.beginPath();X.arc(x,h-4,13,3.5,6.0);X.stroke();X.lineWidth=1}},
+ {id:'helmet',n:'CONSTRUCTION HELMET',c:'hat',p:0,d:'"Earned on the job."',dr:(x,h)=>{X.fillStyle='#ffca3a';X.beginPath();X.arc(x,h-9,10,Math.PI,0);X.fill();X.fillRect(x-13,h-10,26,4)}},
+ {id:'verysmall',n:'VERY SMALL HAT',c:'hat',p:10,d:'"Extremely normal."',dr:(x,h)=>{box(x-3,h-13,6,4,'#2b2d42',1)}},
+ {id:'tophat',n:'GIANT TOP HAT',c:'hat',p:250,d:'"Formal. Too formal."',dr:(x,h)=>{box(x-14,h-12,28,4,'#1d1d20',1);box(x-9,h-40,18,29,'#1d1d20',2)}},
+ {id:'pot',n:'COOKING POT',c:'hat',p:50,d:'"Kitchen adjacent."',dr:(x,h)=>{box(x-11,h-22,22,14,'#9aa0a6',3);X.fillStyle='#6b7075';X.fillRect(x+10,h-18,7,4)}},
+ {id:'signhat',n:'TRAFFIC SIGN HAT',c:'hat',p:75,d:'"Yields to nothing."',dr:(x,h)=>{box(x-1,h-22,3,14,'#8a6a4a',1);box(x-10,h-32,20,12,'#f1f1f1',2);txt('?',x,h-23,10,'#222','center',900)}},
+ {id:'normalhat',n:'VERY NORMAL HAT',c:'hat',p:10,d:'"Extremely normal."',dr:(x,h)=>{X.fillStyle='#6b705c';X.beginPath();X.arc(x,h-10,9,Math.PI,0);X.fill();X.fillRect(x-2,h-11,14,3)}},
+ {id:'taxicap',n:'TAXI DRIVER CAP',c:'hat',p:0,d:'"Job reward."',dr:(x,h)=>{X.fillStyle='#f4c430';X.beginPath();X.arc(x,h-10,9,Math.PI,0);X.fill();X.fillRect(x-2,h-11,13,3);X.fillStyle='#222';X.fillRect(x-6,h-16,12,3)}},
+ {id:'pizzahat',n:'PIZZA HAT',c:'hat',p:0,d:'"Still warm."',dr:(x,h)=>{X.fillStyle='#e6c07b';X.beginPath();X.moveTo(x,h-26);X.lineTo(x+12,h-8);X.lineTo(x-12,h-8);X.closePath();X.fill();X.fillStyle='#c1121f';X.beginPath();X.arc(x-4,h-14,2.5,0,7);X.arc(x+4,h-13,2.5,0,7);X.fill()}},
+ {id:'chickenhat',n:'CHICKEN HAT',c:'hat',p:0,d:'"It knows."',dr:(x,h)=>{X.fillStyle='#f6f6f6';X.beginPath();X.arc(x,h-16,9,0,7);X.fill();X.fillStyle='#d33';X.beginPath();X.arc(x,h-24,4,0,7);X.fill();X.fillStyle='#f4a300';X.beginPath();X.moveTo(x+8,h-15);X.lineTo(x+15,h-13);X.lineTo(x+8,h-11);X.fill()}},
+ {id:'dumbhat',n:'EXTREMELY DUMB HAT',c:'hat',p:1500,d:'"The dumbest one."',dr:(x,h)=>{for(let i=0;i<5;i++){X.fillStyle=['#ff595e','#ffca3a','#8ac926','#1982c4','#6a4c93'][i];X.beginPath();X.arc(x+Math.sin(tt*3+i)*3,h-12-i*6,9-i*1.5,0,7);X.fill()}}},
+  
+ {id:'bigshades',n:'GIANT SUNGLASSES',c:'glasses',p:25,d:'"Cool. Allegedly."',dr:(x,h)=>{box(x-13,h-4,26,9,'#1d1d20',2)}},
+ {id:'tinyglasses',n:'TINY GLASSES',c:'glasses',p:15,d:'"Nearly invisible."',dr:(x,h)=>{X.strokeStyle='#222';X.beginPath();X.arc(x-3,h-1,2,0,7);X.arc(x+3,h-1,2,0,7);X.stroke()}},
+ {id:'onelens',n:'ONE LENS',c:'glasses',p:20,d:'"Half a decision."',dr:(x,h)=>{X.strokeStyle='#222';X.lineWidth=2;X.beginPath();X.arc(x+3,h-1,4,0,7);X.stroke();X.lineWidth=1}},
+ {id:'pixel',n:'PIXEL GLASSES',c:'glasses',p:60,d:'"Deal with it."',dr:(x,h)=>{X.fillStyle='#1d1d20';for(let i=0;i<4;i++)X.fillRect(x-10+i*5,h-4,4,4);X.fillRect(x-10,h,20,3)}},
+ {id:'normalglasses',n:'COMPLETELY NORMAL GLASSES',c:'glasses',p:12,d:'"Nothing unusual."',dr:(x,h)=>{X.strokeStyle='#3d405b';X.lineWidth=1.5;X.strokeRect(x-8,h-4,6,5);X.strokeRect(x+2,h-4,6,5);X.beginPath();X.moveTo(x-2,h-2);X.lineTo(x+2,h-2);X.stroke();X.lineWidth=1}},
+ {id:'mustache',n:'FAKE MUSTACHE',c:'glasses',p:8,d:'"Nobody will know."',dr:(x,h)=>{X.fillStyle='#3a2a1a';X.beginPath();X.ellipse(x-4,h+5,4,2,0,0,7);X.ellipse(x+4,h+5,4,2,0,0,7);X.fill()}},
+  
+ {id:'conepack',n:'TRAFFIC CONE BACKPACK',c:'acc',p:40,d:'"Cones on the go."',dr:(x,h,b)=>{X.fillStyle='#f4732a';X.beginPath();X.moveTo(x-14,b-2);X.lineTo(x-8,b+16);X.lineTo(x-20,b+16);X.closePath();X.fill()}},
+ {id:'spoon',n:'GIANT SPOON',c:'acc',p:50,d:'"Why?"',dr:(x,h,b)=>{X.strokeStyle='#c9c9c9';X.lineWidth=4;X.beginPath();X.moveTo(x+13,b+18);X.lineTo(x+17,b-10);X.stroke();X.fillStyle='#e0e0e0';X.beginPath();X.ellipse(x+17,b-14,5,7,0,0,7);X.fill();X.lineWidth=1}},
+ {id:'floatsand',n:'FLOATING SANDWICH',c:'acc',p:500,d:'"Finally."',dr:(x,h)=>{const y=h-38+Math.sin(tt*2)*4;box(x-13,y,26,15,'#e6c07b',3);X.fillStyle='#8fbf5b';X.fillRect(x-11,y+5,22,3);X.fillStyle='#d95d39';X.fillRect(x-11,y+8,22,3)}},
+ {id:'duck',n:'RUBBER DUCK',c:'acc',p:15,d:'"It watches."',dr:(x,h,b)=>{X.fillStyle='#ffca3a';X.beginPath();X.ellipse(x+12,b-6,6,5,0,0,7);X.arc(x+15,b-11,4,0,7);X.fill();X.fillStyle='#f4732a';X.fillRect(x+18,b-11,4,2)}},
+ {id:'chairacc',n:'THE CHAIR',c:'acc',p:35,d:'"Portable furniture."',dr:(x,h,b)=>{X.fillStyle='#a5643c';X.fillRect(x-22,b-8,5,20);X.fillRect(x-26,b+4,14,4);X.fillRect(x-24,b+8,3,7);X.fillRect(x-15,b+8,3,7)}},
+ {id:'briefcase',n:'THE BRIEFCASE',c:'acc',p:120,d:'"Contains nothing."',dr:(x,h,b)=>{box(x+11,b+4,16,12,'#5b3a29',2);X.fillStyle='#c9a227';X.fillRect(x+17,b+3,4,2)}},
+ {id:'hugekey',n:'HUGE KEY',c:'acc',p:80,d:'"Opens nothing."',dr:(x,h,b)=>{X.strokeStyle='#ffca3a';X.lineWidth=3;X.beginPath();X.arc(x+16,b-8,5,0,7);X.moveTo(x+16,b-3);X.lineTo(x+16,b+14);X.moveTo(x+16,b+8);X.lineTo(x+22,b+8);X.stroke();X.lineWidth=1}},
+ {id:'plant',n:'TINY PLANT',c:'acc',p:18,d:'"A responsibility."',dr:(x,h,b)=>{box(x+12,b+6,10,9,'#b5643c',2);X.fillStyle='#3f7d2e';X.beginPath();X.arc(x+14,b+4,4,0,7);X.arc(x+20,b+3,3,0,7);X.fill()}},
+  
+ {id:'sh_sand',n:'"I LIKE SANDWICHES" SHIRT',c:'shirt',p:25,d:'"A statement."',col:'#f0c775',lb:'SND'},
+ {id:'sh_prob',n:'"PROBABLY" SHIRT',c:'shirt',p:25,d:'"Non-committal."',col:'#9fb8d6',lb:'PRB'},
+ {id:'sh_npc',n:'NPC SHIRT',c:'shirt',p:75,d:'"Become one of them."',col:'#b6b6b6',lb:'NPC'},
+ {id:'sh_emp',n:'"EMPLOYEE" SHIRT',c:'shirt',p:30,d:'"Of somewhere."',col:'#7fb37f',lb:'EMP'},
+ {id:'sh_busy',n:'"I\'M BUSY" SHIRT',c:'shirt',p:30,d:'"You are not."',col:'#d68f8f',lb:'BSY'},
+ {id:'sh_white',n:'PLAIN WHITE SHIRT',c:'shirt',p:5,d:'"It is a shirt."',col:'#f2f2f2'},
+  
+ {id:'bigshoes',n:'GIANT SHOES',c:'shoes',p:45,d:'"Structurally concerning."',dr:(x,h,b,f)=>{X.fillStyle='#1d1d20';X.beginPath();X.ellipse(x-7,f+2,11,5,0,0,7);X.ellipse(x+7,f+2,11,5,0,0,7);X.fill()}},
+ {id:'tinyshoes',n:'TINY SHOES',c:'shoes',p:20,d:'"Barely there."',dr:(x,h,b,f)=>{X.fillStyle='#1d1d20';X.fillRect(x-5,f,3,2);X.fillRect(x+2,f,3,2)}},
+ {id:'flippers',n:'FLIPPERS',c:'shoes',p:35,d:'"For the road."',dr:(x,h,b,f)=>{X.fillStyle='#3f9d5a';X.beginPath();X.ellipse(x-8,f+3,10,4,0,0,7);X.ellipse(x+8,f+3,10,4,0,0,7);X.fill()}},
+ {id:'boots',n:'WORK BOOTS',c:'shoes',p:40,d:'"Professional."',dr:(x,h,b,f)=>{X.fillStyle='#6b4a2f';X.fillRect(x-7,f-2,6,5);X.fillRect(x+1,f-2,6,5)}},
+ {id:'normalshoes',n:'EXTREMELY NORMAL SHOES',c:'shoes',p:10,d:'"Shoes."',dr:(x,h,b,f)=>{X.fillStyle='#2b2d42';X.fillRect(x-6,f,5,3);X.fillRect(x+1,f,5,3)}}
+];
+const COSI={};COS.forEach(c=>COSI[c.id]=c);
+let OWN=SV.get('dg3_own',[]), EQ=SV.get('dg3_eq',{});
+function own(id){if(!OWN.includes(id)){OWN.push(id);SV.set('dg3_own',OWN);notify('UNLOCKED: '+COSI[id].n);sfx.ok()}}
+function equip(id){const c=COSI[id];EQ[c.c]=EQ[c.c]===id?null:id;SV.set('dg3_eq',EQ);sfx.pick()}
+function eqList(){return Object.values(EQ).filter(Boolean)}
+function drawCos(e,list,bob,sit){
+  if(!list||!list.length)return;
+  const hy=e.y-15+bob-sit, by=e.y-8+bob-sit, fy=e.y+13;
+  for(const id of list){const c=COSI[id];if(c&&c.dr)c.dr(e.x,hy,by,fy);
+    if(c&&c.lb){txt(c.lb,e.x,by+11,6,'rgba(0,0,0,.55)','center',800)}}
+}
+
+ 
+const CARS=[
+ {id:'tiny',map:'town',x:1500,y:1330,ang:0,col:'#ffca3a',w:34,h:24,sp:560,ac:620,hd:4.2,name:'TINY CAR',drive:1},
+ {id:'van',map:'town',x:5350,y:2150,ang:0,col:'#4a6fa5',w:86,h:40,sp:330,ac:200,hd:1.8,name:'ENORMOUS VAN',drive:1,heavy:1},
+ {id:'slow',map:'town',x:1250,y:1990,ang:0,col:'#8d99ae',w:56,h:30,sp:90,ac:70,hd:2.2,name:'SUSPICIOUSLY SLOW CAR',drive:1},
+ {id:'stuff',map:'town',x:3560,y:2380,ang:0,col:'#e07a5f',w:60,h:32,sp:400,ac:320,hd:2.5,name:'CAR WITH A THING ON TOP',drive:1,top:1},
+ {id:'old',map:'town',x:640,y:2600,ang:0,col:'#6b705c',w:58,h:30,sp:260,ac:150,hd:2,name:'EXTREMELY OLD CAR',drive:1,smoke:1},
+ {id:'sandracar',map:'town',x:2300,y:2900,ang:0,col:'#c9ada7',w:58,h:30,sp:380,ac:300,hd:2.4,name:"SANDRA'S CAR",drive:1,quest:'parking',owner:'Sandra'},
+ {id:'sport',map:'town',x:3900,y:1000,ang:0,col:'#e63946',w:62,h:28,sp:720,ac:700,hd:2.9,name:'FAST CAR',drive:1},
+ {id:'taxi',map:'town',x:2250,y:1600,ang:0,col:'#f4c430',w:62,h:30,sp:430,ac:340,hd:2.6,name:'TAXI',drive:1},
+ {id:'truck',map:'town',x:5900,y:2150,ang:0,col:'#7a6a55',w:92,h:38,sp:300,ac:180,hd:1.6,name:'WORK TRUCK',drive:1,heavy:1},
+ {id:'farmcar',map:'town',x:1100,y:2900,ang:0,col:'#a3b18a',w:58,h:30,sp:340,ac:260,hd:2.3,name:'FARM CAR',drive:1},
+ {id:'pizzacar',map:'town',x:3100,y:1200,ang:0,col:'#e63946',w:52,h:28,sp:460,ac:400,hd:3,name:'PIZZA CAR',drive:1},
+ {id:'sleepcar',map:'town',x:2100,y:2900,ang:0,col:'#457b9d',w:58,h:30,sp:0,ac:0,hd:0,name:'OCCUPIED CAR',npc:1}
+];
+ 
+ROADS.forEach((r,i)=>{
+  const n=r.hz?2:2;
+  for(let k=0;k<n;k++){
+    const back=k%2===1;
+    const lane=r.hz?r.y+r.h*(back?.72:.28):r.x+r.w*(back?.72:.28);
+    const a=r.hz?[[r.x+20,lane],[r.x+r.w-20,lane]]:[[lane,r.y+20],[lane,r.y+r.h-20]];
+    CARS.push({id:'tr'+i+k,map:'town',x:a[back?1:0][0],y:a[back?1:0][1],ang:0,
+      col:pick(['#f4a261','#2a9d8f','#e9c46a','#9b8bd6','#c1121f','#457b9d','#8ac926']),
+      w:r.hz?58:30,h:r.hz?30:58,sp:rnd(160,260),
+      traffic:back?[a[0],a[1]]:[a[1],a[0]],slowpoke:Math.random()<.25});
+  }
+});
+
+ 
+const QUESTS={
+ chicken:{title:'FIND MY CHICKEN',
+  start:[['Linda','"My chicken is missing."'],['Greg','"Where did it go?"'],['Linda','"Probably somewhere."']],
+  check:()=>F.gotChicken,
+  done:[['Linda','"Thank you!"'],['Greg','"It was behind you."'],['Linda','"Yes."']],reward:{money:5,cos:'chickenhat'}},
+ chair:{title:'DELIVER THE CHAIR',
+  start:[['Rob','"Take this chair to Mike."'],['Greg','"Why?"'],['Rob','"He asked."'],['','',()=>{carry('chair')}]],
+  check:()=>false,reward:null},
+ chair2:{hidden:1,title:'',check:()=>false},
+ parking:{title:'MOVE MY CAR',
+  start:[['Sandra','"Can you move my car?"'],['Greg','"It\'s parked perfectly."'],['Sandra','"Move it."']],
+  check:()=>F.parked,
+  done:[['Sandra','"Perfect."'],['Greg','"I moved it one foot."'],['Sandra','"Perfect."']],reward:{money:8}},
+ sand2:{title:'THE SECOND SANDWICH',
+  start:[['Terry','"I saw your sandwich."'],['Greg','"Where?"'],['Terry','"In the tunnel. Probably."']],
+  check:()=>F.tunnelsand,
+  done:[['Greg','"That was a different sandwich."'],['Terry','"Oh."'],['Terry','"Here\'s three dollars."']],reward:{money:3}},
+ goat:{title:'FIND THE GOAT',
+  start:[['Farmer Bud','"I lost a goat."'],['Greg','"What does it look like?"'],['Farmer Bud','"A goat."']],
+  check:()=>true,
+  done:[['Farmer Bud','"Oh. There it is."'],['Greg','"It was following me."'],['Farmer Bud','"Good goat."']],reward:{money:6,item:'Goat Approval'}},
+ box:{title:'VERY IMPORTANT BOX',
+  start:[['Postman Phil','"Deliver this box to Doris."'],['Greg','"What\'s inside?"'],['Postman Phil','"Not my business."'],['','',()=>{carry('box')}]],
+  check:()=>false},
+ box2:{hidden:1,title:'',check:()=>false},
+ sandwich:{title:'THE SANDWICH',
+  start:[['Narrator','"The chicken has your sandwich."'],['Narrator','"It is in the park."']],
+  check:()=>F.sandwichDone},
+ hat:{title:'THE MISSING HAT',rep:1,cool:25,
+  start:[['Hat Guy','"I lost my hat."'],['Greg','"It\'s on your head."'],['Hat Guy','"Please look for it."']],
+  check:()=>true,done:[['Greg','"It was on your head."'],['Hat Guy','"Oh."']],reward:{money:4}},
+ pigeon:{title:'THE ANGRY PIGEON',rep:1,cool:25,go:[5760,420],r:70,flag:'pigeon',
+  start:[['Pigeon Person','"Please negotiate with that pigeon."'],['Greg','"About what?"'],['Pigeon Person','"Terms."']],
+  check:()=>F.pigeon,done:[['Greg','"It didn\'t care."'],['Pigeon Person','"They never do."']],reward:{money:6}},
+ findguy:{title:'FIND THE GUY',rep:1,cool:30,
+  start:[['Person','"Can you find that guy?"'],['Greg','"Which guy?"'],['Person','"You\'ll know."']],
+  check:()=>F.foundguy,done:[['Greg','"I found a guy."'],['Person','"That\'s the one."']],reward:{money:8}},
+ parkspace:{title:'THE PARKING SPACE',rep:1,cool:20,go:[2500,2900],r:80,flag:'parkspace',hold:2.5,
+  start:[['Driver','"Save me that parking space."'],['Greg','"How?"'],['Driver','"Stand in it."']],
+  check:()=>F.parkspace,done:[['Narrator','"A car parked there anyway."'],['Driver','"Perfect."']],reward:{money:7}},
+ emptybox:{title:'THE EMPTY BOX',rep:1,cool:20,carry:'box',
+  start:[['Box Man','"Deliver this empty box."'],['Greg','"There\'s nothing inside."'],['Box Man','"Exactly."'],['','',()=>carry('box')]],
+  check:()=>false},
+ emptybox2:{hidden:1,recv:'emptybox',title:'',check:()=>false,
+  rdone:[['Receiver','"Perfect."'],['Greg','"There\'s nothing inside."'],['Receiver','"Exactly."']],reward:{money:9}},
+ lostcar:{title:'THE LOST CAR',rep:1,cool:25,
+  start:[['Forgetful Man','"I can\'t remember where I parked."'],['Greg','"It\'s behind you."'],['Forgetful Man','"Go look."']],
+  check:()=>true,done:[['Greg','"It was behind you."'],['Forgetful Man','"Classic."']],reward:{money:6}},
+ busy:{title:'THE VERY BUSY NPC',rep:1,cool:20,wait:6,
+  start:[['Busy Person','"I\'m extremely busy. One moment."'],['Greg','"Sure."']],
+  check:()=>F.waited,done:[['Busy Person','"Thanks for waiting."'],['Greg','"You did nothing."'],['Busy Person','"Exactly."']],reward:{money:5}},
+ noise:{title:'THE MYSTERY NOISE',rep:1,cool:25,go:[3050,1600],r:80,flag:'noise',
+  start:[['Worried Man','"I hear a strange noise."'],['Greg','"I\'ll check."']],
+  check:()=>F.noise,done:[['Greg','"It was a guy."'],['Worried Man','"That\'s just him."']],reward:{money:6}},
+ chairs3:{title:'THE THREE CHAIRS',rep:1,cool:30,cnt:'chair',n:3,
+  start:[['Chair Enthusiast','"Bring me three chairs."'],['Greg','"Why three?"'],['Chair Enthusiast','"Three."']],
+  check:()=>(F.chairs||0)>=3,done:[['Chair Enthusiast','"I only needed one."'],['Greg','"..."'],['Chair Enthusiast','"Keep them."']],reward:{money:12}},
+ wronggoat:{title:'THE WRONG GOAT',rep:1,cool:30,
+  start:[['Goat Owner','"Find my goat."'],['Greg','"There\'s a goat following me."'],['Goat Owner','"Bring it."']],
+  check:()=>true,done:[['Goat Owner','"That\'s not my goat."'],['Goat','"BAAA."'],['Goat Owner','"Actually, that\'s fine."']],reward:{money:10}},
+ button2:{title:'THE BUTTON',rep:1,cool:20,
+  start:[['Button Enjoyer','"Press the mysterious button."'],['Greg','"What does it do?"'],['Button Enjoyer','"Press it."']],
+  check:()=>(F.btnPress||0)>0,done:[['Greg','"Nothing happened."'],['Button Enjoyer','"Excellent."']],reward:{money:5}},
+ selfdeliver:{title:'THE DELIVERY THAT DELIVERS ITSELF',rep:1,cool:25,selfy:1,
+  start:[['Dispatcher 2','"Deliver this package."'],['Greg','"Where?"'],['Dispatcher 2','"You\'ll see."'],['','',()=>{carry('box');
+    setTimeout(()=>{if(Q.st('selfdeliver')==='active'){F.selfdone=1;saveF();P.carry=null;notify('DELIVERY COMPLETE');
+      const t=tmp({k:'person',x:P.x-90,y:P.y,col:'#5a8fc9',ttl:6,vx:180});}},6000)}]],
+  check:()=>F.selfdone,done:[['Greg','"Someone took it."'],['Dispatcher 2','"That\'s the system."']],reward:{money:11}},
+ meeting:{title:'THE IMPORTANT MEETING',rep:1,cool:30,go:[2420,2210],r:95,flag:'meeting',
+  start:[['Manager','"There is an important meeting."'],['Greg','"About what?"'],['Manager','"Attend it."']],
+  check:()=>F.meeting,done:[['Manager','"The meeting was cancelled."'],['Greg','"I was there."'],['Manager','"Good work."']],reward:{money:9}},
+ sandinspect:{title:'THE SANDWICH INSPECTOR',rep:1,cool:15,go:[2188,1395],r:90,flag:'inspected',
+  start:[['Inspector','"Inspect a sandwich."'],['Greg','"How?"'],['Inspector','"Look at it."']],
+  check:()=>F.inspected,done:[['Greg','"Yep."'],['Inspector','"Certified."']],reward:{money:5}},
+ wrongpkg:{title:'THE WRONG PACKAGE',rep:1,cool:20,carry:'box',
+  start:[['Sender','"Deliver this package."'],['Greg','"To who?"'],['Sender','"Whoever."'],['','',()=>carry('box')]],
+  check:()=>false},
+ wrongpkg2:{hidden:1,recv:'wrongpkg',title:'',check:()=>false,
+  rdone:[['Recipient','"This isn\'t mine."'],['Greg','"Sorry."'],['Recipient','"I\'ll take it."']],reward:{money:8,item:'Gratitude'}},
+ remote:{rep:1,cool:25,title:'THE MISSING REMOTE',
+  start:[['Ron','"I lost my TV remote."'],['Greg','"It\'s in your hand."'],['Ron','"Find it please."']],
+  check:()=>true,done:[['Ron','"You found it!"'],['Greg','"You were holding it."'],['Ron','"Teamwork."']],reward:{money:4}},
+ invdog:{rep:1,cool:25,title:'THE INVISIBLE DOG',
+  start:[['Marge','"My dog is missing."'],['Greg','"What does it look like?"'],['Marge','"You can\'t see it."']],
+  check:()=>F.invdog,done:[['Marge','"There he is!"'],['Greg','"I hear barking."'],['Marge','"That\'s him."']],reward:{money:7,item:'Invisible Leash'}},
+ button:{rep:1,cool:25,title:'VERY IMPORTANT BUTTON',
+  start:[['Button Lady','"Press the button."'],['Greg','"What does it do?"'],['Button Lady','"Press it."']],
+  check:()=>F.button,done:[['Button Lady','"Did anything happen?"'],['Greg','"No."'],['Button Lady','"Perfect."']],reward:{money:1}},
+ chairman:{rep:1,cool:25,title:'THE MAN WHO NEEDS A CHAIR',
+  start:[['Seated Man','"I need a chair."'],['Greg','"I\'ll find one."']],
+  check:()=>true,done:[['Seated Man','"I already found one."'],['Greg','"You\'re sitting on it."'],['Seated Man','"Yes."']],reward:{money:5}},
+ sock:{rep:1,cool:25,title:'LOST SOCK',
+  start:[['Sock Man','"Find my sock."'],['Greg','"Which one?"'],['Sock Man','"You\'ll know."']],
+  check:()=>F.realsock,done:[['Sock Man','"That\'s the one."'],['Greg','"How can you tell?"'],['Sock Man','"I can\'t."']],reward:{money:6,item:'One Sock'}},
+ cone:{rep:1,cool:25,title:'THE GREAT TRAFFIC CONE',
+  start:[['Worker','"Move that cone to the other side."'],['Greg','"Why?"'],['Worker','"Regulations."']],
+  check:()=>F.conemoved,done:[['Worker','"Great."'],['Narrator','"The worker moves it back."'],['Greg','"..."']],reward:{money:5}},
+ help:{rep:1,cool:25,title:'HELP THE NPC WHO DOESN\'T NEED HELP',
+  start:[['Nervous Guy','"I need help."'],['Greg','"With what?"'],['Nervous Guy','"Never mind."']],
+  check:()=>true,done:[['Nervous Guy','"Thanks anyway."'],['Greg','"I did nothing."'],['Nervous Guy','"Perfectly."']],reward:{money:3}},
+ pkg:{title:'SUSPICIOUS PACKAGE',
+  start:[['Suspicious Man','"Take this. Don\'t open it."'],['Greg','"Okay."'],['Suspicious Man','"DON\'T."'],['','',()=>carry('box')]],
+  check:()=>false},
+ pkg2:{hidden:1,title:'',check:()=>false},
+ goat2:{title:'THE GOAT IS MISSING AGAIN',req:'goat',
+  start:[['Farmer Bud','"The goat is missing again."'],['Greg','"It\'s behind you."'],['Farmer Bud','"Find it."']],
+  check:()=>true,done:[['Farmer Bud','"Incredible work."'],['Greg','"It never left."'],['Farmer Bud','"Even better."']],reward:{money:8}},
+ goat3:{title:'WHY DOES THE GOAT OWN A CAR?',req:'goat2',
+  start:[['Farmer Bud','"The goat bought a car."'],['Greg','"How?"'],['Farmer Bud','"Financing."']],
+  check:()=>true,done:[['Farmer Bud','"Did you ask it?"'],['Greg','"It said BAAA."'],['Farmer Bud','"That\'s a yes."']],reward:{money:10,item:'Goat Business Card'}},
+ goat4:{title:'THE GOAT HAS A JOB',req:'goat3',
+  start:[['Farmer Bud','"The goat got a job."'],['Greg','"Doing what?"'],['Farmer Bud','"Management."']],
+  check:()=>F.goatjob,done:[['Farmer Bud','"So it\'s true."'],['Greg','"It has an office."'],['Farmer Bud','"Of course it does."']],reward:{money:12}},
+ goat5:{title:'THE GOAT IS YOUR BOSS',req:'goat4',
+  start:[['Goat In A Tie','"BAAA."'],['Narrator','"You have been promoted."'],['Greg','"To what?"'],['Narrator','"Unclear."']],
+  check:()=>true,done:[['Goat In A Tie','"BAAA."'],['Narrator','"That means good job."'],['Greg','"Thank you, sir."']],reward:{money:25,cos:'dumbhat'}}
+};
+ 
+const JOBS={
+ taxi:{title:'TAXI DRIVER',icon:'CAR',cool:20,reward:{money:20,cos:'taxicap'},timeLimit:150,fail:'The passenger walked.',
+  steps:[{text:'GET A CAR AND DRIVE TO THE CORNER',go:[3300,1480],r:130,car:1,say:[['Passenger','"Turn left."']]},
+   {text:'TURN LEFT (APPARENTLY)',go:[3380,2500],r:150,car:1,say:[['Passenger','"WHY DID YOU TURN LEFT?"'],['Greg','"You said left."'],['Passenger','"I said left EVENTUALLY."']]},
+   {text:'DRIVE TO THE PARK',go:[5700,900],r:170,car:1,say:[['Passenger','"This isn\'t where I live."'],['Greg','"Where do you live?"'],['Passenger','"Here."']]}]},
+ delivery:{title:'DELIVERY GUY',icon:'BOX',cool:0,dests:[[2200,1150,'THE STORE'],[800,1100,'A HOUSE'],[3700,700,'MORE THINGS'],[5850,1900,'THE FACTORY']],reward:{money:15,item:'Another Package'},timeLimit:120,fail:'It became someone else\'s problem.',
+  steps:[{text:'DELIVER THE PACKAGE DOWNTOWN',go:[2200,1150],r:110,say:[['Narrator','"The customer opens it."'],['Narrator','"Inside: another package."'],['Greg','"..."']]}]},
+ trash:{title:'TRASH COLLECTOR',icon:'JOB',cool:0,reward:{money:12},fail:'The furniture refused to cooperate.',
+  steps:[{text:'PUSH 3 TRASH CANS AROUND (SOMEHOW THIS IS THE JOB)',cnt:'trash',n:3,
+    say:[['Sanitation Chief','"One of those was a chair."'],['Greg','"Which one?"'],['Sanitation Chief','"Doesn\'t matter now."']]}]},
+ parkjob:{title:'PARKING ATTENDANT',icon:'CAR',cool:15,reward:{money:14},timeLimit:100,fail:'Someone else parked it. Badly.',
+  steps:[{text:'PARK ANY CAR IN THE LOT',go:[2450,2880],r:200,car:1,
+    say:[['Lot Guy','"Perfect."'],['Narrator','"It is diagonal across two spaces."'],['Lot Guy','"Perfect."']]}]},
+ chickens:{title:'CHICKEN FINDER',icon:'CHK',cool:25,reward:{money:18,cos:'chickenhat'},timeLimit:130,fail:'The chicken found itself.',
+  steps:[{text:'FIND THE CHICKENS (THEY ARE AROUND)',go:[1240,940],r:120,
+    say:[['Chicken Person','"You found one."'],['Greg','"There\'s one next to you."'],['Chicken Person','"That one doesn\'t count."']]}]},
+ construction:{title:'CONSTRUCTION WORKER',icon:'BLD',cool:0,reward:{money:16,cos:'helmet'},timeLimit:110,fail:'The site is now slightly worse.',
+  steps:[{text:'MOVE 5 THINGS AT THE SITE (ANY THINGS)',cnt:'site',n:5,
+    say:[['Foreman','"You moved everything."'],['Greg','"Where should it go?"'],['Foreman','"Back."']]}]},
+ pizza:{title:'PIZZA DELIVERY',icon:'PIZ',cool:10,dests:[[900,3150,'THE FARM'],[6300,700,'THE PARK'],[2500,2750,'THE LOT'],[1100,1800,'THE GAS STATION']],reward:{money:13,cos:'pizzahat'},timeLimit:95,fail:'The pizza is now a historical artifact.',
+  steps:[{text:'DELIVER PIZZA TO THE FARM',go:[900,3150],r:160,
+    say:[['Customer','"I ordered this yesterday."'],['Greg','"It\'s still warm."'],['Customer','"It is not."']]}]},
+ cartest:{title:'CAR TESTER',icon:'WRN',cool:20,reward:{money:22,item:'Insurance Claim'},timeLimit:80,fail:'You took slightly too long. Also you crashed.',
+  steps:[{text:'DRIVE THE CAR. DO NOT CRASH IT.',go:[3300,1480],r:170,car:1,
+    say:[['Mechanic','"Did you crash it?"'],['Greg','"Define crash."'],['Mechanic','"Yeah."']]}]}
+};
+let job=SV.get('dg3_job',null);
+const Q={
+  s:SV.get('dg3_q',{}),
+  st(id){return this.s[id]||'none'},
+  set(id,v){this.s[id]=v;SV.set('dg3_q',this.s)},
+  count(){return Object.values(this.s).filter(v=>v==='done').length}
+};
+let F=SV.get('dg3_f',{});
+function saveF(){SV.set('dg3_f',F)}
+let money=SV.get('dg3_money',0), inv=SV.get('dg3_inv',[]), day=SV.get('dg3_day',1);
+function give(it){if(!inv.includes(it)){inv.push(it);SV.set('dg3_inv',inv);pop('GOT: '+it,'#ffca3a')}}
+function pay(n){money+=n;SV.set('dg3_money',money);pop('+$'+n,'#8ac926')}
+
+ 
+let map='town',P,cam={x:0,y:0,z:1,tx:0,ty:0,tz:1,shake:0,focus:null},
+    objs=[],npcs=[],cars=[],parts=[],pops=[],dlg=null,cs=null,drive=null,
+    fade=0,fadeTo=0,evT=8,hint=null,notice=null,noticeT=0,paused=false,tt=0,marker=null,shop=null,bigmap=false,navT=0,mapInfo=null,fadeStuck=0;
+
+P={x:430,y:560,w:18,h:24,vx:0,vy:0,face:1,anim:0,carry:null,map:'town'};
+
+function pop(t,c){pops.push({t,c:c||'#fff',x:P.x,y:P.y-30,life:0})}
+function notify(t){notice=t;noticeT=3}
+
+ 
+function loadMap(id,x,y){
+  map=id;const m=MAPS[id];
+  objs=m.obj;
+  npcs=NPCS.filter(n=>n.map===id).map(n=>{
+    n.rx=n.rx??n.x;n.ry=n.ry??n.y;n.w=n.bird?18:n.dog?22:n.goat?30:18;n.h=n.bird?16:n.dog?16:n.goat?22:26;
+    n.t=n.t||0;n.pi=0;return n});
+  cars=CARS.filter(c=>c.map===id).map(c=>{c.vel=c.vel||0;c.ti=c.ti||0;c.sx=c.sx??c.x;c.sy=c.sy??c.y;return c});
+  if(x!=null){P.x=x;P.y=y}
+  cam.x=P.x;cam.y=P.y;
+  notify(m.name);
+}
+function solids(){
+  const a=[];
+  for(const o of objs)if(K[o.k]&&K[o.k].s)a.push(o);
+  for(const c of cars)if(c!==drive)a.push({x:c.x-c.w/2,y:c.y-c.h/2,w:c.w,h:c.h});
+  return a;
+}
+function moveBox(e,dx,dy,sol){
+  e.x+=dx;
+  if(dx)for(const s of sol)if(hit(e,s))e.x=dx>0?s.x-e.w/2-.02:s.x+s.w+e.w/2+.02;
+  e.y+=dy;
+  if(dy)for(const s of sol)if(hit(e,s))e.y=dy>0?s.y-e.h/2-.02:s.y+s.h+e.h/2+.02;
+  const m=MAPS[map];
+  e.x=clamp(e.x,10,m.w-10);e.y=clamp(e.y,10,m.h-10);
+}
+function hit(e,s){return e.x-e.w/2<s.x+s.w&&e.x+e.w/2>s.x&&e.y-e.h/2<s.y+s.h&&e.y+e.h/2>s.y}
+function near(a,b,r){return dist2(a,b)<r*r}
+
+ 
+function talk(lines,onEnd,auto){
+  const l=lines.filter(x=>{if(x[2]&&!x[0]){x[2]();return false}return true});
+  if(!l.length){if(onEnd)onEnd();return}
+  dlg={l,i:0,t:0,onEnd,auto:auto||null};sfx.talk();
+}
+function dlgAdvance(){
+  if(!dlg)return;
+  if(dlg.t<.15)return;
+  dlg.i++;sfx.talk();dlg.t=0;
+  if(dlg.i>=dlg.l.length){const f=dlg.onEnd;dlg=null;if(f)f()}
+  else{const cur=dlg.l[dlg.i];if(cur[2])cur[2]()}
+}
+
+ 
+function cut(acts,onEnd){cs={a:acts,i:-1,t:0,onEnd};nextAct()}
+function nextAct(){
+  if(!cs)return;
+  cs.i++;cs.t=0;
+  if(cs.i>=cs.a.length){const f=cs.onEnd;cs=null;cam.focus=null;cam.fp=null;cam.tz=1;fadeTo=0;
+    X.globalAlpha=1;if(f)f();return}
+  const a=cs.a[cs.i];
+  switch(a.a){
+    case 'say':talk([[a.w,a.t]],()=>nextAct());break;
+    case 'lines':talk(a.l,()=>nextAct(),a.auto);break;
+    case 'cam':cam.focus=a.on?find(a.on):null;cam.tz=a.z||1;if(a.p)cam.fp={x:a.p[0],y:a.p[1]};else cam.fp=null;nextAct2(a.d||.6);break;
+    case 'wait':nextAct2(a.d||1);break;
+    case 'move':{const e=find(a.who);if(e){e.mt={x:a.x,y:a.y,sp:a.sp||90}}nextAct2(a.d||0);break}
+    case 'sfx':(sfx[a.s]||(()=>{}))();nextAct();break;
+    case 'shake':cam.shake=a.v||10;nextAct();break;
+    case 'do':a.f();nextAct();break;
+    case 'fade':fadeTo=a.to;nextAct2(a.d||.8);break;
+    default:nextAct();
+  }
+}
+function nextAct2(d){cs.wait=d;cs.t=0}
+function find(id){if(id==='greg')return P;return npcs.find(n=>n.id===id)||cars.find(c=>c.id===id)}
+function updCut(dt){
+  if(!cs)return;
+  cs.t+=dt;
+  if(cs.wait!=null&&cs.t>=cs.wait){cs.wait=null;nextAct()}
+}
+
+const CUT={
+ store:[{a:'lines',l:[['Cashier','"Can I help you?"'],['Greg','"I need a sandwich."'],['Cashier','"We don\'t sell sandwiches."']]},
+  {a:'cam',p:[672,330],z:1.7,d:1.4},{a:'lines',l:[['Cashier','"Those are decorative."']]},{a:'cam',on:'greg',z:1,d:.4},
+  {a:'lines',l:[['Greg','"..."']]}],
+ nope:[{a:'sfx',s:'sting'},{a:'cam',on:'greg',z:1.8,d:1},{a:'lines',l:[['Narrator','"Inside:"'],['Narrator','"A NORMAL CHAIR."'],['Greg','"..."']]},{a:'cam',z:1,d:.3}],
+ firstDrive:[{a:'sfx',s:'sting'},{a:'cam',z:1.7,d:.9},{a:'lines',l:[['Narrator','"The engine starts."']]},
+  {a:'wait',d:.5},{a:'lines',l:[['Karl','"Nice driving."'],['Greg','"Thanks."']]},{a:'cam',z:1,d:.3}],
+ button:[{a:'sfx',s:'ok'},{a:'wait',d:.8},{a:'lines',l:[['Narrator','"Nothing happened."'],['Greg','"Good."']]}],
+ boxOpen:[{a:'lines',l:[['Doris','"Finally."'],['Narrator','"Doris opens the box."']]},{a:'sfx',s:'ok'},{a:'wait',d:.6},
+  {a:'lines',l:[['Narrator','"Inside is another box."'],['Doris','"Perfect."'],['Greg','"..."']]},
+  {a:'do',f:()=>{Q.set('box','done');pay(4);give('Empty Box');P.carry=null;checkMain()}}],
+ chairDrop:[{a:'lines',l:[['Mike','"Oh."'],['Greg','"What?"'],['Mike','"I needed a table."']]},
+  {a:'wait',d:.4},{a:'lines',l:[['Mike','"It\'s fine."']]},
+  {a:'do',f:()=>{Q.set('chair','done');pay(7);give('Mike\'s Respect');P.carry=null;checkMain()}}],
+ sandwichStart:[{a:'sfx',s:'sting'},{a:'lines',l:[['Narrator','"A chicken runs past."'],['Narrator','"It has a sandwich."'],['Greg','"THAT\'S MINE."'],
+   ['Narrator','"It went to the park."']]},{a:'do',f:()=>{Q.set('sandwich','active');spawnFinalChicken()}}],
+ ending:[{a:'fade',to:1,d:.9},{a:'do',f:()=>{loadMap('town',5500,560);P.carry=null}},{a:'fade',to:0,d:.9},
+  {a:'cam',on:'greg',z:1.5,d:.8},
+  {a:'lines',l:[['Narrator','"Greg sits down."'],['Narrator','"The world is finally quiet."']]},
+  {a:'wait',d:1},{a:'sfx',s:'pick'},{a:'lines',l:[['Narrator','"Greg takes a bite."']]},{a:'wait',d:1.2},
+  {a:'do',f:()=>{const c=NPCS.find(n=>n.id==='endchick');c.x=P.x+120;c.y=P.y;c.map='town';npcs.push(c)}},
+  {a:'lines',l:[['Narrator','"A chicken walks up."'],['Greg','"..."'],['Narrator','"The chicken looks at Greg."']]},
+  {a:'wait',d:.8},{a:'sfx',s:'bad'},{a:'shake',v:12},
+  {a:'lines',l:[['Narrator','"The chicken steals the sandwich."'],['Greg','"..."']]},
+  {a:'fade',to:1,d:1.2},{a:'do',f:()=>{F.ending=1;saveF()}},{a:'wait',d:1.6},
+  {a:'lines',l:[['','THE END']]},{a:'wait',d:.6},
+  {a:'do',f:()=>{day++;SV.set('dg3_day',day);notify('DAY '+day)}},
+  {a:'lines',l:[['Narrator','"Greg wakes up."'],['Narrator','"There is another sandwich outside."'],['Greg','"...again?"']]},
+  {a:'do',f:()=>{loadMap('town',430,560);Q.set('sandwich','done')}},{a:'fade',to:0,d:1}],
+ projectdumb:[{a:'cam',on:'cameraman',z:1.6,d:1},
+  {a:'lines',l:[['Cameraman','"Uh..."'],['Greg','"What?"'],['Cameraman','"You\'re not supposed to be here."'],
+   ['Greg','"Why?"'],['Cameraman','"We\'re filming a movie."'],['Greg','"What movie?"'],['Cameraman','"Project Dumb."']]},
+  {a:'wait',d:.8},{a:'cam',on:'greg',z:1.5,d:.8},
+  {a:'lines',l:[['Greg','"...I\'m Greg."'],['Cameraman','"Yeah."']]},{a:'wait',d:.8},
+  {a:'lines',l:[['Cameraman','"We know."'],['Cameraman','"It\'s just a movie."'],['Greg','"So all of this is fake?"'],
+   ['Cameraman','"Pretty much."'],['Greg','"What about the sandwich?"'],['Cameraman','"That was real."']]},
+  {a:'do',f:()=>{npcs.forEach(n=>{if(n.id&&n.id.startsWith('aud'))n.react=1})}},{a:'wait',d:.9},
+  {a:'lines',l:[['Cameraman','"We were hungry."']]},
+  {a:'sfx',s:'sting'},{a:'cam',on:'director',z:1.6,d:.7},
+  {a:'lines',l:[['Director','"CUT!"'],['Director','"Who let him out here?"'],['Cameraman','"He walked."'],
+   ['Director','"...Fair enough."'],['Director','"Can you go back now?"'],['Greg','"Sure."'],['Director','"Great."']]},
+  {a:'fade',to:1,d:1.4},{a:'cam',z:1,d:.2},
+  {a:'lines',l:[['','PROJECT DUMB']],auto:1.8},{a:'lines',l:[['','TAKE 47']],auto:1.5},{a:'lines',l:[['','CUT.']],auto:1.4},
+  {a:'wait',d:.8},
+  {a:'do',f:()=>{F.projectdumb=1;saveF();give('PROJECT DUMB — DISCOVERED');
+    loadMap('town',430,560);edgeT=0;edgeStage=0;
+    drive=null;P.inCar=0;engine(false,0);marker=job?marker:null;
+    cam.focus=null;cam.fp=null;cam.tz=1;cam.z=1;cam.shake=0;X.globalAlpha=1}},
+  {a:'fade',to:0,d:1.2},
+  {a:'do',f:()=>notify('Greg has been returned to the set.')},{a:'wait',d:1.6},
+  {a:'lines',l:[['Narrator','"Please don\'t do that again."']],auto:2.8}],
+ wrongdoor:[{a:'sfx',s:'sting'},{a:'cam',z:1.7,d:1},
+  {a:'lines',l:[['Narrator','"Greg opens a door."'],['Narrator','"Inside is another door."']]},
+  {a:'sfx',s:'door'},{a:'wait',d:.6},
+  {a:'lines',l:[['Narrator','"It is the same room."'],['Greg','"..."']]},{a:'cam',z:1,d:.4}],
+ trashcan:[{a:'sfx',s:'sting'},{a:'cam',z:1.6,d:.8},
+  {a:'lines',l:[['Narrator','"Greg hit a trash can."'],['Greg','"..."'],['Narrator','"The trash can had it coming."']]},{a:'cam',z:1,d:.3}],
+ hired:[{a:'lines',l:[['Boss','"Why should I hire you?"'],['Greg','"I can drive."'],['Boss','"Can you do anything else?"'],['Greg','"..."'],['Boss','"You\'re hired."']]}],
+ crowd:[{a:'cam',z:.62,d:1.6},
+  {a:'lines',l:[['Person','"He\'s still doing it."'],['Person 2','"Incredible."'],['Narrator','"Nobody knows why."']]},
+  {a:'cam',z:1,d:.8}],
+ goatscene:[{a:'sfx',s:'sting'},{a:'cam',z:1.6,d:.8},
+  {a:'lines',l:[['Greg','"Are you the goat?"'],['Goat','"BAAA."'],['Narrator','"GOAT CONFIRMED."']]},{a:'cam',z:1,d:.4}],
+ intro:[{a:'cam',on:'greg',z:1.4,d:.8},
+  {a:'lines',l:[['Narrator','"Greg wakes up."'],['Narrator','"There is a sandwich outside."'],['Greg','"I should probably get that."']]},
+  {a:'wait',d:.4},{a:'sfx',s:'bad'},{a:'shake',v:8},
+  {a:'lines',l:[['Narrator','"A chicken takes the sandwich."'],['Greg','"..."'],['Narrator','"Nobody knows why."'],
+   ['Narrator','"Greg starts walking."']]},{a:'cam',z:1,d:.4},
+  {a:'do',f:()=>notify('TALK TO PEOPLE. DRIVE CARS. FIND THE SANDWICH.')}]
+};
+NPCS.push({id:'endchick',name:'Chicken',map:'none',x:0,y:0,col:'#f6f6f6',bird:1,beh:'stand',talk:()=>[['Chicken','"..."']]});
+
+ 
+function spawnFinalChicken(){
+  const c={id:'finalchick',name:'Chicken',map:'town',x:5900,y:600,col:'#f6f6f6',bird:1,beh:'flee',hits:0,
+    w:20,h:18,t:0,rx:5900,ry:600,
+    talk:()=>{c.hits++;
+      if(c.hits>=3){c.map='none';npcs=npcs.filter(n=>n!==c);F.sandwichDone=1;saveF();
+        setTimeout(()=>cut(CUT.ending),400);return[['Chicken','"..."'],['Narrator','"The chicken drops the sandwich."']]}
+      return[['Chicken','"..."'],['Narrator','"The chicken runs. ('+c.hits+'/3)"']]}};
+  NPCS.push(c);if(map==='town')npcs.push(c);
+}
+
+ 
+const EVENTS=[
+ {id:'runcart',w:5,cd:70,f:()=>{fx('MY CART!');
+   const c=tempObj('cart',P.x+rnd(-200,200),P.y-160,44,40,22);push(c,rnd(-1,1),1,700);
+   const g=tmp({k:'person',x:c.x,y:c.y-70,col:'#e07a5f',ttl:11,say:'"MY CART!"'});
+   g.upd=1;g.vx=(c.vx||0)*.5;g.vy=140}},
+ {id:'wrongtaxi',w:4,cd:110,f:()=>{
+   const t=tmp({k:'car',x:P.x-260,y:P.y+40,col:'#f4c430',ttl:12,vx:160});
+   setTimeout(()=>{t.vx=0;lines([['Driver','"Where to?"'],['Greg','"I don\'t know."'],['Driver','"Same."']]);
+     setTimeout(()=>{t.vx=320},2500)},1600)}},
+ {id:'rock',w:3,cd:150,f:()=>{
+   const r=tempObj('rock',P.x+70,P.y+40,40,30,40);
+   lines([['Person','"Protect this rock."'],['Greg','"From what?"'],['Person','"Yes."']]);
+   notify('OBJECTIVE: PROTECT THE ROCK');
+   setTimeout(()=>{notify('MISSION COMPLETE');sfx.ok();pay(6);
+     lines([['Person','"Thank you. It was extremely important."']])},22000)}},
+ {id:'parade2',w:4,cd:120,f:()=>{fx('A parade. Nobody explains it.');
+   const props=['chair','cone','duck','plant','briefcase','spoon'];
+   for(let i=0;i<8;i++){const pr=props[i%props.length];
+     tmp({k:'person',x:P.x-360-i*46,y:P.y+30,vx:130,ttl:14,col:pick(['#ff595e','#ffca3a','#8ac926','#1982c4','#6a4c93']),
+       cos:[pr==='chair'?'chairacc':pr==='cone'?'cone':pr==='duck'?'duck':pr==='plant'?'plant':pr==='briefcase'?'briefcase':'spoon']})}}},
+ {id:'backcar',w:4,cd:90,f:()=>{
+   const c=tmp({k:'car',x:P.x+320,y:P.y+60,col:'#457b9d',ttl:12,vx:-120,back:1});
+   setTimeout(()=>lines([['Person','"Nice car."'],['Driver','"Thanks."']]),2200)}},
+ {id:'ducks47',w:4,cd:100,f:()=>{
+   tmp({k:'person',x:P.x-300,y:P.y+20,col:'#6b705c',vx:70,ttl:20});
+   for(let i=0;i<12;i++)tmp({k:'bird',x:P.x-340-i*22,y:P.y+30+(i%3)*16,col:'#f4e285',vx:70,ttl:20});
+   setTimeout(()=>lines([['Greg','"Are those all yours?"'],['Man','"No."']]),2600)}},
+ {id:'wrongdoor',w:3,cd:150,f:()=>cut(CUT.wrongdoor)},
+ {id:'jam',w:5,cd:80,f:()=>{fx('Traffic.');
+   let n=0;cars.forEach(c=>{if(c.traffic&&Math.hypot(c.x-P.x,c.y-P.y)<700){c.stopT=9;n++}});
+   if(n)setTimeout(()=>lines([['Person','"We may be here for a while."']]),2200)}},
+ {id:'flytrash',w:5,cd:60,f:()=>{
+   const t=objs.filter(o=>o.k==='trash'&&Math.hypot(o.x-P.x,o.y-P.y)<600)[0]||tempObj('trash',P.x+90,P.y,24,28,20);
+   push(t,rnd(-1,1),-1,1400);cam.shake=8;sfx.bump();
+   setTimeout(()=>lines([['Person','"That happens sometimes."']]),1500)}},
+ {id:'conference',w:4,cd:110,f:()=>{fx('A very serious meeting.');
+   const cx=P.x+rnd(-140,140),cy=P.y+rnd(-120,120);
+   const g=[];for(let i=0;i<5;i++)g.push(tmp({k:'person',x:cx+Math.cos(i*1.26)*46,y:cy+Math.sin(i*1.26)*34,ttl:10,col:pick(['#3d405b','#8d99ae','#6d6875','#a3b18a'])}));
+   setTimeout(()=>{lines([['Greg','"What are you discussing?"'],['Person','"Nothing."']]);
+     g.forEach(o=>{o.vx=rnd(-90,90);o.vy=rnd(-70,70)})},4000)}},
+ {id:'freesand',w:4,cd:120,f:()=>{
+   lines([['Person','"Have a sandwich."'],['Greg','"Is this the sandwich?"'],['Person','"No."'],['Greg','"Oh."'],['Person','"Have it anyway."']]);
+   give('A Free Sandwich');sfx.pick()}},
+ {id:'susduck',w:5,cd:80,f:()=>{
+   const d=tmp({k:'bird',x:P.x-80,y:P.y+40,col:'#f4e285',ttl:16});
+   d.follow=1;setTimeout(()=>{d.vx=90;d.vy=40},12000);fx('A duck is following Greg.')}},
+ {id:'storm',w:4,cd:100,f:()=>{F.storm=3.4;F.rain=3.4;sfx.sting();cam.shake=6;
+   setTimeout(()=>lines([['Person','"That was weird."']]),3900)}},
+ {id:'directions',w:5,cd:70,f:()=>{
+   const n=tmp({k:'person',x:P.x+60,y:P.y+30,col:'#7f9cc9',ttl:12});
+   lines([['Person','"Do you know where the gas station is?"'],['Greg','"That way."'],['Person','"Thanks."']]);
+   setTimeout(()=>{n.vx=-110},2600)}},
+ {id:'celeb',w:3,cd:130,f:()=>{fx('Somebody important. Apparently.');
+   const cx=P.x+rnd(-160,160),cy=P.y+rnd(-120,120);
+   const star=tmp({k:'person',x:cx,y:cy,col:'#f2cc8f',ttl:12});
+   for(let i=0;i<7;i++)tmp({k:'person',x:cx+Math.cos(i)*52,y:cy+Math.sin(i)*40,ttl:11,col:pick(['#e07a5f','#81b29a','#9b8bd6','#c9ada7'])});
+   setTimeout(()=>lines([['Greg','"Who are you?"'],['Celebrity','"Hi."']]),2600)}},
+ {id:'fallchair',w:5,cd:70,f:()=>{
+   const c=tempObj('chairprop',P.x+rnd(-160,160),P.y+rnd(-120,120),16,26,30);
+   cam.shake=7;sfx.bump();push(c,rnd(-1,1),rnd(-1,1),120);
+   setTimeout(()=>lines([['Person','"Nice chair."']]),2400)}},
+ {id:'horn',w:5,cd:90,f:()=>{
+   sfx.horn();fx('A parked car honked.');
+   setTimeout(()=>sfx.horn(),3000);
+   setTimeout(()=>lines([['Person','"Probably nothing."']]),5200)}},
+ {id:'freemoney',w:6,cd:60,f:()=>{
+   const b=tempObj('bill',P.x+rnd(-140,140),P.y+rnd(-110,110),22,12,26);
+   push(b,rnd(-1,1),rnd(-1,1),240);fx('Money.')}},
+ {id:'grandma',w:5,cd:80,f:()=>{
+   const g=tmp({k:'person',x:P.x-420,y:P.y+rnd(-40,40),col:'#b0a8a0',vx:430,ttl:8,cos:['normalhat']});
+   setTimeout(()=>lines([['Person','"She\'s late."'],['Greg','"For what?"'],['Person','"Yes."']]),1800)}},
+ {id:'sandemerg',w:3,cd:160,f:()=>{
+   snd(700,.5,'square',.05,400);setTimeout(()=>snd(700,.5,'square',.05,400),700);
+   fx('SANDWICH EMERGENCY');
+   npcs.forEach(n=>{if(!n.crowd&&Math.hypot(n.x-P.x,n.y-P.y)<600)n.panic=4});
+   const r=tmp({k:'person',x:P.x+90,y:P.y+40,col:'#3d405b',ttl:12,cos:['bigshades']});
+   setTimeout(()=>lines([['Reporter','"We have received reports of a sandwich."'],['Greg','"..."'],['Reporter','"That\'s all we know."']]),2200)}},
+ {id:'chickenrun',f:()=>{fx('A chicken runs through town.');
+   for(let i=0;i<3;i++)tmp({k:'bird',x:P.x-500,y:P.y+rnd(-60,60),vx:260,col:'#f6f6f6',ttl:6})}},
+ {id:'runners',f:()=>{fx('Everyone starts running.');npcs.forEach(n=>{if(!n.bird&&!n.goat){n.panic=3}})}},
+ {id:'still',f:()=>{fx('Everyone stands completely still.');npcs.forEach(n=>n.frozen=4)}},
+ {id:'rain',f:()=>{fx('It rains for five seconds.');F.rain=5}},
+ {id:'ufo',f:()=>{fx('A UFO passes overhead.');tmp({k:'ufo',x:P.x-400,y:P.y-180,vx:150,ttl:8})}},
+ {id:'piano',f:()=>{fx('A piano falls somewhere nearby.');
+   tmp({k:'piano',x:P.x+rnd(-260,260),y:P.y+rnd(-200,200),ttl:14,fall:1})}},
+ {id:'sandman',f:()=>{fx('');tmp({k:'runner',x:P.x-420,y:P.y+rnd(-40,40),vx:230,ttl:7,say:'THE SANDWICH!'})}},
+ {id:'crowd',f:()=>{fx('A crowd gathers around nothing.');
+   const cx=P.x+rnd(-180,180),cy=P.y+rnd(-140,140);
+   for(let i=0;i<6;i++)tmp({k:'person',x:cx+Math.cos(i)*40,y:cy+Math.sin(i)*30,ttl:10,col:pick(['#e07a5f','#81b29a','#f2cc8f','#9b8bd6'])})}},
+ {id:'parade',f:()=>{fx('A parade appears.');
+   for(let i=0;i<7;i++)tmp({k:'person',x:P.x-400-i*44,y:P.y+20,vx:120,ttl:12,col:pick(['#ff595e','#ffca3a','#8ac926','#1982c4','#6a4c93'])})}},
+ {id:'goatloose',f:()=>{fx('A goat escaped.');tmp({k:'goat',x:P.x+rnd(-300,300),y:P.y+rnd(-200,200),vx:-120,ttl:9})}},
+ {id:'boxes',f:()=>{fx('Objects fall from the sky.');
+   for(let i=0;i<4;i++)tmp({k:'box',x:P.x+rnd(-240,240),y:P.y+rnd(-180,180),ttl:16,fall:1})}},
+ {id:'carshop',f:()=>{fx('A car drove through something.');cam.shake=14;sfx.bump();
+   tmp({k:'car',x:P.x+rnd(-260,260),y:P.y+rnd(-180,180),ttl:12,col:'#e63946'})}},
+ {id:'confetti',f:()=>{fx('Congratulations.');for(let i=0;i<50;i++)parts.push({x:P.x+rnd(-200,200),y:P.y+rnd(-140,140),
+   vx:rnd(-30,30),vy:rnd(-40,40),life:rnd(1,2.4),t:0,col:pick(['#ff595e','#ffca3a','#8ac926','#1982c4']),s:rnd(3,6)})}},
+ {id:'narr',f:()=>fx(pick(['I do not know what is happening.','Greg is still doing this.','Nothing has been explained.',
+   'This is fine.','I stopped taking notes.']))}
+];
+const RARE=[
+ {id:'face',f:()=>{tmp({k:'stoneface',x:P.x+rnd(-160,160),y:P.y-260,ttl:9});sfx.sting();fx('')}},
+ {id:'bro',f:()=>{const n=tmp({k:'person',x:P.x-160,y:P.y,col:'#3d405b',ttl:9,bro:1});
+   setTimeout(()=>{if(!dlg&&!cs)talk([['Bro','"Bro."']])},1400)}},
+ {id:'guy',f:()=>{const n=tmp({k:'person',x:P.x+140,y:P.y,col:'#3d405b',ttl:14,guy:1,boss:1});
+   F.bossT=10;fx('')}}
+];
+let tmps=[],evCD={};
+function fireEvent(pool){
+  const ok=pool.filter(e=>(evCD[e.id]||0)<=tt);
+  if(!ok.length)return;
+  const tot=ok.reduce((s,a)=>s+(a.w||1),0);let r=Math.random()*tot,e=ok[0];
+  for(const a of ok){r-=(a.w||1);if(r<=0){e=a;break}}
+  evCD[e.id]=tt+(e.cd||60);e.f();
+}
+function tempObj(k,x,y,w,h,ttl,ex){const o=O(k,x,y,w,h,ex||{});o.ttl=ttl||20;objs.push(o);return o}
+function lines(l){if(!dlg&&!cs)talk(l)}
+let tmps_unused;
+function tmp(o){o.t=0;o.vx=o.vx||0;o.vy=o.vy||0;tmps.push(o);return o}
+function fx(t){if(t)notify('"'+t+'"')}
+
+ 
+function interactTarget(){
+  let best=null,bd=1e9;
+  const cand=[];
+  for(const n of npcs)if(n.map===map&&!n.hidden)cand.push({e:n,l:'TALK',r:52,f:()=>npcTalk(n)});
+  for(const c of cars)if(c.drive||c.npc)cand.push({e:c,l:c.npc?'KNOCK':'ENTER CAR',r:56,f:()=>c.npc?talk([['Sleeping Guy','"zzz"'],['Greg','"He\'s in there."']]):enterCar(c)});
+  for(const o of objs){
+    const kk=K[o.k];if(!kk||!kk.i&&!o.secret&&!o.mystery&&!o.normal)continue;
+    const e={x:o.x+(o.w||24)/2,y:o.y+(o.h||24)/2};
+    cand.push({e,l:o.secret?'PUSH':o.mystery?'PRESS':kk.i||'LOOK',r:48,f:()=>useObj(o)});
+  }
+  for(const c of cand){const d=dist2(P,c.e);if(d<c.r*c.r&&d<bd){bd=d;best=c}}
+  return best;
+}
+function useObj(o){
+  if(o.k==='door'){
+    fadeTo=1;
+    setTimeout(()=>{loadMap(o.to,o.tx,o.ty);fadeTo=0;sfx.door();
+      if(o.to==='nope'&&!F.nopeScene){F.nopeScene=1;saveF();setTimeout(()=>cut(CUT.nope),400)}},420);
+    return;
+  }
+  if(o.secret){if(!F.secret){F.secret=1;saveF();notify('Something moved.')}
+    fadeTo=1;setTimeout(()=>{loadMap('secret',250,300);fadeTo=0;sfx.door()},420);return}
+  if(o.mystery){F.button=1;F.btnPress=(F.btnPress||0)+1;saveF();cut(CUT.button);return}
+  if(o.k==='sign'){talk([['Sign','"'+o.text+'"'],['Greg','"Okay."']]);return}
+  if(o.k==='manhole'){fadeTo=1;setTimeout(()=>{loadMap(o.to,o.tx,o.ty);fadeTo=0;sfx.door()},420);return}
+  if(o.k==='sandwich'){
+    objs.splice(objs.indexOf(o),1);sfx.pick();
+    if(o.tag==='tunnelsand'){F.tunnelsand=1;saveF();give('A Different Sandwich');
+      talk([['Greg','"This is not my sandwich."'],['Narrator','"It is not."']])}
+    else talk([['Greg','"Not the one."']]);
+    return;
+  }
+  if(o.normal){talk([['Greg','"It\'s a chair."'],['Narrator','"Yes."']]);return}
+  if(o.k==='invdog'){F.invdog=1;saveF();sfx.ok();return talk([['Narrator','"You hear barking."'],['Greg','"Found him."'],['Narrator','"Probably."']])}
+  if(o.lone){talk([['Greg','"A room with one traffic cone."'],['Narrator','"Yes."']]);return}
+  if(o.secretcar){
+    if(!F.secretcar){F.secretcar=1;saveF();
+      CARS.push({id:'secretcar',map:'town',x:700,y:760,ang:0,col:'#6a4c93',w:60,h:28,sp:800,ac:760,hd:3.2,name:'THE SECRET CAR',drive:1});
+      give('Secret Car Keys');notify('A car appeared outside. Somehow.');
+      return talk([['Narrator','"You pressed it."'],['Narrator','"A car appeared outside."'],['Greg','"Fine."']]);
+    }
+    return talk([['Narrator','"Nothing else happens."']]);
+  }
+  if(o.k==='bill'){objs.splice(objs.indexOf(o),1);pay(1);notify("You're basically rich now.");return}
+  if(o.k==='sock'){
+    objs.splice(objs.indexOf(o),1);sfx.pick();
+    if(o.real){F.realsock=1;saveF();give('The Sock');return talk([['Greg','"This one feels different."'],['Narrator','"It is not."']])}
+    return talk([['Greg','"Wrong sock."']]);
+  }
+  if(o.k==='chairprop'&&Q.st('chairs3')==='active'){F.chairs=(F.chairs||0)+1;saveF();sfx.pick();
+    notify('CHAIRS: '+F.chairs+'/3');if(F.chairs>=3)notify('Return to the Chair Enthusiast');
+    push(o,(o.x-P.x)*2,(o.y-P.y)*2,150);return}
+  if(o.k==='cart'||K[o.k]&&K[o.k].p){push(o,(o.x-P.x)*2,(o.y-P.y)*2,180);return}
+  talk([['Greg','"..."']]);
+}
+ 
+function push(o,dx,dy,f){
+  const m=Math.hypot(dx,dy)||1;const w=(K[o.k].p||1);
+  o.vx=(o.vx||0)+dx/m*f*w;o.vy=(o.vy||0)+dy/m*f*w;
+  o.spin=(o.spin||0)+rnd(-3,3)*w;sfx.bump();
+}
+function physUpdate(dt){
+  const sol=solids();
+  for(let i=objs.length-1;i>=0;i--){const o=objs[i];
+    if(o.ttl!=null){o.ttl-=dt;if(o.ttl<=0){objs.splice(i,1);continue}}}
+  for(const o of objs){
+    const kk=K[o.k];if(!kk||!kk.p)continue;
+    if(Math.abs(o.x-P.x)>1100||Math.abs(o.y-P.y)>800)continue;
+    if(!o.ox){o.ox=o.x;o.oy=o.y}
+    if(o.vx||o.vy){
+      const nx=o.x+o.vx*dt,ny=o.y+o.vy*dt;
+      const b={x:nx+o.w/2,y:ny+o.h/2,w:o.w,h:o.h};
+      let blocked=false;
+      for(const s of sol)if(s!==o&&hit(b,s)){blocked=true;break}
+      if(blocked){o.vx*=-.35;o.vy*=-.35;o.rot=(o.rot||0)+1.2;sfx.bump()}
+      else{o.x=nx;o.y=ny;o.rot=(o.rot||0)+(o.spin||0)*dt}
+      const m=MAPS[map];o.x=clamp(o.x,4,m.w-40);o.y=clamp(o.y,4,m.h-40);
+      const d=Math.pow(.09,dt);o.vx*=d;o.vy*=d;o.spin*=d;
+      if(Math.hypot(o.vx,o.vy)<6){o.vx=0;o.vy=0;o.spin=0;
+        if(Math.hypot(o.x-o.ox,o.y-o.oy)>90){o.ox=o.x;o.oy=o.y;objMoved(o)}}
+    }
+     
+    if(!P.inCar&&hit(P,{x:o.x,y:o.y,w:o.w,h:o.h}))push(o,o.x+o.w/2-P.x,o.y+o.h/2-P.y,150);
+  }
+}
+function objMoved(o){
+  F.moved=(F.moved||0)+1;
+  if(o.k==='cone2'&&Q.st('cone')==='active'&&!F.conemoved){F.conemoved=1;saveF();notify('Cone relocated.')}
+  if(job){const s=JOBS[job.id].steps[job.i];
+    if(s&&s.cnt&&((s.cnt==='trash'&&o.k==='trash')||(s.cnt==='site'&&['crate','barrier','cone2','tire'].includes(o.k)))){
+      job.n=(job.n||0)+1;notify(job.n+'/'+s.n);
+      if(job.n>=s.n)jobAdvance();
+    }}
+}
+function npcTalk(n){
+  n.face=P.x<n.x?-1:1;
+  if(n.j){
+    if(job&&job.id===n.j)return talk([[n.name,'"You\'re still working."'],['Greg','"Yes."']]);
+    if(job)return talk([[n.name,'"Finish your other job first."']]);
+    if((jobCD[n.j]||0)>tt)return talk([[n.name,'"Come back in '+Math.ceil(jobCD[n.j]-tt)+' seconds."'],['Greg','"Okay."']]);
+    return talk([[n.name,'"Want a job?"'],['Greg','"I can drive."'],[n.name,'"You\'re hired."']],()=>startJob(n.j));
+  }
+  if(n.q){
+    const qd=QUESTS[n.q];
+    if(qd.req&&Q.st(qd.req)!=='done'&&Q.st(n.q)==='none')return talk([[n.name,'"Not yet."'],['Greg','"Okay."']]);
+    if(n.q==='chair2'){
+      if(P.carry==='chair'){cut(CUT.chairDrop);return}
+      return talk([['Mike','"I\'m waiting for a chair."'],['Greg','"Okay."']]);
+    }
+    if(n.q==='box2'){
+      if(P.carry==='box'){cut(CUT.boxOpen);return}
+      return talk([['Doris','"I\'m expecting a box."'],['Greg','"Sure."']]);
+    }
+    if(qd.recv){
+      const src=QUESTS[qd.recv];
+      if(P.carry===src.carry&&Q.st(qd.recv)==='active'){
+        return talk(qd.rdone,()=>{questDone(qd.recv);P.carry=null;
+          if(qd.reward){if(qd.reward.money)pay(qd.reward.money);if(qd.reward.item)give(qd.reward.item);if(qd.reward.cos)own(qd.reward.cos)}
+          notify('QUEST COMPLETE');sfx.ok();saveF();checkMain()});
+      }
+      return talk([[n.name,'"I\'m expecting something."'],['Greg','"Sure."']]);
+    }
+    if(n.q==='pkg2'){
+      if(P.carry==='box'&&Q.st('pkg')==='active'){
+        return talk([['Other Man','"Finally."'],['Greg','"Don\'t open it."'],['Narrator','"He opens it."'],
+          ['Narrator','"It\'s a sandwich."'],['Greg','"..."']],()=>{
+          Q.set('pkg','done');pay(9);give('Someone Else\'s Sandwich');P.carry=null;notify('QUEST COMPLETE');sfx.ok();saveF();checkMain()});
+      }
+      return talk([['Other Man','"I\'m expecting something."'],['Greg','"Sure."']]);
+    }
+    const st=Q.st(n.q);
+    if((questCD[n.q]||0)>tt)return talk([[n.name,'"Maybe in '+Math.ceil(questCD[n.q]-tt)+' seconds."']]);
+    if(st==='none'){questStart(n.q,n.id);return talk(qd.start,()=>{notify('QUEST: '+qd.title);questMark()})}
+    if(st==='active'){
+      if(qd.check&&qd.check()){
+        return talk(qd.done||[['','...']],()=>{
+          questDone(n.q);
+          if(qd.reward){if(qd.reward.money)pay(qd.reward.money);if(qd.reward.item)give(qd.reward.item);if(qd.reward.cos)own(qd.reward.cos)}
+          notify('QUEST COMPLETE');sfx.ok();saveF();checkMain();
+        });
+      }
+      return talk([[n.name,'"Still waiting."'],['Greg','"Working on it."']]);
+    }
+    return talk([[n.name,pick(['"Thanks again."','"Good job."','"You again."'])]]);
+  }
+  if(n.sus){if(Q.st('findguy')==='active'&&!F.foundguy){F.foundguy=1;saveF()}
+    return talk([['Suspicious Guy','"I wasn\'t here."'],['Greg','"Okay."']])}
+  if(n.talk)return talk(n.talk());
+  talk([[n.name,'"..."']]);
+}
+let edgeT=0,edgeStage=0,edgeCD=0;
+const EDGE_LINES=[[2.5,'"You probably shouldn\'t go that way."'],[9,'"Seriously."'],
+ [16,'"There is literally nothing out there."'],[23,'"Greg."'],[28,'"Please stop."'],
+ [33,'"Why are you doing this?"'],[39,'"Fine."']];
+function edgeCheck(dt,a){
+  if(map!=='town'||cs||F.projectdumb){edgeT=Math.max(0,edgeT-dt);return}
+  const m=MAPS.town,E=200;
+  const out=(P.x<E&&a.x<-.3)||(P.x>m.w-E&&a.x>.3)||(P.y<E&&a.y<-.3)||(P.y>m.h-E&&a.y>.3);
+  if(!out){edgeT=Math.max(0,edgeT-dt*1.2);return}
+  edgeT+=dt;
+  if(edgeStage<EDGE_LINES.length&&edgeT>=EDGE_LINES[edgeStage][0]){
+    notify('Narrator: '+EDGE_LINES[edgeStage][1]);sfx.talk();edgeStage++;
+    if(edgeStage===EDGE_LINES.length){
+      fadeTo=1;
+      setTimeout(()=>{loadMap('set',140,360);fadeTo=0;sfx.door();notify('...')},1400);
+    }
+  }
+}
+let aq=null;
+function questStart(id,giver){
+  const qd=QUESTS[id];Q.set(id,'active');
+  aq={id,t:qd.timeLimit||null,giver};questMark();
+}
+function questMark(){
+  if(job)return;
+  const qd=aq&&QUESTS[aq.id];
+  marker=(qd&&qd.go)?{x:qd.go[0],y:qd.go[1],label:qd.title}:null;
+}
+function questQuit(){
+  if(!aq)return;Q.set(aq.id,'none');aq=null;marker=null;quitAsk=false;
+  notify('"'+pick(QUITMSG)+'"');sfx.bad();
+}
+function questDone(id){
+  const qd=QUESTS[id];Q.set(id,'done');
+  if(aq&&aq.id===id)aq=null;
+  if(!job)marker=null;
+  if(qd.rep)questCD[id]=tt+(qd.cool||20);
+}
+function questTick(dt){
+   
+  for(const id in questCD)if(questCD[id]&&questCD[id]<=tt&&Q.st(id)==='done'){
+    Q.set(id,'none');questCD[id]=0;
+    const qd0=QUESTS[id];if(qd0.flag)F[qd0.flag]=0;
+    ({chairs3:()=>F.chairs=0,button2:()=>F.btnPress=0,findguy:()=>F.foundguy=0,
+      busy:()=>F.waited=0,selfdeliver:()=>F.selfdone=0,invdog:()=>F.invdog=0,
+      sock:()=>F.realsock=0,cone:()=>F.conemoved=0,button:()=>F.button=0}[id]||(()=>0))();
+    saveF();
+  }
+  if(!aq)return;
+  const qd=QUESTS[aq.id];
+  if(Q.st(aq.id)!=='active'){aq=null;return}
+  if(aq.t!=null&&!cs){aq.t-=dt;if(aq.t<=0){notify(qd.title+' FAILED — "You took slightly too long."');
+    Q.set(aq.id,'none');aq=null;marker=null;sfx.bad();return}}
+  if(qd.go&&!F[qd.flag]){
+    const d=Math.hypot(P.x-qd.go[0],P.y-qd.go[1]);
+    if(d<(qd.r||80)){aq.hold=(aq.hold||0)+dt;
+      if(aq.hold>=(qd.hold||0.6)){F[qd.flag]=1;saveF();sfx.ok();notify('OBJECTIVE DONE — return to the NPC')}}
+    else aq.hold=0;
+  }
+  if(qd.wait&&aq.giver){
+    const g=npcs.find(n=>n.id===aq.giver);
+    if(g&&Math.hypot(P.x-g.x,P.y-g.y)<70){aq.w=(aq.w||0)+dt;if(aq.w>=qd.wait&&!F.waited){F.waited=1;saveF();sfx.ok();notify('You waited. Nothing happened.')}}
+  }
+}
+function checkMain(){
+  if(Q.count()>=4&&Q.st('sandwich')==='none'){Q.set('sandwich','active');setTimeout(()=>cut(CUT.sandwichStart),600)}
+}
+function respawnHome(){
+  if(cs||dlg||shop||quitAsk||fadeTo===1)return;
+  if(drive)exitCar();
+  P.vx=0;P.vy=0;P.mt=null;P.anim=0;
+  fadeTo=1;sfx.door();
+  setTimeout(()=>{
+    loadMap('home',250,250);
+    cam.focus=null;cam.fp=null;cam.tz=1;cam.z=1;cam.shake=0;cam.x=P.x;cam.y=P.y;
+    fadeTo=0;notify('Greg went home.');
+  },420);
+}
+function carry(k){P.carry=k;notify('Carrying: '+(k==='chair'?'A CHAIR':'A BOX'))}
+
+ 
+function openShop(){shop={i:0,top:0};sfx.door()}
+function shopRows(){return COS.filter(c=>c.p>0||OWN.includes(c.id))}
+function shopAct(){
+  const r=shopRows()[shop.i];if(!r)return;
+  if(OWN.includes(r.id)){equip(r.id);return}
+  if(money>=r.p){money-=r.p;SV.set('dg3_money',money);OWN.push(r.id);SV.set('dg3_own',OWN);equip(r.id);sfx.ok();notify('BOUGHT: '+r.n)}
+  else{sfx.bad();notify('Not enough money.')}
+}
+function shopNav(d){const n=shopRows().length;shop.i=(shop.i+d+n)%n;sfx.talk();
+  if(shop.i<shop.top)shop.top=shop.i;if(shop.i>shop.top+8)shop.top=shop.i-8}
+
+ 
+let jobCD={},questCD={};
+function startJob(id){const J=JOBS[id];
+  job={id,i:0,n:0,t:J.timeLimit||null,go:J.dests?pick(J.dests):null};SV.set('dg3_job',job);
+  notify('JOB: '+JOBS[id].title+(job.t?'  ('+fmt(job.t)+')':''));sfx.ok();jobMark()}
+function fmt(t){t=Math.max(0,Math.ceil(t));return (t/60|0)+':'+String(t%60).padStart(2,'0')}
+const QUITMSG=['Greg has decided this isn\'t worth it.','Greg quit.','Probably a good decision.',
+ 'The job was cancelled due to Greg.','Greg has left the workforce.','Career change.',
+ 'Nobody is sure what happened.','Greg will not be discussing this.','Job abandoned successfully.',
+ 'He\'ll try again later.'];
+let quitAsk=false;
+function jobQuit(){
+  quitAsk=false;job=null;SV.set('dg3_job',null);marker=null;
+  notify('"'+pick(QUITMSG)+'"');sfx.bad();
+}
+function jobFail(){
+  const J=JOBS[job.id];
+  notify(J.title+' FAILED — "'+(J.fail||'You took slightly too long.')+'"');
+  sfx.bad();job=null;SV.set('dg3_job',null);marker=null;F.failed=(F.failed||0)+1;saveF();
+}
+function jobMark(){
+  if(!job){marker=null;return}
+  const s=JOBS[job.id].steps[job.i];
+  const g=(job.go&&job.i===0)?job.go:(s&&s.go);
+  marker=g?{x:g[0],y:g[1],label:(job.go&&job.i===0&&job.go[2]?s.text+' — '+job.go[2]:s.text)}:null;
+}
+function jobAdvance(){
+  const J=JOBS[job.id],s=J.steps[job.i];
+  talk(s.say||[['','...']],()=>{
+    job.i++;job.n=0;
+    if(job.i>=J.steps.length){
+      const r=J.reward||{};if(r.money)pay(r.money);if(r.item)give(r.item);if(r.cos)own(r.cos);
+      F.jobsDone=(F.jobsDone||0)+1;saveF();
+      jobCD[job.id]=tt+(J.cool||0);
+      if(J.cool)notify('Available again in '+J.cool+'s.');
+      notify('JOB COMPLETE');sfx.ok();job=null;SV.set('dg3_job',null);marker=null;
+      if(F.jobsDone===1)setTimeout(()=>cut(CUT.hired),500);
+    } else {SV.set('dg3_job',job);jobMark()}
+  });
+}
+function jobCheck(dt){
+  if(!job)return;
+  if(job.t!=null&&!cs){job.t-=dt||0;if(job.t<=0){jobFail();return}}
+  if(dlg||cs)return;
+  const s=JOBS[job.id].steps[job.i];if(!s||!s.go)return;
+  if(s.car&&!drive)return;
+  const g=(job.go&&job.i===0)?job.go:s.go;
+  const e=drive||P;
+  if(Math.hypot(e.x-g[0],e.y-g[1])<s.r)jobAdvance();
+}
+
+ 
+let idleT=0,crowdN=0,crowdAnchor={x:0,y:0},crowdStage=0,dispT=0;
+const CROWD_STAGES=[[7,1],[14,3],[22,6],[32,11],[44,17],[58,24],[75,32]];
+const CROWD_LINES=[
+ [['Person','"Are you okay?"'],['Greg','"..."'],['Person','"Okay."']],
+ [['Person','"What\'s he doing?"'],['Person 2','"Nothing."'],['Person','"Incredible."']],
+ [['Person','"Is this a protest?"'],['Person 2','"I think so."'],['Person','"I support it."']],
+ [['Person','"How long has he been standing there?"'],['Person 2','"Since Tuesday."']],
+ [['Reporter','"Sir, do you have a statement?"'],['Greg','"..."'],['Reporter','"Powerful."']],
+ [['Person','"Should we join?"'],['Person 2','"I already joined."']],
+ [['Officer','"What is happening here?"'],['Person','"We don\'t know."'],['Officer','"Carry on."']]
+];
+function crowdUpdate(dt,moving){
+  if(map!=='town'||drive){resetCrowd();return}
+  if(moving){idleT=Math.max(0,idleT-dt*6);dispT+=dt}
+  else{idleT+=dt;dispT=0;crowdAnchor.x=P.x;crowdAnchor.y=P.y}
+  if(moving){
+     
+    if(dispT>.6&&crowdN>0){
+      dispT=0;
+      const c=npcs.find(n=>n.crowd&&!n.leaving);
+      if(c){c.leaving=1;c.beh='leave';c.la=rnd(0,6.28);crowdN--;
+        setTimeout(()=>{npcs=npcs.filter(x=>x!==c);const k=NPCS.indexOf(c);if(k>=0)NPCS.splice(k,1)},4000)}
+      if(crowdN===0){crowdStage=0;idleT=0}
+    }
+    return;
+  }
+   
+  const st=CROWD_STAGES.findIndex(s=>idleT<s[0]);
+  const want=st<0?CROWD_STAGES[CROWD_STAGES.length-1][1]:(st===0?0:CROWD_STAGES[st-1][1]);
+  while(crowdN<want){
+    const i=crowdN++;
+    const a=rnd(0,6.28),r=70+Math.sqrt(i)*34;
+    const arch=ri(0,ARCH.length-1);
+    const n={id:'cr'+i+'_'+tt,name:i>22?'Reporter':i>18?'Snack Seller':ARCH[arch][0],map:'town',crowd:1,
+      col:ARCH[arch][1],x:crowdAnchor.x+Math.cos(a)*900,y:crowdAnchor.y+Math.sin(a)*700,
+      tx:crowdAnchor.x+Math.cos(a)*r,ty:crowdAnchor.y+Math.sin(a)*r,w:18,h:26,t:0,
+      beh:'crowd',pose:pick(['stand','stand','sit','photo']),prop:i>26?'sign':i>22?'cam':i>18?'snack':null,
+      cos:Math.random()<.5?[pick(NPC_COS)]:null};
+    n.talk=()=>pick(CROWD_LINES);
+    npcs.push(n);NPCS.push(n);
+  }
+  const nowStage=CROWD_STAGES.filter(s=>idleT>=s[0]).length;
+  if(nowStage>crowdStage){
+    crowdStage=nowStage;F.crowdSeen=1;saveF();
+    if(!dlg&&!cs)talk(CROWD_LINES[Math.min(crowdStage-1,CROWD_LINES.length-1)]);
+    if(crowdStage>=4){cam.shake=4;cars.forEach(c=>{if(c.traffic&&Math.hypot(c.x-crowdAnchor.x,c.y-crowdAnchor.y)<600)c.stopT=6})}
+    if(crowdStage===CROWD_STAGES.length&&!F.crowdMax){F.crowdMax=1;saveF();give('Public Figure');cut(CUT.crowd)}
+  }
+}
+function resetCrowd(){
+  if(crowdN){npcs=npcs.filter(n=>!n.crowd);for(let i=NPCS.length-1;i>=0;i--)if(NPCS[i].crowd)NPCS.splice(i,1)}
+  crowdN=0;crowdStage=0;idleT=0;
+}
+
+ 
+function enterCar(c){
+  drive=c;P.inCar=1;engine(true,0);
+  notify(c.name);
+  if(!F.firstDrive){F.firstDrive=1;saveF();setTimeout(()=>cut(CUT.firstDrive),300)}
+}
+function exitCar(){
+  const c=drive;drive=null;P.inCar=0;engine(false,0);
+  P.x=c.x+Math.cos(c.ang+1.6)*38;P.y=c.y+Math.sin(c.ang+1.6)*38;
+  if(c.quest==='parking'&&Math.hypot(c.x-c.sx,c.y-c.sy)>40&&!F.parked){F.parked=1;saveF();notify('Car moved. Approximately.')}
+}
+function updCar(c,dt){
+  if(c.traffic){
+    const tgt=c.traffic[c.ti%c.traffic.length];
+    const dx=tgt[0]-c.x,dy=tgt[1]-c.y,d=Math.hypot(dx,dy);
+    if(d<20){c.ti++;if(c.slowpoke&&Math.random()<.5)c.stopT=2.5}
+    if(c.stopT>0){c.stopT-=dt;return}
+    c.ang=Math.atan2(dy,dx);
+    c.x+=dx/d*c.sp*dt;c.y+=dy/d*c.sp*dt;
+    if(near(c,P,40)&&!P.inCar&&!cs){sfx.horn();cam.shake=6;P.x-=Math.cos(c.ang)*10;P.y-=Math.sin(c.ang)*10}
+    return;
+  }
+  if(c!==drive)return;
+  const busy=!!(dlg||cs);
+  const a=busy?{x:0,y:0}:axis();
+  const fwd=-a.y,turn=a.x;
+  c.vel+=fwd*c.ac*dt;
+  c.vel*=(1-1.2*dt);
+  c.vel=clamp(c.vel,-c.sp*.4,c.sp);
+  if(Math.abs(c.vel)>6)c.ang+=turn*c.hd*dt*(c.vel>0?1:-1)*clamp(Math.abs(c.vel)/80,.3,1.4);
+  const nx=c.x+Math.cos(c.ang)*c.vel*dt, ny=c.y+Math.sin(c.ang)*c.vel*dt;
+  const bb={x:nx,y:ny,w:Math.max(c.w,c.h)*.72,h:Math.max(c.w,c.h)*.72};
+  let blocked=false;
+  for(const s of solids())if(hit(bb,s)){blocked=true;break}
+  const m=MAPS[map];
+  if(nx<20||ny<20||nx>m.w-20||ny>m.h-20)blocked=true;
+  if(blocked){
+    if(Math.abs(c.vel)>60){cam.shake=Math.min(16,Math.abs(c.vel)/12);sfx.bump();
+      if(!F.crash){F.crash=1;saveF();notify('"Nice."')}
+      for(let i=0;i<8;i++)parts.push({x:c.x,y:c.y,vx:rnd(-80,80),vy:rnd(-80,80),life:.5,t:0,col:'#ccc',s:3});}
+    c.vel=-c.vel*.25;
+  } else {c.x=nx;c.y=ny}
+   
+  for(const n of npcs)if(near(n,c,34)&&Math.abs(c.vel)>40){n.x-=Math.cos(c.ang)*40*dt*4;n.y-=Math.sin(c.ang)*40*dt*4;
+    n.panic=1.4;
+    if(!n.yelled){n.yelled=2.5;notify(pick(['"HEY."','"Watch it."','"That\'s my leg."','"Nice parking."','"I was walking there."']))}}
+   
+  const cb={x:c.x,y:c.y,w:c.w+10,h:c.h+10};
+  for(const o of objs){const kk=K[o.k];if(!kk||!kk.p)continue;
+    if(Math.abs(o.x-c.x)>200||Math.abs(o.y-c.y)>200)continue;
+    if(hit(cb,{x:o.x,y:o.y,w:o.w,h:o.h})){
+      push(o,Math.cos(c.ang)*100+(o.x-c.x),Math.sin(c.ang)*100+(o.y-c.y),Math.min(900,Math.abs(c.vel)*(c.heavy?2.4:1.8)));
+      o.rot=(o.rot||0)+1.4;cam.shake=Math.min(12,Math.abs(c.vel)/26);c.vel*=c.heavy?.96:.86;
+      if(!F.crash){F.crash=1;saveF();notify('"That was there before."')}
+      if(!F.firstHit){F.firstHit=1;saveF();setTimeout(()=>{if(!dlg&&!cs)cut(CUT.trashcan)},300)}
+    }}
+  engine(true,clamp(Math.abs(c.vel)/c.sp,0,1));
+  if(c.smoke&&Math.random()<.3)parts.push({x:c.x-Math.cos(c.ang)*20,y:c.y-Math.sin(c.ang)*20,vx:rnd(-8,8),vy:rnd(-14,-4),life:.9,t:0,col:'#9aa',s:4});
+}
+
+ 
+function updNpc(n,dt){
+  n.t+=dt;
+  if(n.yelled>0)n.yelled-=dt;
+  if(n.frozen>0){n.frozen-=dt;return}
+  if(n.panic>0){n.panic-=dt;n.x+=Math.cos(n.t*6+n.rx)*160*dt;n.y+=Math.sin(n.t*5+n.ry)*120*dt;n.anim=(n.anim||0)+dt*14;return}
+  if(n.mt){const dx=n.mt.x-n.x,dy=n.mt.y-n.y,d=Math.hypot(dx,dy);
+    if(d<4)n.mt=null;else{n.x+=dx/d*n.mt.sp*dt;n.y+=dy/d*n.mt.sp*dt;n.anim=(n.anim||0)+dt*10}return}
+  switch(n.beh){
+   case 'wander':{
+     if(!n.wt||n.wt<=0){n.wt=rnd(1,3);n.wa=rnd(0,6.28)}
+     n.wt-=dt;n.x+=Math.cos(n.wa)*26*dt;n.y+=Math.sin(n.wa)*26*dt;n.anim=(n.anim||0)+dt*8;
+     n.x=clamp(n.x,n.rx-140,n.rx+140);n.y=clamp(n.y,n.ry-110,n.ry+110);break}
+   case 'walk':{
+     const p=n.path[n.pi%n.path.length],dx=p[0]-n.x,dy=p[1]-n.y,d=Math.hypot(dx,dy);
+     if(d<8)n.pi++;else{n.x+=dx/d*46*dt;n.y+=dy/d*46*dt;n.anim=(n.anim||0)+dt*10}break}
+   case 'circle':{n.x=n.rx+Math.cos(n.t*1.4)*70;n.y=n.ry+Math.sin(n.t*1.4)*50;n.anim=(n.anim||0)+dt*12;break}
+   case 'follow':{const d=Math.hypot(P.x-n.x,P.y-n.y);
+     if(d>70&&d<900){n.x+=(P.x-n.x)/d*70*dt;n.y+=(P.y-n.y)/d*70*dt;n.anim=(n.anim||0)+dt*9}break}
+   case 'flee':{const d=Math.hypot(P.x-n.x,P.y-n.y);
+     if(d<160){n.x+=(n.x-P.x)/d*120*dt;n.y+=(n.y-P.y)/d*120*dt;n.anim=(n.anim||0)+dt*16}
+     n.x=clamp(n.x,5320,6880);n.y=clamp(n.y,200,1280);break}
+   case 'look':n.face=Math.sin(n.t)>0?1:-1;break;
+   case 'phone':n.face=1;n.anim=lerp(n.anim||0,0,dt*6);break;
+   case 'walk2':{
+     if(!n.wa)n.wa=rnd(0,6.28);
+     n.x+=Math.cos(n.wa)*34*dt;n.y+=Math.sin(n.wa)*34*dt;n.anim=(n.anim||0)+dt*9;
+     if(Math.hypot(n.x-n.rx,n.y-n.ry)>230)n.wa=Math.atan2(n.ry-n.y,n.rx-n.x)+rnd(-.6,.6);break}
+   case 'pair':{n.face=Math.sin(n.t*.7)>0?1:-1;n.anim=lerp(n.anim||0,0,dt*5);break}
+   case 'crowd':{
+     const dx=n.tx-n.x,dy=n.ty-n.y,d=Math.hypot(dx,dy);
+     if(d>6){n.x+=dx/d*130*dt;n.y+=dy/d*130*dt;n.anim=(n.anim||0)+dt*11}
+     else{n.anim=lerp(n.anim||0,0,dt*6);n.face=P.x>n.x?1:-1}break}
+   case 'leave':{n.x+=Math.cos(n.la)*150*dt;n.y+=Math.sin(n.la)*150*dt;n.anim=(n.anim||0)+dt*12;break}
+  }
+}
+
+ 
+function drawPerson(e,col,opt){
+  opt=opt||{};
+  const bob=Math.sin((e.anim||0))*1.6, sit=opt.sit?6:0;
+  shadow(e.x,e.y+13,10);
+  X.strokeStyle='#2b2d42';X.lineWidth=3;X.lineCap='round';
+  const sw=Math.sin(e.anim||0)*4;
+  X.beginPath();
+  if(opt.sit){X.moveTo(e.x-4,e.y+6);X.lineTo(e.x+7,e.y+8);X.moveTo(e.x+3,e.y+6);X.lineTo(e.x+9,e.y+12)}
+  else{X.moveTo(e.x-3,e.y+4);X.lineTo(e.x-3+sw,e.y+13);X.moveTo(e.x+3,e.y+4);X.lineTo(e.x+3-sw,e.y+13)}
+  X.stroke();
+  box(e.x-7,e.y-8+bob-sit,14,15,col,4);
+  if(opt.apron){X.fillStyle='#fff';X.fillRect(e.x-5,e.y-2+bob-sit,10,9)}
+  if(opt.coat){X.fillStyle='#fff';X.fillRect(e.x-7,e.y-8+bob-sit,14,15)}
+  X.beginPath();X.moveTo(e.x-6,e.y-5+bob-sit);X.lineTo(e.x-9-sw*.5,e.y+3+bob-sit);
+  X.moveTo(e.x+6,e.y-5+bob-sit);X.lineTo(e.x+9+sw*.5,e.y+3+bob-sit);X.stroke();
+  X.fillStyle='#f2cc8f';X.beginPath();X.arc(e.x,e.y-15+bob-sit,7,0,7);X.fill();
+  X.fillStyle='#4a3728';X.beginPath();X.arc(e.x,e.y-18+bob-sit,7,Math.PI,0);X.fill();
+  X.fillStyle='#2b2d42';const f=(e.face||1);
+  X.beginPath();X.arc(e.x+f*2.5,e.y-15+bob-sit,1.5,0,7);X.arc(e.x-f*.5,e.y-15+bob-sit,1.5,0,7);X.fill();
+  X.lineWidth=1;
+  if(opt.cos)drawCos(e,opt.cos,bob,sit);
+}
+function drawBird(e,col){
+  shadow(e.x,e.y+8,8);
+  const f=Math.sin((e.anim||0)*2)*3;
+  X.fillStyle=col||'#f6f6f6';X.beginPath();X.ellipse(e.x,e.y,10,8,0,0,7);X.fill();
+  X.beginPath();X.arc(e.x+8,e.y-6,5,0,7);X.fill();
+  X.fillStyle='#f4a300';X.beginPath();X.moveTo(e.x+12,e.y-6);X.lineTo(e.x+18,e.y-4);X.lineTo(e.x+12,e.y-3);X.fill();
+  X.fillStyle='#d33';X.beginPath();X.arc(e.x+7,e.y-11,3,0,7);X.fill();
+  X.fillStyle='#111';X.beginPath();X.arc(e.x+10,e.y-7,1.3,0,7);X.fill();
+  X.strokeStyle='#e58e26';X.lineWidth=2;X.beginPath();X.moveTo(e.x-2,e.y+7);X.lineTo(e.x-2,e.y+11+f*.2);X.moveTo(e.x+4,e.y+7);X.lineTo(e.x+4,e.y+11-f*.2);X.stroke();X.lineWidth=1;
+}
+function drawGoat(e){
+  shadow(e.x,e.y+11,14);
+  X.fillStyle='#e8e2d4';X.beginPath();X.ellipse(e.x,e.y,15,9,0,0,7);X.fill();
+  X.beginPath();X.arc(e.x-13,e.y-6,7,0,7);X.fill();
+  X.strokeStyle='#c9b18a';X.lineWidth=2.5;X.beginPath();X.moveTo(e.x-15,e.y-11);X.lineTo(e.x-20,e.y-16);X.stroke();
+  X.fillStyle='#111';X.beginPath();X.arc(e.x-16,e.y-6,1.5,0,7);X.fill();
+  X.strokeStyle='#cfc7b6';X.lineWidth=3;const s=Math.sin(e.anim||0)*3;
+  X.beginPath();X.moveTo(e.x-6,e.y+7);X.lineTo(e.x-6+s,e.y+13);X.moveTo(e.x+7,e.y+7);X.lineTo(e.x+7-s,e.y+13);X.stroke();X.lineWidth=1;
+}
+function drawDog(e){
+  shadow(e.x,e.y+8,10);
+  X.fillStyle='#8a6a4a';X.beginPath();X.ellipse(e.x,e.y,12,7,0,0,7);X.fill();
+  X.beginPath();X.arc(e.x-10,e.y-4,6,0,7);X.fill();
+  X.fillStyle='#5b452f';X.beginPath();X.ellipse(e.x-13,e.y-8,3,5,0,0,7);X.fill();
+  X.fillStyle='#111';X.beginPath();X.arc(e.x-13,e.y-4,1.4,0,7);X.fill();
+  X.strokeStyle='#8a6a4a';X.lineWidth=3;X.beginPath();X.moveTo(e.x+10,e.y-2);X.lineTo(e.x+16,e.y-8);X.stroke();X.lineWidth=1;
+}
+function drawCar(c){
+  X.save();X.translate(c.x,c.y);X.rotate(c.ang);
+  X.fillStyle='rgba(0,0,0,.2)';rr(-c.w/2+3,-c.h/2+5,c.w,c.h,6);X.fill();
+  box(-c.w/2,-c.h/2,c.w,c.h,c.col,6);
+  X.fillStyle='rgba(255,255,255,.75)';rr(-c.w*.1,-c.h/2+3,c.w*.34,c.h-6,3);X.fill();
+  X.fillStyle='rgba(0,0,0,.25)';rr(-c.w*.42,-c.h/2+4,c.w*.22,c.h-8,3);X.fill();
+  X.fillStyle='#222';X.fillRect(-c.w*.34,-c.h/2-3,c.w*.2,3);X.fillRect(-c.w*.34,c.h/2,c.w*.2,3);
+  X.fillRect(c.w*.16,-c.h/2-3,c.w*.2,3);X.fillRect(c.w*.16,c.h/2,c.w*.2,3);
+  X.fillStyle='#ffe9a8';X.fillRect(c.w/2-3,-c.h/2+3,3,5);X.fillRect(c.w/2-3,c.h/2-8,3,5);
+  if(c.top){box(-14,-12,28,24,'#a5643c',3);txt('?',0,5,14,'#fff','center')}
+  if(c.npc){X.fillStyle='#f2cc8f';X.beginPath();X.arc(0,0,5,0,7);X.fill();txt('z',6,-4,10,'#fff')}
+  X.restore();
+}
+function drawTmp(o){
+  switch(o.k){
+   case 'bird':drawBird(o,o.col);break;
+   case 'goat':drawGoat(o);break;
+   case 'person':drawPerson(o,o.col||'#e07a5f',{cos:o.cos});
+     if(o.say)txt(o.say,o.x,o.y-34,12,'#fff','center',800);break;
+   case 'runner':drawPerson(o,'#c1121f',{});if(o.say)txt(o.say,o.x,o.y-34,12,'#fff','center',800);break;
+   case 'car':drawCar({x:o.x,y:o.y,ang:o.back?3.14:(o.vx<0?3.14:0),w:58,h:30,col:o.col});break;
+   case 'ufo':{X.fillStyle='rgba(140,255,180,.14)';X.beginPath();X.moveTo(o.x-30,o.y+10);X.lineTo(o.x+30,o.y+10);X.lineTo(o.x+60,o.y+190);X.lineTo(o.x-60,o.y+190);X.closePath();X.fill();
+     X.fillStyle='#9ad1d4';X.beginPath();X.ellipse(o.x,o.y,44,13,0,0,7);X.fill();
+     X.fillStyle='#cfe8f5';X.beginPath();X.arc(o.x,o.y-6,20,Math.PI,0);X.fill();break}
+   case 'piano':{shadow(o.x,o.y+22,26);box(o.x-32,o.y-20,64,44,'#1d1d20',4);X.fillStyle='#f6f6f6';X.fillRect(o.x-26,o.y+8,52,12);
+     X.fillStyle='#111';for(let i=0;i<7;i++)X.fillRect(o.x-24+i*7,o.y+8,3,7);break}
+   case 'box':{shadow(o.x,o.y+16,16);box(o.x-18,o.y-18,36,36,'#c08b52',3);break}
+   case 'stoneface':{K.face.d({x:o.x-80,y:o.y,w:160,h:150});break}
+  }
+}
+function drawPlayer(){
+  if(P.inCar)return;
+  const sh=EQ.shirt&&COSI[EQ.shirt];
+  drawPerson(P,sh&&sh.col||'#e63946',{cos:eqList()});
+  if(P.carry==='chair'){X.fillStyle='#a5643c';X.fillRect(P.x-8,P.y-38,6,18);X.fillRect(P.x-10,P.y-28,16,5);X.fillRect(P.x-8,P.y-23,3,7);X.fillRect(P.x+1,P.y-23,3,7)}
+  if(P.carry==='box'){box(P.x-14,P.y-40,28,22,'#c08b52',3)}
+}
+
+ 
+function update(dt){
+  tt+=dt;
+  if(mapToggle){bigmap=!bigmap;mapToggle=false}
+  if(respawnPress){respawnPress=false;respawnHome()}
+  if(quitPress){quitPress=false;if(job)quitAsk=quitAsk?false:'job'}
+  if(questQuitPress){questQuitPress=false;if(aq)quitAsk=quitAsk?false:'quest'}
+  if(quitAsk){
+    if(yesPress){if(quitAsk==='quest')questQuit();else jobQuit()}
+    if(noPress||closePress){quitAsk=false;closePress=false}
+    yesPress=noPress=false;actPress=false;
+    hint=null;return;
+  }
+  yesPress=noPress=false;
+  if(closePress&&!shop){bigmap=false;closePress=false}
+  if(fadeTo===1&&!cs){fadeStuck=(fadeStuck||0)+dt;if(fadeStuck>2.5){fadeTo=0;fadeStuck=0}}else fadeStuck=0;
+  fade=lerp(fade,fadeTo,Math.min(1,dt*6));
+  if(cam.shake>0)cam.shake=Math.max(0,cam.shake-40*dt);
+  if(noticeT>0)noticeT-=dt;
+  if(F.rain>0)F.rain-=dt;
+  if(F.bossT>0)F.bossT-=dt;
+  if(dlg){dlg.t+=dt;if(dlg.auto&&dlg.t>=dlg.auto)dlgAdvance()}
+  updCut(dt);
+
+  if(shop){
+    if(navT>0)navT-=dt;
+    const a=axis();
+    if(navT<=0&&Math.abs(a.y)>.5){shopNav(a.y>0?1:-1);navT=.18}
+    if(actPress){shopAct();actPress=false}
+    if(closePress){shop=null;closePress=false}
+    hint=null;return;
+  }
+  if(actPress){
+    if(dlg)dlgAdvance();
+    else if(!cs){
+      if(drive){if(Math.abs(drive.vel)<40)exitCar();else notify('Stop first.')}
+      else{const t=interactTarget();if(t)t.f()}
+    }
+    actPress=false;
+  }
+  actPress=false;
+
+  const busy=!!(dlg||cs);
+   
+  let moving=false;
+  if(!busy&&!drive){
+    const a=axis();
+    const sp=165;
+    if(a.x||a.y){
+      moving=true;
+      moveBox(P,a.x*sp*dt,a.y*sp*dt,solids());
+      P.anim+=dt*10;if(a.x)P.face=a.x>0?1:-1;
+      if(!P.step||tt-P.step>.32){P.step=tt;snd(120+Math.random()*30,.04,'square',.012)}
+    } else P.anim=lerp(P.anim,0,dt*8);
+    edgeCheck(dt,a);
+  } else if(drive) edgeT=Math.max(0,edgeT-dt);
+  if(drive&&Math.abs(drive.vel)>20)moving=true;
+  if(cs&&P.mt){const dx=P.mt.x-P.x,dy=P.mt.y-P.y,d=Math.hypot(dx,dy);
+    if(d<4)P.mt=null;else{P.x+=dx/d*P.mt.sp*dt;P.y+=dy/d*P.mt.sp*dt;P.anim+=dt*10}}
+
+  for(const n of npcs){
+    if(!n.crowd&&!n.mt&&Math.abs(n.x-P.x)>1400)continue;
+    if(!busy||n.mt||n.crowd)updNpc(n,dt);
+  }
+  for(const c of cars){if(c!==drive&&Math.abs(c.x-P.x)>2200&&Math.abs(c.y-P.y)>1500)continue;updCar(c,dt)}
+  physUpdate(dt);
+  crowdUpdate(dt,moving||busy&&!dlg);
+  jobCheck(dt);
+  questTick(dt);
+  if(map==='set'&&!F.pdSeen&&!cs&&!dlg){
+    const cm=npcs.find(n=>n.id==='cameraman');
+    if(cm&&Math.hypot(P.x-cm.x,P.y-cm.y)<110){F.pdSeen=1;saveF();cut(CUT.projectdumb)}
+  }
+  if(drive){P.x=drive.x;P.y=drive.y}
+
+  for(let i=tmps.length-1;i>=0;i--){const o=tmps[i];o.t+=dt;o.anim=(o.anim||0)+dt*10;
+    if(o.fall&&o.t<.6){continue}
+    if(o.fall&&!o.landed){o.landed=1;cam.shake=10;sfx.bump()}
+    o.x+=o.vx*dt;o.y+=o.vy*dt;
+    if(o.follow){const d=Math.hypot(P.x-o.x,P.y-o.y);if(d>60){o.x+=(P.x-o.x)/d*90*dt;o.y+=(P.y-o.y)/d*90*dt}}
+    if(o.boss&&F.bossT<=0&&!o.done){o.done=1;o.ttl=Math.min(o.ttl,o.t+.2);
+      if(!dlg&&!cs)talk([['Guy','"Hi."'],['Narrator','"The boss bar disappears."']])}
+    if(o.t>o.ttl)tmps.splice(i,1)}
+
+  for(let i=parts.length-1;i>=0;i--){const p=parts[i];p.t+=dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.vx*=.98;p.vy*=.98;if(p.t>p.life)parts.splice(i,1)}
+  for(let i=pops.length-1;i>=0;i--){const p=pops[i];p.life+=dt;p.y-=26*dt;if(p.life>1.2)pops.splice(i,1)}
+
+   
+  if(!busy&&map==='town'){
+    evT-=dt;
+    if(evT<=0){evT=rnd(11,20);
+      fireEvent(Math.random()<.07?RARE:EVENTS);}
+  }
+   
+  const tgt=cam.focus||(cam.fp?cam.fp:(drive||P));
+  cam.tx=tgt.x;cam.ty=tgt.y;
+  cam.x=lerp(cam.x,cam.tx,Math.min(1,dt*(drive?3.4:6)));
+  cam.y=lerp(cam.y,cam.ty,Math.min(1,dt*(drive?3.4:6)));
+  cam.z=lerp(cam.z,cam.tz,Math.min(1,dt*4));
+  const m=MAPS[map],vw=W/cam.z,vh=H/cam.z;
+  if(m.w>vw)cam.x=clamp(cam.x,vw/2,m.w-vw/2);else cam.x=m.w/2;
+  if(m.h>vh)cam.y=clamp(cam.y,vh/2,m.h-vh/2);else cam.y=m.h/2;
+  hint=(!busy&&!drive)?interactTarget():null;
+}
+
+const ICON={JOB:['!','#ffca3a'],CAR:['CAR','#4cc9f0'],PIZ:['PIZZA','#e63946'],WRN:['FIX','#8d99ae'],
+ CD:['WAIT','#8d99ae'],BLD:['BUILD','#ff924c'],CHK:['CHICK','#f6f6f6'],BOX:['BOX','#c08b52'],QST:['?','#8ac926'],SHOP:['$','#8ac926']};
+function npcIcon(n){
+  if(n.shop)return ICON.SHOP;
+  if(n.j){const J=JOBS[n.j];if(job&&job.id===n.j)return null;if(job)return null;
+    if((jobCD[n.j]||0)>tt)return ICON.CD;return ICON[J.icon||'JOB']||ICON.JOB}
+  if(n.q){const st=Q.st(n.q),qd=QUESTS[n.q];
+    if(qd&&qd.recv)return (P.carry&&Q.st(qd.recv)==='active')?ICON.QST:null;
+    if(qd&&qd.hidden)return null;
+    if((questCD[n.q]||0)>tt)return ICON.CD;
+    if(qd&&qd.req&&Q.st(qd.req)!=='done')return null;
+    if(st==='none')return ICON.QST;
+    if(st==='active'&&qd&&qd.check&&qd.check())return ICON.QST;}
+  return null;
+}
+function drawIcon(n){
+  const ic=npcIcon(n);if(!ic)return;
+  const y=n.y-40+Math.sin(tt*4+n.x)*3, w=ic[0].length*7+12;
+  X.fillStyle='rgba(20,22,28,.75)';rr(n.x-w/2,y-13,w,17,4);X.fill();
+  X.fillStyle=ic[1];X.beginPath();X.moveTo(n.x-4,y+4);X.lineTo(n.x+4,y+4);X.lineTo(n.x,y+9);X.closePath();X.fill();
+  txt(ic[0],n.x,y,11,ic[1],'center',900);
+}
+function drawObj(o){
+  const kk=K[o.k];if(!kk)return;
+  if(o.rot){X.save();const cx=o.x+o.w/2,cy=o.y+o.h/2;X.translate(cx,cy);X.rotate(o.rot);X.translate(-cx,-cy);kk.d(o);X.restore()}
+  else kk.d(o);
+}
+ 
+function render(){
+  const m=MAPS[map];
+  X.setTransform(1,0,0,1,0,0);
+  X.fillStyle=m.base;X.fillRect(0,0,W,H);
+  X.save();
+  X.translate(W/2,H/2);X.scale(cam.z,cam.z);
+  if(cam.shake>0)X.translate(rnd(-cam.shake,cam.shake)*.3,rnd(-cam.shake,cam.shake)*.3);
+  X.translate(-cam.x,-cam.y);
+  const vw=W/cam.z,vh=H/cam.z,L=cam.x-vw/2-80,R=cam.x+vw/2+80,T=cam.y-vh/2-80,B=cam.y+vh/2+120;
+
+  (m.zones||[]).forEach(z=>{X.fillStyle=z[0];X.fillRect(z[1],z[2],z[3],z[4]);
+    if(z[0]==='#5a5f66'){X.fillStyle='rgba(255,255,255,.5)';
+      if(z[3]>z[4])for(let x=z[1];x<z[1]+z[3];x+=110)X.fillRect(x,z[2]+z[4]/2-3,56,6);
+      else for(let y=z[2];y<z[2]+z[4];y+=110)X.fillRect(z[1]+z[3]/2-3,y,6,56)}});
+
+  const draws=[];
+  for(const o of objs){if(o.x>R||o.x+(o.w||24)<L||o.y>B||o.y+(o.h||24)<T)continue;
+    draws.push({y:o.y+(o.h||24),f:()=>drawObj(o)})}
+  for(const c of cars)if(c.x>L&&c.x<R&&c.y>T&&c.y<B)draws.push({y:c.y,f:()=>drawCar(c)});
+  for(const n of npcs)if(n.x>L&&n.x<R&&n.y>T&&n.y<B)draws.push({y:n.y+12,f:()=>{
+    if(n.bird)drawBird(n,n.col);else if(n.goat)drawGoat(n);else if(n.dog)drawDog(n);
+    else drawPerson(n,n.col,{sit:n.beh==='sit'||(n.crowd&&n.pose==='sit'),apron:n.apron,coat:n.coat,cos:n.cos});
+    if(n.tie){X.fillStyle='#c1121f';X.fillRect(n.x-2,n.y-6,4,10)}
+    if(n.crowd&&n.pose==='photo'){X.fillStyle='#2b2d42';X.fillRect(n.x-7,n.y-24,14,9);X.fillStyle='#6c9dc9';X.fillRect(n.x-4,n.y-22,7,5)}
+    if(n.prop==='sign'){X.fillStyle='#f1f1f1';X.fillRect(n.x-14,n.y-46,30,18);txt('?',n.x+1,n.y-33,12,'#222','center')}
+    if(n.prop==='cam'){X.fillStyle='#111';X.fillRect(n.x-8,n.y-26,16,10)}
+    if(n.prop==='snack'||n.snack){X.fillStyle='#e6c07b';X.fillRect(n.x+8,n.y-6,14,10)}
+    if(n.react){const r=(n.x|0)%4;
+      if(r===0)txt('HA',n.x,n.y-34+Math.sin(tt*9)*3,12,'#ffca3a','center',900);
+      else if(r===1)txt('clap',n.x,n.y-34,11,'rgba(255,255,255,.7)','center',800);
+      else if(r===2)txt('*eating*',n.x,n.y-34,10,'rgba(255,255,255,.45)','center',700)}
+    if(!n.crowd&&!n.ambient)drawIcon(n);
+    if(n.hide){X.fillStyle='#3f7d2e';X.beginPath();X.arc(n.x,n.y+2,17,0,7);X.arc(n.x-12,n.y+6,12,0,7);X.arc(n.x+12,n.y+6,12,0,7);X.fill()}
+  }});
+  for(const o of tmps)if(!o.fall||o.t>.6)draws.push({y:o.y+10,f:()=>drawTmp(o)});
+  if(!P.inCar)draws.push({y:P.y+12,f:drawPlayer});
+  draws.sort((a,b)=>a.y-b.y);
+  draws.forEach(d=>d.f());
+
+   
+  for(const o of tmps)if(o.fall&&o.t<.6){X.fillStyle='rgba(0,0,0,.25)';X.beginPath();X.ellipse(o.x,o.y+14,22,10,0,0,7);X.fill();
+    txt('!',o.x,o.y-6,20,'#e63946','center',900)}
+  for(const p of parts){X.globalAlpha=clamp(1-p.t/p.life,0,1);X.fillStyle=p.col;X.fillRect(p.x,p.y,p.s,p.s)}
+  X.globalAlpha=1;
+   
+  if(F.rain>0){X.strokeStyle='rgba(180,210,255,.55)';X.lineWidth=1.5;
+    for(let i=0;i<120;i++){const rx=L+((i*137+tt*300)%(R-L)),ry=T+((i*271+tt*900)%(B-T));
+      X.beginPath();X.moveTo(rx,ry);X.lineTo(rx-3,ry+12);X.stroke()}X.lineWidth=1}
+
+  if(F.storm>0){F.storm-=1/60;}
+   
+  if(marker&&map==='town'){
+    const pu=1+Math.sin(tt*4)*.15;
+    X.strokeStyle='rgba(255,202,58,.9)';X.lineWidth=3;
+    X.beginPath();X.arc(marker.x,marker.y,34*pu,0,7);X.stroke();
+    X.beginPath();X.arc(marker.x,marker.y,16*pu,0,7);X.stroke();X.lineWidth=1;
+    X.fillStyle='rgba(255,202,58,.25)';X.beginPath();X.arc(marker.x,marker.y,16*pu,0,7);X.fill();
+  }
+   
+  if(hint){
+    const e=hint.e;const bw=hint.l.length*10+26;
+    X.fillStyle='rgba(20,22,28,.85)';rr(e.x-bw/2,e.y-56,bw,24,6);X.fill();
+    X.strokeStyle='#ffca3a';X.lineWidth=2;rr(e.x-bw/2,e.y-56,bw,24,6);X.stroke();X.lineWidth=1;
+    txt((touch?'':'[E] ')+hint.l,e.x,e.y-39,12,'#fff','center',800);
+  }
+  X.restore();
+  if(F.storm>0){
+    X.fillStyle='rgba(10,14,40,'+clamp(F.storm*.16,0,.5)+')';X.fillRect(0,0,W,H);
+    if(Math.random()<.06){X.fillStyle='rgba(255,255,255,.5)';X.fillRect(0,0,W,H)}
+  }
+  if(fade>.01){X.save();X.setTransform(1,0,0,1,0,0);X.globalAlpha=1;
+    X.fillStyle='rgba(0,0,0,'+clamp(fade,0,1)+')';X.fillRect(0,0,W,H);X.restore()}
+  ui();
+}
+
+function ui(){
+   
+  X.fillStyle='rgba(16,18,24,.55)';X.fillRect(0,0,W,38);
+  txt('$'+money,16,25,18,'#8ac926');
+  txt('DAY '+day,110,25,15,'#c9c9c9');
+  const aqt=aq&&QUESTS[aq.id];
+  if(aqt)txt('QUEST: '+aqt.title,W-16,25,14,'#ffca3a','right');
+  else txt(MAPS[map].name,W-16,25,14,'#8d99ae','right');
+  if(P.carry)txt('CARRYING: '+(P.carry==='chair'?'CHAIR':'BOX'),W/2,25,13,'#fff','center');
+  if(job){const s2=JOBS[job.id].steps[job.i];
+    X.fillStyle='rgba(16,18,24,.6)';rr(14,44,Math.max(240,(s2.text.length*6.6)+24),job.t!=null?44:26,6);X.fill();
+    txt('JOB: '+s2.text,26,62,12,'#ffca3a');
+    if(job.t!=null){const lo=job.t<20;
+      txt('TIME: '+fmt(job.t),26,80,15,lo&&Math.sin(tt*8)>0?'#ff595e':'#fff','left',800)}
+     
+    const qy=job.t!=null?94:76;job.btn=[14,qy,108,24];
+    X.fillStyle=quitAsk?'rgba(230,57,70,.9)':'rgba(230,57,70,.55)';rr(14,qy,108,24,5);X.fill();
+    txt('QUIT JOB'+(touch?'':'  [X]'),68,qy+16,11,'#fff','center',800);
+  }
+  if(quitAsk){
+    X.fillStyle='rgba(10,12,16,.75)';X.fillRect(0,0,W,H);
+    X.fillStyle='rgba(20,22,28,.98)';rr(W/2-210,H/2-80,420,160,10);X.fill();
+    X.strokeStyle='rgba(255,255,255,.18)';rr(W/2-210,H/2-80,420,160,10);X.stroke();
+    txt(quitAsk==='quest'?'QUIT QUEST?':'QUIT JOB?',W/2,H/2-36,26,'#fff','center',900);
+    txt(quitAsk==='quest'?'"Greg can always try again later."':'"Greg can give up whenever he wants."',W/2,H/2-8,14,'rgba(255,255,255,.6)','center',600);
+    X.fillStyle='#c1121f';rr(W/2-150,H/2+20,130,40,6);X.fill();
+    X.fillStyle='#3f6d4a';rr(W/2+20,H/2+20,130,40,6);X.fill();
+    txt('YES',W/2-85,H/2+46,18,'#fff','center',900);
+    txt('NO',W/2+85,H/2+46,18,'#fff','center',900);
+    txt(touch?'TAP A BUTTON':'Y / N',W/2,H/2+76,12,'rgba(255,255,255,.45)','center',700);
+    return;
+  }
+   
+  if(aq&&QUESTS[aq.id]&&!QUESTS[aq.id].hidden){
+    const qd=QUESTS[aq.id],y0=job?128:44;
+    X.fillStyle='rgba(16,18,24,.6)';rr(14,y0,Math.max(230,qd.title.length*8+30),aq.t!=null?66:48,6);X.fill();
+    txt('QUEST: '+qd.title,26,y0+18,12,'#ffca3a');
+    if(aq.t!=null)txt('TIME: '+fmt(aq.t),26,y0+36,14,aq.t<15&&Math.sin(tt*8)>0?'#ff595e':'#fff','left',800);
+    const qy=y0+(aq.t!=null?40:22);aq.btn=[14,qy,116,22];
+    X.fillStyle=quitAsk==='quest'?'rgba(230,57,70,.9)':'rgba(230,57,70,.5)';rr(14,qy,116,22,5);X.fill();
+    txt('QUIT QUEST'+(touch?'':'  [C]'),72,qy+15,10,'#fff','center',800);
+  }
+   
+  if(marker&&map==='town'&&!cs){
+    const dx=marker.x-P.x,dy=marker.y-P.y,d=Math.hypot(dx,dy);
+    const near2=d<160;
+    const a2=Math.atan2(dy,dx),ax=W/2+Math.cos(a2)*150,ay=H/2+Math.sin(a2)*110;
+    if(!near2){
+      X.save();X.translate(ax,ay);X.rotate(a2);
+      X.fillStyle='rgba(255,202,58,.92)';X.beginPath();X.moveTo(16,0);X.lineTo(-10,9);X.lineTo(-5,0);X.lineTo(-10,-9);X.closePath();X.fill();
+      X.restore();
+    }
+    const label=near2?'OBJECTIVE NEARBY':'OBJECTIVE  '+Math.round(d/10)+'m  →';
+    X.font='800 13px system-ui';const lw=X.measureText(label).width+22;
+    X.fillStyle='rgba(16,18,24,.7)';rr(W/2-lw/2,H-118,lw,24,6);X.fill();
+    txt(label,W/2,H-101,13,near2?'#8ac926':'#ffca3a','center',800);
+  }
+  if(crowdN>3)txt(crowdN+' PEOPLE ARE WATCHING GREG',W/2,60,13,'rgba(255,255,255,.75)','center',700);
+
+   
+  if(map==='town'&&!cs){
+    const mw=150,mh=92,mx=W-mw-14,my=46,m=MAPS.town;
+    X.fillStyle='rgba(16,18,24,.5)';rr(mx,my,mw,mh,6);X.fill();
+    const sx=mw/m.w,sy=mh/m.h;
+    (m.zones||[]).forEach(z=>{X.fillStyle=z[0]==='#5a5f66'?'rgba(255,255,255,.5)':'rgba(255,255,255,.14)';
+      X.fillRect(mx+z[1]*sx,my+z[2]*sy,z[3]*sx,z[4]*sy)});
+    X.fillStyle='#ffca3a';X.fillRect(mx+P.x*sx-2,my+P.y*sy-2,4,4);
+    X.fillStyle='#4cc9f0';for(const c of cars)if(c.drive)X.fillRect(mx+c.x*sx-1,my+c.y*sy-1,2,2);
+    if(marker){X.fillStyle='#ff595e';X.fillRect(mx+marker.x*sx-2,my+marker.y*sy-2,4,4)}
+    for(const n of npcs){const ic=npcIcon(n);if(!ic)continue;
+      X.fillStyle=ic[1];X.fillRect(mx+n.x*sx-1.5,my+n.y*sy-1.5,3,3)}
+    for(const o of objs)if(o.poi){X.fillStyle=ICON[o.poi][1];X.fillRect(mx+o.x*sx-1.5,my+o.y*sy-1.5,3,3)}
+    txt('M = MAP',mx+mw/2,my+mh+12,9,'rgba(255,255,255,.45)','center',700);
+  }
+   
+  if(F.bossT>0){
+    X.fillStyle='rgba(16,18,24,.7)';rr(W/2-200,52,400,32,6);X.fill();
+    X.fillStyle='#ff595e';rr(W/2-194,58,388,20,4);X.fill();
+    txt('GUY',W/2,75,17,'#fff','center',900);
+  }
+   
+  if(noticeT>0){
+    X.globalAlpha=clamp(noticeT,0,1);
+    X.font='800 16px system-ui';const tw=X.measureText(notice).width;
+    X.fillStyle='rgba(16,18,24,.8)';rr(W/2-tw/2-16,H-150,tw+32,30,7);X.fill();
+    txt(notice,W/2,H-130,16,'#ffca3a','center',800);X.globalAlpha=1;
+  }
+   
+  if(dlg){
+    const c=dlg.l[dlg.i];if(!c)return;
+    const bh=c[0]?86:70;
+    X.fillStyle='rgba(14,16,20,.92)';rr(70,H-bh-18,W-140,bh,10);X.fill();
+    X.strokeStyle='rgba(255,255,255,.15)';rr(70,H-bh-18,W-140,bh,10);X.stroke();
+    if(c[0])txt(c[0].toUpperCase(),96,H-bh+8,13,'#ffca3a');
+    X.font='600 21px system-ui';
+    wrap(c[1],96,H-bh+(c[0]?36:30),W-192,25);
+    txt(touch?'TAP ▸':'[E] ▸',W-100,H-30,13,'rgba(255,255,255,.55)','right',700);
+  }
+  for(const p of pops){X.globalAlpha=clamp(1.2-p.life,0,1);
+    const s=(p.x-cam.x)*cam.z+W/2,t=(p.y-cam.y)*cam.z+H/2;txt(p.t,s,t,14,p.c,'center',800);X.globalAlpha=1}
+   
+  if(shop){
+    X.fillStyle='rgba(10,12,16,.97)';X.fillRect(0,0,W,H);
+    txt('FASHION?',40,54,30,'#fff','left',900);
+    txt('Money: $'+money,W-40,54,20,'#8ac926','right');
+    const rows=shopRows();
+    for(let i=0;i<9;i++){
+      const r=rows[shop.top+i];if(!r)break;
+      const y=104+i*30,sel=shop.top+i===shop.i,ow=OWN.includes(r.id),eq=EQ[r.c]===r.id;
+      if(sel){X.fillStyle='rgba(255,202,58,.14)';rr(30,y-16,W-60,28,5);X.fill()}
+      txt((sel?'> ':'  ')+r.n,44,y+3,15,ow?'#8ac926':'#fff','left',sel?800:600);
+      txt(r.c.toUpperCase(),W-330,y+3,11,'rgba(255,255,255,.35)','right');
+      txt(eq?'EQUIPPED':ow?'OWNED — E TO WEAR':'$'+r.p,W-44,y+3,13,eq?'#ffca3a':ow?'rgba(255,255,255,.5)':'#8ac926','right',700);
+    }
+    const cur=rows[shop.i];
+    if(cur)txt(cur.d,W/2,H-64,15,'rgba(255,255,255,.65)','center',600);
+    txt(touch?'TAP AN ITEM TO BUY / WEAR  ·  TAP BELOW TO LEAVE':'W/S SELECT  ·  E BUY / WEAR  ·  Q LEAVE',W/2,H-28,13,'rgba(255,255,255,.5)','center',700);
+    return;
+  }
+   
+  if(bigmap&&map==='town'){
+    const m=MAPS.town,mw=W-120,mh=H-140,mx=60,my=86,sx=mw/m.w,sy=mh/m.h;
+    X.fillStyle='rgba(10,12,16,.96)';X.fillRect(0,0,W,H);
+    txt('GREGTOWN',W/2,58,24,'#fff','center',900);
+    (m.zones||[]).forEach(z=>{X.fillStyle=z[0]==='#5a5f66'?'rgba(255,255,255,.45)':'rgba(255,255,255,.12)';
+      X.fillRect(mx+z[1]*sx,my+z[2]*sy,z[3]*sx,z[4]*sy)});
+    for(const c of cars)if(c.drive){X.fillStyle='#4cc9f0';X.fillRect(mx+c.x*sx-2,my+c.y*sy-2,4,4)}
+    for(const n of npcs){const ic=npcIcon(n);if(!ic)continue;
+      txt(ic[0],mx+n.x*sx,my+n.y*sy+4,ic[0].length>1?9:14,ic[1],'center',900)}
+    for(const o of objs)if(o.poi)txt(ICON[o.poi][0],mx+o.x*sx,my+o.y*sy+5,16,ICON[o.poi][1],'center',900)
+    if(marker){X.fillStyle='#ff595e';X.beginPath();X.arc(mx+marker.x*sx,my+marker.y*sy,5,0,7);X.fill()}
+    X.fillStyle='#fff';X.beginPath();X.arc(mx+P.x*sx,my+P.y*sy,4,0,7);X.fill();
+    if(mapInfo){X.font='800 15px system-ui';const iw=X.measureText(mapInfo).width+28;
+      X.fillStyle='rgba(255,202,58,.15)';rr(W/2-iw/2,H-76,iw,26,6);X.fill();
+      txt(mapInfo,W/2,H-58,15,'#ffca3a','center',800)}
+    txt('! JOB   ? QUEST   $ SHOP   BLUE = CAR   WHITE = GREG',W/2,H-42,13,'rgba(255,255,255,.6)','center',700);
+    txt(touch?'TAP TO CLOSE':'M TO CLOSE',W/2,H-20,12,'rgba(255,255,255,.4)','center',700);
+    return;
+  }
+  if(!cs&&!dlg){
+    X.fillStyle='rgba(16,18,24,.6)';rr(12,H-44,106,28,6);X.fill();
+    X.strokeStyle='rgba(255,255,255,.18)';rr(12,H-44,106,28,6);X.stroke();
+    txt('RESPAWN'+(touch?'':'  [R]'),65,H-25,11,'rgba(255,255,255,.8)','center',800);
+  }
+   
+  if(touch&&!dlg){
+    if(stick.on){X.fillStyle='rgba(255,255,255,.13)';X.beginPath();X.arc(stick.ox,stick.oy,52,0,7);X.fill();
+      X.fillStyle='rgba(255,255,255,.3)';X.beginPath();X.arc(stick.ox+stick.x*46,stick.oy+stick.y*46,22,0,7);X.fill()}
+    X.fillStyle='rgba(255,255,255,.15)';X.beginPath();X.arc(W-80,H-80,44,0,7);X.fill();
+    txt(drive?'EXIT':'USE',W-80,H-74,15,'rgba(255,255,255,.8)','center',800);
+  }
+  if(!touch&&tt<14){txt('WASD / ARROWS move   ·   E interact',W/2,H-16,14,'rgba(255,255,255,.6)','center',600)}
+}
+function wrap(t,x,y,mw,lh){
+  const words=(t||'').split(' ');let line='',yy=y;
+  for(const w of words){const test=line+w+' ';
+    if(X.measureText(test).width>mw&&line){txt(line,x,yy,21,'#fff','left',600);line=w+' ';yy+=lh}
+    else line=test}
+  txt(line,x,yy,21,'#fff','left',600);
+}
+
+ 
+loadMap('town',430,560);
+if(!F.intro){F.intro=1;saveF();setTimeout(()=>cut(CUT.intro),500)}
+if(Q.st('sandwich')==='active'&&!F.sandwichDone)spawnFinalChicken();
+{const a0=Object.keys(QUESTS).find(k=>Q.st(k)==='active'&&!QUESTS[k].hidden&&!QUESTS[k].recv);
+ if(a0){aq={id:a0,t:null};questMark()}}
+
+let last=performance.now();
+function loop(now){
+  let dt=(now-last)/1000;last=now;dt=Math.min(dt,.05);
+  update(dt);render();
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
