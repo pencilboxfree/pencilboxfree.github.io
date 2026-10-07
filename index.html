@@ -11,7 +11,7 @@
  
 <meta property="og:type" content="website">
 <meta property="og:title" content="Pencilbox Games">
-<meta property="og:description" content="Ten free browser games. No downloads, no ads, no sign-up.">
+<meta property="og:description" content="Fourteen free browser games. No downloads, no ads, no sign-up.">
 <meta name="twitter:card" content="summary">
 
  
@@ -37,6 +37,8 @@
     --laser: #4d7cff;
     --castle: #7ce0d6;
     --sandwich: #ffb347;
+    --camo: #8fbf5d;
+    --reckoning: #ff3df0;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
@@ -124,6 +126,8 @@
   .cab.c10:hover { border-color: var(--laser); box-shadow: 0 8px 0 rgba(0,0,0,0.35), 0 0 26px rgba(77,124,255,0.45); }
   .cab.c11:hover { border-color: var(--castle); box-shadow: 0 8px 0 rgba(0,0,0,0.35), 0 0 26px rgba(124,224,214,0.4); }
   .cab.c12:hover { border-color: var(--sandwich); box-shadow: 0 8px 0 rgba(0,0,0,0.35), 0 0 26px rgba(255,179,71,0.4); }
+  .cab.c13:hover { border-color: var(--camo);     box-shadow: 0 8px 0 rgba(0,0,0,0.35), 0 0 26px rgba(143,191,93,0.4); }
+  .cab.c14:hover { border-color: var(--reckoning); box-shadow: 0 8px 0 rgba(0,0,0,0.35), 0 0 26px rgba(255,61,240,0.4); }
 
   .screen {
      
@@ -150,6 +154,8 @@
   .c10 .screen { background: linear-gradient(160deg, #101a33, #2a3f8f); }
   .c11 .screen { background: linear-gradient(160deg, #101c22, #1f4a52); }
   .c12 .screen { background: linear-gradient(160deg, #33240f, #8f6a1f); }
+  .c13 .screen { background: linear-gradient(160deg, #1b2414, #4a6b2a); }
+  .c14 .screen { background: linear-gradient(160deg, #0a0f1f, #5a1d6b); }
 
   .cab h2 {
     font-size: clamp(1rem, 2.6vw, 1.15rem);
@@ -173,6 +179,8 @@
   .c10 h2 { color: var(--laser); }
   .c11 h2 { color: var(--castle); }
   .c12 h2 { color: var(--sandwich); }
+  .c13 h2 { color: var(--camo); }
+  .c14 h2 { color: var(--reckoning); }
 
   .cab p {
     color: var(--dim);
@@ -305,6 +313,20 @@
       <div class="screen" aria-hidden="true">🥪</div>
       <h2>The Dumb Game</h2>
       <p>Open-world comedy sandbox. Drive cars, take dumb jobs, do dumber side quests, upset a crowd of people who refuse to move — and find out what happens if you walk off the edge of the map.</p>
+      <span class="players">1 Player</span>
+    </a>
+
+    <a class="cab c13" href="games/camo-play.html">
+      <div class="screen" aria-hidden="true">🪵</div>
+      <h2>Camo Play</h2>
+      <p>Two games in one building. Camo Tag: dress as a barrel, a locker or a bush, hold perfectly still and survive the seekers — or carry the laser and work out which prop is breathing. Imposter Game: finish your tasks, watch who wanders off, and vote. Five maps plus a level creator.</p>
+      <span class="players">1 Player</span>
+    </a>
+
+    <a class="cab c14" href="games/mafia-grand-prix-2.html">
+      <div class="screen" aria-hidden="true">🏁</div>
+      <h2>Mafia Grand Prix 2: The Reckoning</h2>
+      <p>Twenty racers, nine tracks and you start dead last. Hit the boosters, dodge the cops, bet on who you can beat, take on the mob bosses in Free Roam and buy your way into the rare cars.</p>
       <span class="players">1 Player</span>
     </a>
   </main>
