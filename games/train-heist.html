@@ -9,12 +9,12 @@
 <meta name="description" content="Train Heist — a Wild West browser game. Ride as the sheriff, question the passengers and work out who the bandits are, then fight them the length of a moving train. Bounties, upgrades and a legendary outlaw.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='26' font-size='26'>%F0%9F%9A%82</text></svg>">
 <style>
-/* ============================================================
-   TRAIN HEIST
-   Pencilbox Games - overlay screens (menu, bounty board, case
-   file, upgrades, results). Everything in play is canvas-drawn.
-   ============================================================ */
-/* TRAIN HEIST — styles for the DOM overlay screens */
+
+
+
+
+
+ 
 * { box-sizing: border-box; }
 html, body {
   margin: 0; padding: 0; height: 100%; background: #0c0a10; overflow: hidden;
@@ -38,7 +38,7 @@ html, body {
 .th-screen { width: min(980px, 96vw); margin: auto; animation: fade .22s ease-out; }
 @keyframes fade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 
-/* ---------- header ---------- */
+ 
 .th-header {
   display: flex; justify-content: space-between; align-items: center; gap: 12px;
   border-bottom: 2px solid #6b5230; padding-bottom: 8px; margin-bottom: 14px; flex-wrap: wrap;
@@ -49,7 +49,7 @@ html, body {
 .th-rank { color: #cbb894; }
 .th-rep { color: #e8c877; letter-spacing: 1px; }
 
-/* ---------- menu ---------- */
+ 
 .th-menu { text-align: center; padding: 30px 0; }
 .th-title {
   font-family: Georgia, serif; font-size: clamp(44px, 9vw, 92px); letter-spacing: 6px;
@@ -59,7 +59,7 @@ html, body {
 .th-menu-buttons { display: flex; flex-direction: column; gap: 12px; align-items: center; }
 .th-foot { margin-top: 30px; font-size: 12px; color: #857a68; line-height: 1.7; }
 
-/* ---------- buttons ---------- */
+ 
 .th-btn {
   font-family: "Courier New", monospace; font-weight: bold; font-size: 14px; letter-spacing: 2px;
   color: #f2e3c4; background: linear-gradient(#5c3f28, #3d2a1b);
@@ -73,7 +73,7 @@ html, body {
 .th-danger { border-color: #8a3a30; color: #e59a8a; background: linear-gradient(#5a2620, #3a1814); min-width: 150px; }
 .th-btn.disabled { opacity: .4; cursor: not-allowed; }
 
-/* ---------- bounty board ---------- */
+ 
 .th-board-head { text-align: center; margin-bottom: 16px; }
 .th-board-head h2 { font-family: Georgia, serif; letter-spacing: 5px; margin: 4px 0; color: #f0d79a; font-size: 26px; }
 .th-board-head p { margin: 0; color: #9d8f79; font-size: 13px; font-style: italic; }
@@ -106,7 +106,7 @@ html, body {
 .th-cleared { font-size: 10px; color: #1f5a2a; letter-spacing: 1px; }
 .th-actions { display: flex; gap: 12px; justify-content: center; margin-top: 20px; flex-wrap: wrap; }
 
-/* ---------- upgrades ---------- */
+ 
 .th-upg-list { display: flex; flex-direction: column; gap: 8px; }
 .th-upg {
   display: flex; justify-content: space-between; align-items: center; gap: 16px;
@@ -121,7 +121,7 @@ html, body {
 .th-btn-buy { min-width: 120px; padding: 9px 14px; }
 .th-maxed { color: #9adb8a; font-size: 12px; letter-spacing: 2px; }
 
-/* ---------- settings ---------- */
+ 
 .th-set-list { display: flex; flex-direction: column; gap: 8px; max-width: 520px; margin: 0 auto; }
 .th-set {
   display: flex; justify-content: space-between; align-items: center;
@@ -130,7 +130,7 @@ html, body {
 .th-set .th-btn { min-width: 110px; padding: 7px 12px; }
 .th-stats-block { margin: 20px auto 0; max-width: 520px; font-size: 12px; color: #9d8f79; line-height: 1.9; text-align: center; }
 
-/* ---------- results ---------- */
+ 
 .th-results { display: flex; justify-content: center; }
 .th-res-card {
   width: min(520px, 94vw); background: linear-gradient(#1d1720, #14101a);
@@ -154,7 +154,7 @@ html, body {
   .th-btn { min-width: 180px; }
 }
 
-/* ---------- case file / accusation ---------- */
+ 
 .th-case { display: flex; justify-content: center; }
 .th-case-card {
   width: min(860px, 96vw); background: linear-gradient(#efe2c2, #ddcda6);
@@ -208,16 +208,16 @@ html, body {
 <script>
 "use strict";
 
-/* =============================================================
-   TRAIN HEIST — 00 CORE
-   Utilities, RNG, input, audio synthesis, persistence.
-   ============================================================= */
+
+
+
+
 'use strict';
 
 const VIEW_W = 960;
 const VIEW_H = 540;
 
-/* ---------- math utils ---------- */
+ 
 const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
 const lerp = (a, b, t) => a + (b - a) * t;
 const sign = (v) => (v < 0 ? -1 : v > 0 ? 1 : 0);
@@ -225,7 +225,7 @@ const dist2 = (ax, ay, bx, by) => { const dx = ax - bx, dy = ay - by; return dx 
 const approach = (v, target, amt) => (v < target ? Math.min(v + amt, target) : Math.max(v - amt, target));
 const TAU = Math.PI * 2;
 
-/* Deterministic-ish RNG (mulberry32) so missions can be seeded. */
+ 
 function makeRng(seed) {
   let a = seed >>> 0;
   return function () {
@@ -250,10 +250,10 @@ function fmtTime(s) {
 }
 function stars(n) { return '★★★★★'.slice(0, n) + '☆☆☆☆☆'.slice(0, 5 - n); }
 
-/* =============================================================
-   INPUT
-   Keyboard-first, mouse aiming as an optional enhancement.
-   ============================================================= */
+
+
+
+
 const Input = (function () {
   const KEYMAP = {
     ArrowLeft: 'left', KeyA: 'left',
@@ -292,8 +292,8 @@ const Input = (function () {
         if (['left', 'right', 'up', 'down', 'jump', 'notes'].indexOf(act) >= 0) e.preventDefault();
         if (!e.repeat) setAction(act, true);
         state.anyKeyThisFrame = true;
-        // only directional aim keys hand control back to the keyboard —
-        // moving or jumping must not cancel mouse aiming
+         
+         
         if (act === 'up' || act === 'down') state.usingMouse = false;
       }
     });
@@ -335,9 +335,9 @@ const Input = (function () {
   };
 })();
 
-/* =============================================================
-   AUDIO — everything synthesised at runtime, no external assets.
-   ============================================================= */
+
+
+
 const Sound = (function () {
   let ctx = null, master = null, sfxGain = null, musGain = null, noiseBuf = null;
   let enabled = true, musicOn = true, sfxOn = true;
@@ -351,7 +351,7 @@ const Sound = (function () {
     master = ctx.createGain(); master.gain.value = 0.75; master.connect(ctx.destination);
     sfxGain = ctx.createGain(); sfxGain.gain.value = 0.85; sfxGain.connect(master);
     musGain = ctx.createGain(); musGain.gain.value = 0.34; musGain.connect(master);
-    // shared noise buffer
+     
     const len = ctx.sampleRate * 1.2;
     noiseBuf = ctx.createBuffer(1, len, ctx.sampleRate);
     const d = noiseBuf.getChannelData(0);
@@ -391,7 +391,7 @@ const Sound = (function () {
     return o;
   }
 
-  /* ---- SFX table ---- */
+   
   const SFX = {
     shot() { noise(0.16, 0.5, 'bandpass', 2600, 400); tone('square', 320, 60, 0.1, 0.28); },
     shotEnemy() { noise(0.13, 0.24, 'bandpass', 1700, 300); tone('square', 220, 50, 0.09, 0.13); },
@@ -431,12 +431,12 @@ const Sound = (function () {
   function sfx(name) {
     if (!enabled || !sfxOn || !ctx) return;
     const f = SFX[name];
-    if (f) { try { f(); } catch (e) { /* ignore audio hiccups */ } }
+    if (f) { try { f(); } catch (e) {   } }
   }
 
-  /* ---- Procedural music: scheduled 16th-note western groove ---- */
-  const SCALE = [0, 3, 5, 7, 10]; // minor pentatonic
-  const ROOTS = { menu: 55, calm: 55, combat: 58.27, boss: 51.91 }; // A1 / Bb1 / G#1
+   
+  const SCALE = [0, 3, 5, 7, 10];  
+  const ROOTS = { menu: 55, calm: 55, combat: 58.27, boss: 51.91 };  
   let mus = { mode: null, next: 0, step: 0, timer: null };
 
   function midiHz(semi, base) { return base * Math.pow(2, semi / 12); }
@@ -447,7 +447,7 @@ const Sound = (function () {
     const s = step % 16;
     const intense = mode === 'combat' || mode === 'boss';
 
-    // bass — driving eighths
+     
     if (s % 2 === 0) {
       const deg = (s === 0 || s === 8) ? 0 : (bar === 2 ? 3 : (s === 6 ? 5 : 0));
       const f = midiHz(deg + (bar === 3 && s >= 12 ? 5 : 0), root);
@@ -459,7 +459,7 @@ const Sound = (function () {
       g.gain.exponentialRampToValueAtTime(0.001, t + 0.19);
       o.connect(g); g.connect(musGain); o.start(t); o.stop(t + 0.22);
     }
-    // twangy lead pluck
+     
     if (s === 0 || s === 3 || s === 6 || s === 10 || (intense && s === 13)) {
       const deg = SCALE[(bar + (s >> 2)) % SCALE.length] + 24 + (bar === 3 ? 12 : 0);
       const f = midiHz(deg, root);
@@ -474,7 +474,7 @@ const Sound = (function () {
       o.connect(flt); flt.connect(g); g.connect(musGain);
       o.start(t); o.stop(t + 0.36);
     }
-    // percussion: shaker + rim
+     
     if (s % 2 === 1) {
       const src = ctx.createBufferSource(); src.buffer = noiseBuf; src.loop = true;
       const flt = ctx.createBiquadFilter(); flt.type = 'highpass'; flt.frequency.value = 6500;
@@ -491,7 +491,7 @@ const Sound = (function () {
       src.connect(flt); flt.connect(g); g.connect(musGain);
       src.start(t); src.stop(t + 0.14);
     }
-    // boss: low drone swell
+     
     if (mode === 'boss' && s === 0) {
       const o = ctx.createOscillator(); o.type = 'sawtooth';
       o.frequency.setValueAtTime(midiHz(-12, root), t);
@@ -510,7 +510,7 @@ const Sound = (function () {
     let guard = 0;
     while (mus.next < ahead && guard++ < 40) {
       if (mus.next < now()) mus.next = now() + 0.02;
-      try { scheduleStep(mus.next, mus.mode, mus.step); } catch (e) { /* noop */ }
+      try { scheduleStep(mus.next, mus.mode, mus.step); } catch (e) {   }
       mus.step = (mus.step + 1) % 64;
       mus.next += spb;
     }
@@ -538,17 +538,17 @@ const Sound = (function () {
   };
 })();
 
-/* =============================================================
-   SAVE — guarded storage; falls back to memory when unavailable.
-   ============================================================= */
+
+
+
 const Save = (function () {
   const KEY = 'pbx.trainheist.save';
   const DEFAULTS = {
     money: 0,
     rep: 0,
     rank: 1,
-    completed: {},      // missionId -> times cleared
-    upgrades: {},       // upgradeId -> level
+    completed: {},       
+    upgrades: {},        
     stats: { kills: 0, missions: 0, earned: 0, shotsFired: 0, shotsHit: 0 },
     settings: { music: true, sfx: true, shake: true },
     seenIntro: false,
@@ -573,11 +573,11 @@ const Save = (function () {
       data = Object.assign(JSON.parse(JSON.stringify(DEFAULTS)), parsed);
       data.stats = Object.assign({}, DEFAULTS.stats, parsed.stats || {});
       data.settings = Object.assign({}, DEFAULTS.settings, parsed.settings || {});
-    } catch (e) { /* corrupt save — keep defaults */ }
+    } catch (e) {   }
   }
   function write() {
     if (!backing) return;
-    try { backing.setItem(KEY, JSON.stringify(data)); } catch (e) { /* quota/denied */ }
+    try { backing.setItem(KEY, JSON.stringify(data)); } catch (e) {   }
   }
   function reset() { data = JSON.parse(JSON.stringify(DEFAULTS)); write(); }
 
@@ -588,32 +588,32 @@ const Save = (function () {
     get persistent() { return !!backing; },
   };
 })();
-/* =============================================================
-   TRAIN HEIST — 10 DATA
-   All content is declarative. New cars, enemies, environments,
-   missions and upgrades can be added here without touching the
-   engine below.
-   ============================================================= */
 
-/* ---------- world geometry (shared constants) ---------- */
-const TRACK_Y = 476;   // top of the rails
-const FLOOR_Y = 434;   // walkable deck inside cars / couplings
-const CEIL_Y = 340;   // interior ceiling
-const ROOF_Y = 330;   // walkable roof surface
-const COUPLE_W = 46;    // gap between cars
+
+
+
+
+
+
+ 
+const TRACK_Y = 476;    
+const FLOOR_Y = 434;    
+const CEIL_Y = 340;    
+const ROOF_Y = 330;    
+const COUPLE_W = 46;     
 const CRATE_H = 44;
 
-/* Sheriff jump feel. Rise height = JUMP_VEL^2 / (2 * GRAVITY_UP) ≈ 177px,
-   comfortably more than the 104px deck-to-roof climb, while the heavier
-   fall gravity keeps the arc snappy rather than floaty. */
+
+
+
 const JUMP_VEL = 820;
 const GRAVITY_UP = 1900;
 const GRAVITY_DOWN = 2500;
 
-/* ---------- train car catalogue ---------- */
+ 
 const CAR_TYPES = {
-  /* The locomotive is deliberately open-topped: the boiler and cab are
-     solid blocks you climb over, so nothing can get sealed inside it. */
+  
+
   engine: { w: 310, roof: false, bodyTop: FLOOR_Y - 78, label: 'Engine', kind: 'engine', cover: 2 },
   tender: { w: 170, roof: false, label: 'Tender', kind: 'tender', cover: 1 },
   passenger: { w: 280, roof: true, label: 'Passenger Car', kind: 'passenger', cover: 2 },
@@ -626,7 +626,7 @@ const CAR_TYPES = {
   caboose: { w: 215, roof: true, label: 'Caboose', kind: 'caboose', cover: 1 },
 };
 
-/* ---------- environments ---------- */
+ 
 const ENVIRONMENTS = {
   desert: {
     name: 'Red Mesa Desert',
@@ -686,9 +686,9 @@ const ENVIRONMENTS = {
   },
 };
 
-/* ---------- bandit catalogue ----------
-   Behaviour differences are implemented in the AI module; the
-   numbers here tune each archetype. */
+
+
+
 const ENEMY_TYPES = {
   outlaw: {
     name: 'Outlaw', hp: 34, speed: 92, w: 26, h: 44,
@@ -734,10 +734,10 @@ const ENEMY_TYPES = {
   },
 };
 
-/* ---------- special event catalogue ---------- */
+ 
 const EVENT_TYPES = ['tunnel', 'bridge', 'storm', 'town', 'horseback', 'reinforcements', 'cargoSpill'];
 
-/* ---------- objective descriptions ---------- */
+ 
 const OBJECTIVE_TEXT = {
   eliminate: (o, m) => 'Defeat the bandits (' + m.kills + '/' + o.count + ')',
   protect_cargo: (o, m) => 'Protect the cargo — integrity ' + Math.ceil(m.cargo) + '%',
@@ -747,10 +747,10 @@ const OBJECTIVE_TEXT = {
   boss: (o, m) => (m.bossAlive ? 'Take down ' + o.bossName : 'Clear the remaining bandits'),
 };
 
-/* ---------- missions ---------- */
-/* wave.spawn entries: {type, count, at} where `at` is one of
-   'front' (engine side), 'back' (caboose side), 'roofAhead',
-   'ride' (horseback alongside), 'near' (just off-camera either side) */
+ 
+
+
+
 const MISSIONS = [
   {
     id: 'small_time',
@@ -884,7 +884,7 @@ const MISSIONS = [
   },
 ];
 
-/* ---------- upgrades ---------- */
+ 
 const UPGRADES = [
   {
     id: 'health', name: 'Reinforced Vest', icon: 'vest',
@@ -918,8 +918,8 @@ const UPGRADES = [
   },
 ];
 
-/* Derived player stats from upgrade levels. Deliberately modest so
-   late missions stay dangerous. */
+
+
 function playerStats() {
   const u = Save.data.upgrades;
   const lv = (id) => u[id] || 0;
@@ -948,21 +948,21 @@ function rankProgress(rep) {
 }
 const RANK_TITLES = ['Deputy', 'Sheriff', 'Senior Sheriff', 'Territorial Marshal',
   'Chief Marshal', 'Circuit Marshal', 'Frontier Marshal', 'Legend of the Line', 'Living Legend'];
-/* =============================================================
-   TRAIN HEIST — 15 MYSTERY
-   Generative case system.
 
-   A case is built from ATTRIBUTES (facts about each passenger) and
-   CLUES (predicates over those attributes). Every clue is true of
-   every culprit, and the generator then proves that the conjunction
-   of all clues matches the culprit set EXACTLY — mutating innocents
-   until it does. That makes a contradictory or unsolvable case
-   impossible by construction.
 
-   Statements of fact from passengers are always truthful; only
-   opinions (gossip) mislead, so the player can never be punished for
-   reasoning correctly.
-   ============================================================= */
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 const STATIONS = ['Red Mesa', 'Perdition', 'Iron Mesa', 'Dry Fork', 'Cañon Junction', 'Sweetwater'];
 const TRADES = ['cattle buyer', 'preacher', 'seamstress', 'prospector', 'drummer', 'schoolteacher', 'ranch hand', 'telegraph clerk'];
@@ -983,10 +983,10 @@ const FIRST_NAMES = ['Abel', 'Corliss', 'Josiah', 'Ada', 'Mercy', 'Ruth', 'Silas
 const SURNAMES = ['Hatch', 'Prewitt', 'Vance', 'Colbourne', 'Doyle', 'Mercer', 'Ashby', 'Sloan',
   'Tull', 'Redfern', 'Garrity', 'Quill', 'Barrow', 'Whitlock', 'Espinoza', 'Fontaine', 'Crane', 'Mott'];
 
-/* Attribute definitions. `reveal` says how the sheriff learns it:
-   'notice' — visible once you have been close to them
-   'ask'    — a question in conversation
-   'look'   — the "look them over" option                          */
+
+
+
+
 const ATTRS = {
   scarf: { label: 'Neckerchief', reveal: 'notice', values: SCARVES, show: (v) => v + ' neckerchief' },
   luggage: { label: 'Luggage', reveal: 'notice', values: [0, 1, 2], show: (v) => v === 0 ? 'travelling with nothing' : v + (v === 1 ? ' case' : ' cases') },
@@ -999,8 +999,8 @@ const ATTRS = {
   boots: { label: 'Boots', reveal: 'look', values: BOOTS, show: (v) => 'boots ' + v },
 };
 const ATTR_KEYS = Object.keys(ATTRS);
-/* attributes a clue may be built on — every one of these is
-   discoverable by the player, which is what keeps cases fair */
+
+
 const CLUE_ATTRS = ['boarded', 'destination', 'trade', 'ticket', 'luggage', 'scarf', 'hands', 'boots', 'habit'];
 
 const CLUE_TEXT = {
@@ -1015,7 +1015,7 @@ const CLUE_TEXT = {
   habit: (v) => 'They share a nervous habit — each one ' + v + '.',
 };
 
-/* where a clue is found */
+ 
 const CLUE_OBJECTS = [
   { t: 'satchel', name: 'an abandoned satchel', line: 'Nobody claims it. Inside, a scrap of paper:' },
   { t: 'coat', name: 'a coat left on a hook', line: 'Heavier than it ought to be. A note in the lining:' },
@@ -1046,7 +1046,7 @@ const GREETINGS = {
     'Nothing to tell you.', 'Can I help you with something?'],
 };
 
-/* ---------- generation ---------- */
+ 
 function mysteryConfig(mission) {
   const m = mission.mystery || {};
   const risk = mission.risk;
@@ -1075,7 +1075,7 @@ function makeCase(mission) {
   const n = cfg.passengers;
   const K = Math.min(cfg.culprits, n - 2);
 
-  // 1. roster with random attributes
+   
   const usedNames = {};
   const people = [];
   for (let i = 0; i < n; i++) {
@@ -1091,17 +1091,17 @@ function makeCase(mission) {
     });
   }
 
-  // 2. choose culprits
+   
   const order = people.map((p) => p.id);
   for (let i = order.length - 1; i > 0; i--) { const j = randInt(0, i); const t = order[i]; order[i] = order[j]; order[j] = t; }
   const culpritIds = order.slice(0, K);
   for (const id of culpritIds) { people[id].culprit = true; people[id].role = 'culprit'; }
   const culprits = culpritIds.map((id) => people[id]);
 
-  // 3. pick clue attributes; force every culprit to share each value
+   
   const shuffle = (a) => { for (let i = a.length - 1; i > 0; i--) { const j = randInt(0, i); const t = a[i]; a[i] = a[j]; a[j] = t; } return a; };
-  /* Early jobs hang on things you can see from across the car; later
-     jobs hang on things you have to ask about or look closely for. */
+  
+
   const plain = shuffle(CLUE_ATTRS.filter((a) => ATTRS[a].reveal === 'notice'));
   const subtle = shuffle(CLUE_ATTRS.filter((a) => ATTRS[a].reveal !== 'notice'));
   const want = clamp(cfg.clues, 2, CLUE_ATTRS.length);
@@ -1114,7 +1114,7 @@ function makeCase(mission) {
     clues.push({ attr, value, text: CLUE_TEXT[attr](value), found: false });
   }
 
-  // 4. prove uniqueness: no innocent may satisfy every clue
+   
   const satisfiesAll = (p) => clues.every((c) => p.attrs[c.attr] === c.value);
   let guard = 0;
   for (const p of people) {
@@ -1125,7 +1125,7 @@ function makeCase(mission) {
       p.attrs[c.attr] = pick(alt);
     }
   }
-  // 5. red herrings: make a couple of innocents match all but one clue
+   
   const innocents = people.filter((p) => !p.culprit);
   const herrings = Math.min(innocents.length, 1 + Math.floor(cfg.clues / 2));
   for (let i = 0; i < herrings; i++) {
@@ -1135,17 +1135,17 @@ function makeCase(mission) {
       if (j === skip) continue;
       p.attrs[clues[j].attr] = clues[j].value;
     }
-    if (satisfiesAll(p)) {   // paranoia: never let a herring become a false solution
+    if (satisfiesAll(p)) {    
       const c = clues[skip];
       p.attrs[c.attr] = pick(ATTRS[c.attr].values.filter((v) => v !== c.value));
     }
     p.herring = true;
   }
-  // final assertion — the solution set must be exactly the culprits
+   
   const matches = people.filter(satisfiesAll);
   const solvable = matches.length === K && matches.every((p) => p.culprit);
 
-  // 6. distribute clue sources: witnesses and objects
+   
   const witnessPool = innocents.filter((p) => !p.herring);
   let wi = 0;
   clues.forEach((c, i) => {
@@ -1168,7 +1168,7 @@ function makeCase(mission) {
   };
 }
 
-/* ---------- dialogue ---------- */
+ 
 function attrAnswer(p, key) {
   const v = p.attrs[key];
   switch (key) {
@@ -1182,20 +1182,20 @@ function attrAnswer(p, key) {
 function lookLine(p) {
   return 'You take them in: ' + ATTRS.hands.show(p.attrs.hands) + ', ' + ATTRS.boots.show(p.attrs.boots) + '.';
 }
-/* =============================================================
-   TRAIN HEIST — 20 WORLD
-   Modular train assembly + procedural parallax environments.
-   The train is the frame of reference: it stays still in world
-   coordinates while the scenery scrolls, which keeps collision
-   maths trivial and rendering cheap.
-   ============================================================= */
+
+
+
+
+
+
+
 
 function hash1(n) {
   n = (n << 13) ^ n;
   return ((n * (n * n * 15731 + 789221) + 1376312589) & 0x7fffffff) / 0x7fffffff;
 }
 
-/* ---------- Train assembly ---------- */
+ 
 const Train = {
   cars: [], platforms: [], covers: [], cargo: [], passengers: [], solids: [],
   x0: 0, x1: 0, engineX: 0, len: 0,
@@ -1223,7 +1223,7 @@ const Train = {
     this.len = x;
     this.engineX = this.cars[0] ? this.cars[0].x + this.cars[0].w * 0.5 : 0;
 
-    // continuous deck through the whole train (couplings included)
+     
     this.platforms.push({ x1: this.x0, x2: this.x1, y: FLOOR_Y, oneWay: false, kind: 'deck' });
 
     for (const car of this.cars) {
@@ -1233,21 +1233,21 @@ const Train = {
       this.buildProps(car);
     }
 
-    // coupling centres double as ladders / drop points
+     
     this.gaps = [];
     for (let i = 0; i < this.cars.length - 1; i++) {
       const a = this.cars[i], b = this.cars[i + 1];
       this.gaps.push((a.x + a.w + b.x) * 0.5);
     }
-    /* Car end walls above the doorways. The deck stays a continuous
-       corridor at standing height, but the upper half of each car end is
-       solid, so jumping up through a coupling gap can only take you onto
-       a roof once you have actually cleared it. Movement-only: bullets
-       still travel the length of the train. */
+    
+
+
+
+
     this.walls = [];
     for (const car of this.cars) {
       if (car.roofY === null) continue;
-      // doorway is tall enough for every character, including the boss
+       
       const y1 = car.roofY + 8, y2 = FLOOR_Y - 64;
       if (y2 <= y1) continue;
       this.walls.push({ x1: car.x - 3, x2: car.x + 3, y1, y2 });
@@ -1255,11 +1255,11 @@ const Train = {
     }
     this.moveSolids = this.solids.concat(this.walls);
 
-    // anything that stops a bullet
+     
     this.blockers = this.solids.concat(this.crateBoxes || []);
-    // never drop reinforcements inside the locomotive
-    // start reinforcements past the locomotive and tender, which are
-    // climbing set-pieces rather than places to fight from
+     
+     
+     
     let minX = this.x0 + 30;
     for (const car of this.cars) {
       if (car.kind !== 'engine' && car.kind !== 'tender') break;
@@ -1358,7 +1358,7 @@ const Train = {
     for (const c of this.cars) if (x >= c.x && x <= c.x + c.w) return c;
     return null;
   },
-  /* true when x sits over a coupling gap (no roof to stand on) */
+   
   inGap(x) {
     return this.carAt(x) === null;
   },
@@ -1368,7 +1368,7 @@ const Train = {
   },
 };
 
-/* ---------- Environment / parallax renderer ---------- */
+ 
 const Backdrop = {
   env: ENVIRONMENTS.desert,
   dist: 0,
@@ -1428,7 +1428,7 @@ const Backdrop = {
   },
 
   poles(ctx, color) {
-    // trackside telegraph poles — the classic western railroad read
+     
     const off = this.dist * 0.78, sp = 300;
     const k0 = Math.floor((off - 60) / sp), k1 = Math.ceil((off + VIEW_W + 60) / sp);
     ctx.fillStyle = color;
@@ -1438,7 +1438,7 @@ const Backdrop = {
       ctx.fillRect(px - 4, 168, 8, 262);
       ctx.fillRect(px - 26, 190, 52, 7);
       ctx.fillRect(px - 19, 214, 38, 6);
-      // sagging wires to the next pole
+       
       ctx.beginPath();
       ctx.moveTo(px + 4, 193);
       ctx.quadraticCurveTo(px + sp * 0.5, 214, px + sp - 4, 193);
@@ -1461,7 +1461,7 @@ const Backdrop = {
     }
   },
 
-  /* ---- layer helpers ---- */
+   
   ridge(ctx, y, amp, period, color, offset, steps) {
     ctx.fillStyle = color;
     ctx.beginPath();
@@ -1559,7 +1559,7 @@ const Backdrop = {
     if (this.skyKey !== this.envKey) this.buildSky();
     ctx.drawImage(this.skyCanvas, 0, 0, 8, VIEW_H, 0, 0, VIEW_W, VIEW_H);
 
-    // sun / moon
+     
     const sunX = VIEW_W * 0.74, sunY = VIEW_H * 0.2;
     ctx.globalAlpha = 0.35;
     ctx.fillStyle = e.light;
@@ -1573,13 +1573,13 @@ const Backdrop = {
     this.clouds(ctx, e.light, this.envKey === 'night' ? 0.10 : 0.22);
     if (this.envKey !== 'night' && this.envKey !== 'snow') this.birds(ctx, this.dist * 0.004);
 
-    // three parallax ridges — tall enough to fill the sky above the train
+     
     this.ridge(ctx, 400, 196, 700, e.far, this.dist * 0.035, 16);
     this.ridge(ctx, 418, 132, 430, e.mid, this.dist * 0.09, 20);
     this.ridge(ctx, 430, 62, 300, e.near, this.dist * 0.18, 22);
     this.poles(ctx, this.envKey === 'night' ? '#161c2c' : e.groundDark);
 
-    // mid-ground props
+     
     const spacing = e.prop === 'building' ? 150 : 190;
     const off = this.dist * 0.42;
     const k0 = Math.floor((off - 120) / spacing);
@@ -1592,7 +1592,7 @@ const Backdrop = {
       this.prop(ctx, e.prop, px, 424, s, e.near, e.mid);
     }
 
-    // town event overlay: extra buildings closer in
+     
     if (st && st.town > 0.01) {
       ctx.globalAlpha = Math.min(1, st.town);
       const off2 = this.dist * 0.62, sp2 = 132;
@@ -1605,7 +1605,7 @@ const Backdrop = {
       ctx.globalAlpha = 1;
     }
 
-    // ground band (or bridge gorge)
+     
     const bridge = st ? st.bridge : 0;
     if (bridge < 0.99) {
       ctx.globalAlpha = 1 - bridge;
@@ -1638,7 +1638,7 @@ const Backdrop = {
       ctx.globalAlpha = 1;
     }
 
-    // rails + ties
+     
     ctx.fillStyle = '#4a3a30';
     ctx.fillRect(0, TRACK_Y + 6, VIEW_W, 16);
     ctx.fillStyle = '#3a2c24';
@@ -1650,7 +1650,7 @@ const Backdrop = {
     ctx.fillStyle = '#8d8a92';
     ctx.fillRect(0, TRACK_Y + 3, VIEW_W, 4);
 
-    // heat haze / fog tint
+     
     if (e.hazeAlpha) {
       ctx.globalAlpha = e.hazeAlpha;
       ctx.fillStyle = e.haze;
@@ -1659,7 +1659,7 @@ const Backdrop = {
     }
   },
 
-  /* foreground blur band drawn after the train for depth */
+   
   drawForeground(ctx) {
     const e = this.env;
     ctx.globalAlpha = 0.55;
@@ -1677,7 +1677,7 @@ const Backdrop = {
   },
 };
 
-/* ---------- Train rendering ---------- */
+ 
 const TrainRenderer = {
   bodyColors: {
     engine: ['#2f2f3a', '#20202a', '#4a4a58'],
@@ -1699,7 +1699,7 @@ const TrainRenderer = {
       if (sx > VIEW_W + 40 || sx + car.w < -40) continue;
       this.drawCar(ctx, car, sx, t);
     }
-    // couplings
+     
     ctx.fillStyle = '#22222c';
     for (let i = 0; i < Train.cars.length - 1; i++) {
       const a = Train.cars[i], b = Train.cars[i + 1];
@@ -1709,7 +1709,7 @@ const TrainRenderer = {
       ctx.fillStyle = '#3a3a48';
       ctx.fillRect(sx + w * 0.5 - 5, FLOOR_Y - 8, 10, 10);
       ctx.fillStyle = '#22222c';
-      // safety rails
+       
       ctx.fillRect(sx, FLOOR_Y - 34, 3, 34);
       ctx.fillRect(sx + w - 3, FLOOR_Y - 34, 3, 34);
       ctx.fillRect(sx, FLOOR_Y - 34, w, 3);
@@ -1721,7 +1721,7 @@ const TrainRenderer = {
     const bodyTop = car.roofY !== null ? car.roofY : (car.def.bodyTop || FLOOR_Y - 34);
     const h = FLOOR_Y - bodyTop;
 
-    // undercarriage + wheels
+     
     ctx.fillStyle = '#1b1b22';
     ctx.fillRect(sx + 4, FLOOR_Y + 12, car.w - 8, 18);
     const wheelPhase = (Backdrop.dist * 0.06) % TAU;
@@ -1738,21 +1738,21 @@ const TrainRenderer = {
       ctx.stroke();
     }
 
-    // body
+     
     ctx.fillStyle = c[1];
     ctx.fillRect(sx, bodyTop, car.w, h + 12);
     ctx.fillStyle = c[0];
     ctx.fillRect(sx + 3, bodyTop + 3, car.w - 6, h + 4);
 
-    // panel lines
+     
     ctx.fillStyle = c[1];
     for (let i = 1; i < 5; i++) ctx.fillRect(sx + (car.w / 5) * i, bodyTop + 6, 2, h - 4);
 
-    // interior back wall tint (the playable corridor)
+     
     ctx.fillStyle = 'rgba(0,0,0,0.30)';
     ctx.fillRect(sx + 8, bodyTop + 10, car.w - 16, h - 12);
 
-    // kind-specific details
+     
     switch (car.kind) {
       case 'passenger':
       case 'dining':
@@ -1801,7 +1801,7 @@ const TrainRenderer = {
         ctx.globalAlpha = 1;
         ctx.fillStyle = c[2];
         ctx.fillRect(sx + 3, bodyTop + 52, car.w - 6, 4);
-        // cupola
+         
         ctx.fillStyle = c[1];
         ctx.fillRect(sx + car.w * 0.5 - 32, car.roofY - 26, 64, 26);
         ctx.fillStyle = '#f2d99a';
@@ -1812,7 +1812,7 @@ const TrainRenderer = {
         break;
       }
       case 'engine': {
-        // smokestack and headlamp sit on top of the boiler
+         
         const bt = FLOOR_Y - 78;
         ctx.fillStyle = '#15151c';
         ctx.fillRect(sx + 30, bt - 40, 26, 40);
@@ -1821,7 +1821,7 @@ const TrainRenderer = {
         ctx.beginPath(); ctx.arc(sx + 16, bt + 26, 11, 0, TAU); ctx.fill();
         ctx.fillStyle = '#fff3c8';
         ctx.beginPath(); ctx.arc(sx + 16, bt + 26, 6, 0, TAU); ctx.fill();
-        // cowcatcher
+         
         ctx.fillStyle = '#2b2b36';
         ctx.beginPath();
         ctx.moveTo(sx - 2, FLOOR_Y - 6); ctx.lineTo(sx - 26, TRACK_Y + 2); ctx.lineTo(sx + 14, TRACK_Y + 2);
@@ -1839,7 +1839,7 @@ const TrainRenderer = {
       }
     }
 
-    // roof surface
+     
     if (car.roofY !== null) {
       ctx.fillStyle = c[2];
       ctx.fillRect(sx - 4, car.roofY - 6, car.w + 8, 7);
@@ -1847,7 +1847,7 @@ const TrainRenderer = {
       for (let i = 0; i < 6; i++) ctx.fillRect(sx + 10 + i * ((car.w - 20) / 6), car.roofY - 6, 3, 7);
     }
 
-    // props
+     
     for (const p of car.props) this.drawProp(ctx, p, p.x - (car.x - sx), car);
   },
 
@@ -1927,13 +1927,13 @@ const TrainRenderer = {
     }
   },
 };
-/* =============================================================
-   TRAIN HEIST — 25 ENTITIES
-   Pooled particles / bullets / floating text, shared physics
-   helpers, and the sheriff.
-   ============================================================= */
 
-/* ---------- generic pool ---------- */
+
+
+
+
+
+ 
 function Pool(factory, cap) {
   this.items = new Array(cap);
   for (let i = 0; i < cap; i++) this.items[i] = factory();
@@ -1941,7 +1941,7 @@ function Pool(factory, cap) {
   this.cursor = 0;
 }
 Pool.prototype.spawn = function () {
-  // find a free slot starting at cursor; overwrite oldest if saturated
+   
   for (let i = 0; i < this.cap; i++) {
     const idx = (this.cursor + i) % this.cap;
     if (!this.items[idx].alive) { this.cursor = (idx + 1) % this.cap; return this.items[idx]; }
@@ -1950,7 +1950,7 @@ Pool.prototype.spawn = function () {
   return this.items[idx];
 };
 
-/* ---------- particles ---------- */
+ 
 const Particles = (function () {
   const pool = new Pool(() => ({
     alive: false, x: 0, y: 0, vx: 0, vy: 0, life: 0, max: 1,
@@ -1996,9 +1996,9 @@ const Particles = (function () {
       const t = p.life / p.max;
       ctx.globalAlpha = p.kind === 2 ? t * 0.55 : Math.min(1, t * 1.6);
       ctx.fillStyle = p.color;
-      if (p.kind === 1) { // spark streak
+      if (p.kind === 1) {  
         ctx.fillRect(sx - p.size, p.y - p.size * 0.5, p.size * 2.4, p.size);
-      } else if (p.kind === 2) { // smoke puff
+      } else if (p.kind === 2) {  
         ctx.beginPath();
         ctx.arc(sx, p.y, p.size * (1.7 - t * 0.7), 0, TAU);
         ctx.fill();
@@ -2012,7 +2012,7 @@ const Particles = (function () {
   return { emit, update, draw, clear };
 })();
 
-/* ---------- floating combat text ---------- */
+ 
 const FloatText = (function () {
   const pool = new Pool(() => ({ alive: false, x: 0, y: 0, vy: 0, life: 0, max: 1, text: '', color: '#fff', size: 14 }), 40);
   function add(x, y, text, color, size) {
@@ -2047,7 +2047,7 @@ const FloatText = (function () {
   return { add, update, draw, clear };
 })();
 
-/* ---------- bullets ---------- */
+ 
 const Bullets = (function () {
   const pool = new Pool(() => ({
     alive: false, x: 0, y: 0, px: 0, py: 0, vx: 0, vy: 0,
@@ -2097,10 +2097,10 @@ const Bullets = (function () {
   return { fire, update, draw, clear, items: pool.items };
 })();
 
-/* ---------- shared physics ---------- */
+ 
 const Physics = {
-  /* Returns the platform an entity moving from prevFeet to feet
-     should land on, or null. */
+  
+
   landOn(x, prevFeet, feet, dropping, halfW) {
     let best = null;
     const pl = Train.platforms;
@@ -2114,7 +2114,7 @@ const Physics = {
     }
     return best;
   },
-  /* Highest surface at x that is at or below `feet` (used by AI). */
+   
   surfaceBelow(x, feet) {
     let best = null;
     for (const p of Train.platforms) {
@@ -2124,14 +2124,14 @@ const Physics = {
     return best;
   },
   supportAt(x, y) {
-    // platform the entity is standing on at (x, y)
+     
     for (const p of Train.platforms) {
       if (x >= p.x1 && x <= p.x2 && Math.abs(p.y - y) < 2) return p;
     }
     return null;
   },
-  /* Cars have ceilings: you can only get onto a roof through a
-     coupling gap or from an open car. */
+  
+
   clampCeiling(e) {
     const c = Train.carAt(e.x);
     if (!c || c.roofY === null) return;
@@ -2141,7 +2141,7 @@ const Physics = {
       if (e.vy < 0) e.vy = 0;
     }
   },
-  /* Does a solid object block the point? Used for bullets. */
+   
   blocked(x, y) {
     const b = Train.blockers;
     for (let i = 0; i < b.length; i++) {
@@ -2163,7 +2163,7 @@ const Physics = {
   },
 };
 
-/* ---------- the sheriff ---------- */
+ 
 function Player() {
   this.reset(playerStats());
 }
@@ -2199,9 +2199,9 @@ Player.prototype.update = function (dt, mission) {
   this.crouching = Input.down('down') && this.onGround;
   const h = this.crouching ? this.crouchH : this.h;
 
-  /* --- hold-to-lock: plant your feet, keep shooting ---
-     Horizontal position is pinned while the key is held; jumping,
-     aiming and firing all stay available. Never a toggle. */
+  
+
+
   const wasLocked = this.locked;
   this.locked = Input.down('lock');
   if (this.locked) {
@@ -2215,13 +2215,13 @@ Player.prototype.update = function (dt, mission) {
     this.lockPulse = 0.6;
   }
 
-  // horizontal
+   
   const targetVx = this.locked ? 0 : moveDir * s.speed * (this.crouching ? 0.42 : 1);
   const accel = this.locked ? 9999 : (this.onGround ? 2600 : 1500);
   this.vx = approach(this.vx, targetVx, accel * dt);
   if (moveDir !== 0 && !Input.state.usingMouse) this.facing = moveDir;
 
-  // jump (coyote + buffer + optional double jump)
+   
   if (Input.pressed('jump')) this.buffer = 0.12;
   this.buffer -= dt;
   if (this.onGround) { this.coyote = 0.09; this.jumps = 0; } else this.coyote -= dt;
@@ -2230,12 +2230,12 @@ Player.prototype.update = function (dt, mission) {
     const canGround = this.onGround || this.coyote > 0;
     const canAir = s.doubleJump && this.jumps < 1 && !canGround;
     if (canGround || canAir) {
-      // drop through a one-way platform with down+jump
+       
       const plat = Physics.supportAt(this.x, this.y);
       if (Input.down('down') && plat && plat.oneWay && !this.locked) {
         this.dropTimer = 0.18; this.onGround = false; this.vy = 40;
       } else {
-        // JUMP_VEL clears a car roof from the deck with room to spare
+         
         this.vy = canAir ? -JUMP_VEL * 0.86 : -JUMP_VEL;
         this.onGround = false;
         this.jumps += canAir ? 1 : 0;
@@ -2245,10 +2245,10 @@ Player.prototype.update = function (dt, mission) {
       this.buffer = 0; this.coyote = 0;
     }
   }
-  // variable height: a tap gives roughly a third of the arc, a hold the lot
+   
   if (Input.released('jump') && this.vy < -480) this.vy = -480;
 
-  // gravity — heavier on the way down so the bigger jump never feels floaty
+   
   this.vy += (this.vy < 0 ? GRAVITY_UP : GRAVITY_DOWN) * dt;
   if (this.vy > 1350) this.vy = 1350;
 
@@ -2262,10 +2262,10 @@ Player.prototype.update = function (dt, mission) {
   this.hw = 12; this.h = h;
   Physics.resolveSolids(this);
   Physics.clampCeiling(this);
-  // re-pin after collision response so nothing nudges a locked sheriff
+   
   if (this.locked) { this.lockX = clamp(this.lockX, Train.x0 + 10, Train.x1 - 10); this.x = this.lockX; this.vx = 0; }
 
-  // landing
+   
   this.onGround = false;
   if (this.vy >= 0) {
     const p = Physics.landOn(this.x, prevFeet, this.y, this.dropTimer > 0, this.hw);
@@ -2277,17 +2277,17 @@ Player.prototype.update = function (dt, mission) {
       }
     }
   }
-  // fell below the world (shouldn't normally happen) — put back on deck
+   
   if (this.y > VIEW_H + 40) { this.y = FLOOR_Y; this.vy = 0; this.damage(10, 0); }
 
-  // aiming
+   
   const gunY = this.y - (this.crouching ? 20 : 30);
   if (Input.state.usingMouse) {
     const tx = Input.state.mx + mission.cam, ty = Input.state.my;
     this.aim = Math.atan2(ty - gunY, tx - this.x);
     this.facing = Math.cos(this.aim) >= 0 ? 1 : -1;
   } else {
-    // keyboard aim: facing ± a diagonal, and straight up/down while locked
+     
     const ax = moveDir;
     let ay = 0;
     if (Input.down('up')) ay = -1;
@@ -2301,7 +2301,7 @@ Player.prototype.update = function (dt, mission) {
     }
   }
 
-  // shooting / reloading
+   
   this.fireCd -= dt;
   this.muzzle = Math.max(0, this.muzzle - dt);
   this.recoil = Math.max(0, this.recoil - dt * 5);
@@ -2369,11 +2369,11 @@ Player.prototype.draw = function (ctx, cam, t) {
   ctx.save();
   if (blink) ctx.globalAlpha = 0.45;
 
-  // shadow
+   
   ctx.fillStyle = 'rgba(0,0,0,0.28)';
   ctx.beginPath(); ctx.ellipse(sx, y + 2, 15, 5, 0, 0, TAU); ctx.fill();
 
-  // planted-stance marker while the sheriff is locked in place
+   
   const lockGlow = this.locked ? 1 : (this.lockPulse || 0);
   if (lockGlow > 0.01) {
     ctx.save();
@@ -2399,9 +2399,9 @@ Player.prototype.draw = function (ctx, cam, t) {
   const bob = this.onGround && !this.locked ? Math.abs(Math.sin(this.runPhase)) * 2 : 0;
   const top = y - h + bob;
   const legSwing = this.locked ? 0 : (this.onGround ? Math.sin(this.runPhase) * 8 : (this.vy < 0 ? -5 : 5));
-  const stance = this.locked ? 3 : 0;   // feet braced apart
+  const stance = this.locked ? 3 : 0;    
 
-  // legs
+   
   ctx.fillStyle = '#2b3550';
   ctx.fillRect(sx - 9 - stance, y - h * 0.42, 7, h * 0.42);
   ctx.fillRect(sx + 2 + stance, y - h * 0.42, 7, h * 0.42);
@@ -2409,12 +2409,12 @@ Player.prototype.draw = function (ctx, cam, t) {
   ctx.fillRect(sx - 10 - stance + legSwing * 0.5, y - 6, 10, 6);
   ctx.fillRect(sx + 1 + stance - legSwing * 0.5, y - 6, 10, 6);
 
-  // long coat
+   
   ctx.fillStyle = '#3a4a70';
   ctx.fillRect(sx - 12, top + h * 0.24, 24, h * 0.52);
   ctx.fillStyle = '#48598a';
   ctx.fillRect(sx - 12, top + h * 0.24, 24, h * 0.20);
-  // coat tails
+   
   ctx.fillStyle = '#31405f';
   ctx.beginPath();
   ctx.moveTo(sx - 12, top + h * 0.5);
@@ -2422,7 +2422,7 @@ Player.prototype.draw = function (ctx, cam, t) {
   ctx.lineTo(sx - 4, top + h * 0.78);
   ctx.closePath(); ctx.fill();
 
-  // badge
+   
   ctx.fillStyle = '#f5d25b';
   const bx = sx + f * 5, by = top + h * 0.34;
   ctx.beginPath();
@@ -2434,7 +2434,7 @@ Player.prototype.draw = function (ctx, cam, t) {
   }
   ctx.closePath(); ctx.fill();
 
-  // head + neckerchief
+   
   const headY = top + h * 0.16;
   ctx.fillStyle = '#8e2f2f';
   ctx.fillRect(sx - 7, headY + 5, 14, 5);
@@ -2443,7 +2443,7 @@ Player.prototype.draw = function (ctx, cam, t) {
   ctx.fillStyle = '#2b2b33';
   ctx.fillRect(sx + (f > 0 ? 1 : -4), headY - 3, 3, 3);
 
-  // hat — wide brim, defining silhouette
+   
   ctx.fillStyle = '#c2a06a';
   ctx.fillRect(sx - 17, headY - 8, 34, 4);
   ctx.fillStyle = '#a9884f';
@@ -2451,7 +2451,7 @@ Player.prototype.draw = function (ctx, cam, t) {
   ctx.fillStyle = '#7d6338';
   ctx.fillRect(sx - 9, headY - 10, 18, 3);
 
-  // gun arm along aim
+   
   const gy = y - (this.crouching ? 20 : 30);
   const ga = this.aim;
   const kick = this.recoil * 4;
@@ -2463,14 +2463,14 @@ Player.prototype.draw = function (ctx, cam, t) {
   ctx.strokeStyle = '#d9a878'; ctx.lineWidth = 4;
   ctx.beginPath(); ctx.moveTo(handX - Math.cos(ga) * 3, handY - Math.sin(ga) * 3); ctx.lineTo(handX, handY); ctx.stroke();
   ctx.lineCap = 'butt';
-  // revolver
+   
   ctx.save();
   ctx.translate(handX, handY); ctx.rotate(ga);
   ctx.fillStyle = '#3b3b46'; ctx.fillRect(0, -3, 15, 5);
   ctx.fillStyle = '#8a6a3c'; ctx.fillRect(-4, -2, 6, 8);
   ctx.restore();
 
-  // muzzle flash
+   
   if (this.muzzle > 0) {
     const fx = handX + Math.cos(ga) * 17, fy = handY + Math.sin(ga) * 17;
     ctx.save();
@@ -2492,14 +2492,14 @@ Player.prototype.draw = function (ctx, cam, t) {
   }
   ctx.restore();
 };
-/* =============================================================
-   TRAIN HEIST — 30 ENEMIES
-   Distinct archetype behaviour, cheap off-screen simulation.
-   ============================================================= */
 
-function laneOf(y) { return y < 382 ? 1 : 0; }   // 1 = roof, 0 = deck
 
-/* line of sight between two points, blocked by crates/solids */
+
+
+
+function laneOf(y) { return y < 382 ? 1 : 0; }    
+
+ 
 function hasLOS(x0, y0, x1, y1) {
   const steps = 10;
   for (let i = 1; i < steps; i++) {
@@ -2509,7 +2509,7 @@ function hasLOS(x0, y0, x1, y1) {
   return true;
 }
 
-/* ---------- thrown dynamite ---------- */
+ 
 const Grenades = (function () {
   const list = [];
   function throwAt(x, y, tx, ty, owner) {
@@ -2556,7 +2556,7 @@ const Grenades = (function () {
   return { throwAt, update, draw, clear, list };
 })();
 
-/* ---------- enemy ---------- */
+ 
 function Enemy(typeKey, x, y, opts) {
   const d = ENEMY_TYPES[typeKey];
   this.type = typeKey; this.d = d;
@@ -2618,7 +2618,7 @@ Enemy.prototype.hurt = function (dmg, dirX, mission) {
   }
 };
 
-/* --- movement helper: walk toward a world x --- */
+ 
 Enemy.prototype.walkTo = function (tx, dt, speedMul) {
   const d = this.d;
   const dir = sign(tx - this.x);
@@ -2626,17 +2626,17 @@ Enemy.prototype.walkTo = function (tx, dt, speedMul) {
   if (Math.abs(tx - this.x) < 6) { this.vx = approach(this.vx, 0, 1800 * dt); return true; }
   this.vx = approach(this.vx, dir * spd, 1600 * dt);
   this.facing = dir;
-  /* Hop over obstacles. Measured by how far we actually travelled last
-     frame, not by velocity — a bandit shoved back by a solid still has
-     velocity, so a velocity test can loop forever against the coal
-     tender or the boiler. */
+  
+
+
+
   if (this.onGround && this.movedLast < 0.6 && Math.abs(tx - this.x) > 20) {
     this.vy = -700; this.onGround = false;
   }
   return false;
 };
 
-/* --- try to align lanes with the player; returns true when busy --- */
+ 
 Enemy.prototype.syncLane = function (P, dt) {
   const myLane = laneOf(this.y), pLane = laneOf(P.y);
   if (myLane === pLane) return false;
@@ -2644,13 +2644,13 @@ Enemy.prototype.syncLane = function (P, dt) {
   const gx = Train.nearestGap(this.x, dir);
   if (gx === null || gx === undefined) return false;
   if (pLane === 1) {
-    // need to climb: get in the gap, jump, then steer onto the roof
+     
     if (Math.abs(this.x - gx) > 12) { this.walkTo(gx, dt); return true; }
     if (this.onGround) { this.vy = -700; this.vx = dir * 40; }
     else { this.vx = approach(this.vx, dir * this.d.speed * 0.8, 1200 * dt); }
     return true;
   }
-  // need to drop: head for the gap and let gravity take over
+   
   this.walkTo(gx, dt);
   return true;
 };
@@ -2666,8 +2666,8 @@ Enemy.prototype.fireAt = function (P, mission) {
   const d = this.d;
   const D = Game.diff;
   const gy = this.gunY();
-  // shots are aimed where the sheriff was when the bandit drew — keep
-  // moving and they miss. Later shots in a burst correct partway.
+   
+   
   const track = this.burstFired ? 0.45 : 0;
   const tx = lerp(this.lockX, P.x, track);
   const ty = lerp(this.lockY, P.y - P.h * 0.5, track);
@@ -2694,7 +2694,7 @@ Enemy.prototype.tickWeapon = function (dt, P, mission, delayMul) {
   const d = this.d;
   const D = Game.diff;
 
-  // face the player whenever a shot is being lined up
+   
   if (this.aimT > 0 || this.burstLeft > 0) this.facing = sign(P.x - this.x) || this.facing;
 
   if (this.burstLeft > 0) {
@@ -2715,8 +2715,8 @@ Enemy.prototype.tickWeapon = function (dt, P, mission, delayMul) {
   }
   this.fireT -= dt * (this.buff > 0 ? 1.45 : 1);
   if (this.fireT <= 0) {
-    // only a few bandits may be shooting at once — a crowd should feel
-    // like a running gunfight, not an unavoidable firing squad
+     
+     
     if (!d.boss && Enemies.aiming >= Game.attackCap) { this.fireT = 0.22; return; }
     if (this.canShoot(P)) {
       this.aimT = (d.telegraph || 0.34) * D.tell;
@@ -2728,7 +2728,7 @@ Enemy.prototype.tickWeapon = function (dt, P, mission, delayMul) {
   }
 };
 
-/* --- per-archetype brains --- */
+ 
 Enemy.prototype.think = function (dt, P, mission) {
   const d = this.d;
   const adx = Math.abs(P.x - this.x);
@@ -2738,7 +2738,7 @@ Enemy.prototype.think = function (dt, P, mission) {
   if (this.mounted) return this.thinkRider(dt, P, mission);
   if (d.boss) return this.thinkBoss(dt, P, mission);
 
-  // plant your feet while drawing and firing — this is the player's tell
+   
   if (this.aimT > 0 || this.burstLeft > 0) {
     this.vx = approach(this.vx, 0, 2200 * dt);
     this.tickWeapon(dt, P, mission);
@@ -2750,7 +2750,7 @@ Enemy.prototype.think = function (dt, P, mission) {
   const r0 = d.range[0], r1 = d.range[1];
 
   if (d.charge) {
-    // shotgun bandit: close the distance relentlessly
+     
     if (adx > r1 * 0.7) this.walkTo(P.x, dt, 1.0);
     else { this.vx = approach(this.vx, 0, 2000 * dt); this.facing = dir; }
     this.tickWeapon(dt, P, mission);
@@ -2758,7 +2758,7 @@ Enemy.prototype.think = function (dt, P, mission) {
   }
 
   if (d.kite) {
-    // gunslinger: hold long range, back off when crowded
+     
     if (adx < r0 * 0.8) this.walkTo(this.x - dir * 120, dt, 1.15);
     else if (adx > r1) this.walkTo(P.x, dt, 0.9);
     else { this.vx = approach(this.vx, 0, 1800 * dt); this.facing = dir; }
@@ -2766,10 +2766,10 @@ Enemy.prototype.think = function (dt, P, mission) {
     return;
   }
 
-  // outlaw / captain: take cover, advance, fire
+   
   const losOK = this.canShoot(P);
   if (!losOK && adx < 520) {
-    this.walkTo(P.x, dt, 1.05);          // flank around the obstruction
+    this.walkTo(P.x, dt, 1.05);           
   } else if (adx > r1) {
     this.walkTo(P.x, dt);
   } else if (adx < r0) {
@@ -2814,7 +2814,7 @@ Enemy.prototype.thinkRunner = function (dt, P, mission) {
     if (this.plantT > 1.9) {
       this.plantT = 0;
       mission.sabotage(this.target, this);
-      // job done — bolt for the nearest end of the train
+       
       this.state = 'flee';
     }
   }
@@ -2826,7 +2826,7 @@ Enemy.prototype.thinkRunner = function (dt, P, mission) {
 };
 
 Enemy.prototype.thinkRider = function (dt, P, mission) {
-  // gallops alongside the train at ground level, then boards
+   
   const targetX = P.x + (this.opts.side || 1) * 150;
   this.vx = approach(this.vx, clamp((targetX - this.x) * 2.2, -230, 230), 900 * dt);
   this.facing = sign(P.x - this.x) || 1;
@@ -2891,7 +2891,7 @@ Enemy.prototype.thinkBoss = function (dt, P, mission) {
     return;
   }
 
-  // phase 1 — fan the hammer at mid range
+   
   if (adx > d.range[1]) this.walkTo(P.x, dt);
   else if (adx < d.range[0]) this.walkTo(this.x - dir * 150, dt);
   else { this.vx = approach(this.vx, 0, 1500 * dt); this.facing = dir; }
@@ -2908,7 +2908,7 @@ Enemy.prototype.update = function (dt, P, mission) {
   if (this.stagger <= 0) this.think(dt, P, mission);
   else this.vx = approach(this.vx, 0, 900 * dt);
 
-  // anti-stuck: if a long way from the player and going nowhere, hop
+   
   if (!this.mounted) {
     const far = Math.abs(P.x - this.x) > (this.d.range[1] || 200) + 60;
     if (far && this.movedLast < 0.6 && this.onGround) {
@@ -2949,10 +2949,10 @@ Enemy.prototype.update = function (dt, P, mission) {
   if (this.onGround && Math.abs(this.vx) > 20) this.runPhase += dt * Math.abs(this.vx) * 0.05;
 };
 
-/* cheap update for enemies far from the action */
+ 
 Enemy.prototype.updateDistant = function (dt, P) {
   if (!this.alive) { this.deathT -= dt; return; }
-  // runners keep heading for their sabotage target even off-screen
+   
   const goal = (this.d.sabotage && this.target && !this.target.done) ? this.target : P;
   const dir = sign(goal.x - this.x) || 1;
   this.x += dir * this.d.speed * 0.75 * dt;
@@ -2970,7 +2970,7 @@ Enemy.prototype.draw = function (ctx, cam, t) {
   if (sx < -80 || sx > VIEW_W + 80) return;
 
   if (!this.alive) {
-    // brief death fade
+     
     const a = clamp(this.deathT / 0.75, 0, 1);
     if (a <= 0) return;
     ctx.globalAlpha = a * 0.8;
@@ -2987,7 +2987,7 @@ Enemy.prototype.draw = function (ctx, cam, t) {
   const f = this.facing;
 
   ctx.save();
-  // shadow
+   
   ctx.fillStyle = 'rgba(0,0,0,0.25)';
   ctx.beginPath(); ctx.ellipse(sx, this.y + 2, this.hw + 3, 4, 0, 0, TAU); ctx.fill();
 
@@ -2996,7 +2996,7 @@ Enemy.prototype.draw = function (ctx, cam, t) {
   const bob = this.onGround || this.mounted ? Math.abs(Math.sin(this.runPhase)) * 2 : 0;
   const bodyTop = top + bob;
 
-  // legs
+   
   ctx.fillStyle = '#2c2c34';
   const swing = Math.sin(this.runPhase) * 7;
   ctx.fillRect(sx - 8, this.y - h * 0.4, 6, h * 0.4);
@@ -3004,14 +3004,14 @@ Enemy.prototype.draw = function (ctx, cam, t) {
   ctx.fillRect(sx - 9 + swing * 0.4, this.y - 5, 9, 5);
   ctx.fillRect(sx + swing * -0.4, this.y - 5, 9, 5);
 
-  // torso
+   
   ctx.fillStyle = d.color;
   ctx.fillRect(sx - this.hw, bodyTop + h * 0.24, this.hw * 2, h * 0.5);
   ctx.fillStyle = d.accent;
   ctx.fillRect(sx - this.hw, bodyTop + h * 0.24, this.hw * 2, 4);
 
   if (d.boss) {
-    // long duster coat
+     
     ctx.fillStyle = '#15151c';
     ctx.beginPath();
     ctx.moveTo(sx - this.hw, bodyTop + h * 0.42);
@@ -3023,7 +3023,7 @@ Enemy.prototype.draw = function (ctx, cam, t) {
     ctx.fillRect(sx - this.hw, bodyTop + h * 0.5, this.hw * 2, 3);
   }
 
-  // head + bandana
+   
   const headY = bodyTop + h * 0.16;
   ctx.fillStyle = '#c99a6f';
   ctx.fillRect(sx - 6, headY - 6, 12, 12);
@@ -3031,12 +3031,12 @@ Enemy.prototype.draw = function (ctx, cam, t) {
   ctx.fillRect(sx - 7, headY, 14, 7);
   ctx.fillStyle = '#1e1e26';
   ctx.fillRect(sx + (f > 0 ? 1 : -4), headY - 3, 3, 3);
-  // hat
+   
   ctx.fillStyle = d.hat;
   ctx.fillRect(sx - (d.boss ? 18 : 14), headY - 8, d.boss ? 36 : 28, 4);
   ctx.fillRect(sx - 8, headY - 16, 16, 9);
 
-  // gun arm
+   
   const gy = this.gunY();
   const ga = this.aim;
   const hx = sx + Math.cos(ga) * 15, hy = gy + Math.sin(ga) * 15;
@@ -3049,7 +3049,7 @@ Enemy.prototype.draw = function (ctx, cam, t) {
   ctx.fillRect(0, -2.5, d.pellets ? 20 : 13, 5);
   ctx.restore();
 
-  // telegraph: a bandit lining up a shot shows a glint and a sight line
+   
   if (this.aimT > 0) {
     const total = (d.telegraph || 0.34) * Game.diff.tell;
     const k = 1 - this.aimT / total;
@@ -3080,7 +3080,7 @@ Enemy.prototype.draw = function (ctx, cam, t) {
     ctx.restore();
   }
 
-  // dynamite in hand for runners
+   
   if (d.sabotage && this.plantT > 0) {
     ctx.fillStyle = '#b83b2c';
     ctx.fillRect(sx - 4, this.y - 12, 8, 10);
@@ -3088,7 +3088,7 @@ Enemy.prototype.draw = function (ctx, cam, t) {
     ctx.fillRect(sx - 1, this.y - 18, 2, 6);
   }
 
-  // hit flash
+   
   if (this.flash > 0) {
     ctx.globalAlpha = this.flash * 0.85;
     ctx.fillStyle = '#ffffff';
@@ -3096,7 +3096,7 @@ Enemy.prototype.draw = function (ctx, cam, t) {
     ctx.globalAlpha = 1;
   }
 
-  // health pip for tough enemies
+   
   if ((d.leader || d.boss) && this.hp < this.maxHp) {
     const w = d.boss ? 60 : 40;
     ctx.fillStyle = 'rgba(0,0,0,0.6)';
@@ -3132,7 +3132,7 @@ Enemy.prototype.drawHorse = function (ctx, sx) {
   ctx.restore();
 };
 
-/* ---------- enemy manager ---------- */
+ 
 const Enemies = {
   list: [],
   clear() { this.list.length = 0; },
@@ -3168,12 +3168,12 @@ const Enemies = {
     for (const e of this.list) if (e.mounted) e.draw(ctx, cam, t);
   },
 };
-/* =============================================================
-   TRAIN HEIST — 35 PASSENGERS
-   Civilians aboard the train, inspectable clue props, and a small
-   question-and-answer dialogue system. Used by the investigation
-   phase; combat entities are untouched.
-   ============================================================= */
+
+
+
+
+
+
 
 const Passengers = {
   list: [], props: [], case: null,
@@ -3182,7 +3182,7 @@ const Passengers = {
     this.list.length = 0; this.props.length = 0;
     this.case = caseData;
 
-    // usable standing room: interior cars, avoiding the locomotive
+     
     const rooms = [];
     for (const car of Train.cars) {
       if (car.kind === 'engine' || car.kind === 'tender') continue;
@@ -3205,7 +3205,7 @@ const Passengers = {
         state: 'idle', talkT: 0, duck: 0, bubble: 0,
       });
     }
-    // pair up neighbours into conversations
+     
     for (let i = 0; i < this.list.length - 1; i++) {
       const a = this.list[i], b = this.list[i + 1];
       if (a.pose === 'stand' && b.pose === 'stand' && a.car === b.car && Math.abs(a.x - b.x) < 110 && rand() < 0.6) {
@@ -3214,7 +3214,7 @@ const Passengers = {
       }
     }
 
-    // clue objects
+     
     for (let ci = 0; ci < caseData.clues.length; ci++) {
       const c = caseData.clues[ci];
       if (!c.source || c.source.type !== 'object') continue;
@@ -3228,7 +3228,7 @@ const Passengers = {
 
   clear() { this.list.length = 0; this.props.length = 0; this.case = null; },
 
-  /* Anything the sheriff can act on right now, nearest first. */
+   
   focusTarget(P) {
     let best = null, bd = 78;
     for (const q of this.list) {
@@ -3253,7 +3253,7 @@ const Passengers = {
       if (phase === 'showdown' && q.state === 'idle') q.state = 'flee';
 
       if (q.state === 'flee') {
-        // civilians scatter to the ends of their car and keep their heads down
+         
         const away = sign(q.x - P.x) || 1;
         const targetX = clamp(q.homeX + away * 150, Train.x0 + 20, Train.x1 - 20);
         if (Math.abs(q.x - targetX) > 4) {
@@ -3274,7 +3274,7 @@ const Passengers = {
     }
     for (const pr of this.props) pr.glow = (pr.glow + dt) % TAU;
 
-    // passing near someone reveals what is plainly visible about them
+     
     for (const q of this.list) {
       if (q.state === 'gone') continue;
       if (Math.abs(q.x - P.x) < 150 && Math.abs(q.y - P.y) < 60) {
@@ -3284,7 +3284,7 @@ const Passengers = {
     }
   },
 
-  /* ---------- drawing ---------- */
+   
   draw(ctx, cam, t, focus) {
     for (const pr of this.props) {
       if (pr.taken) continue;
@@ -3376,7 +3376,7 @@ const Passengers = {
     ctx.fillStyle = 'rgba(0,0,0,0.25)';
     ctx.beginPath(); ctx.ellipse(sx, y + 2, 12, 4, 0, 0, TAU); ctx.fill();
 
-    // legs
+     
     ctx.fillStyle = '#2f2a30';
     if (sitting) {
       ctx.fillRect(sx - 8, y - 14, 18, 7);
@@ -3386,7 +3386,7 @@ const Passengers = {
       ctx.fillRect(sx + 1 - walkPhase * 3, y - h * 0.42, 6, h * 0.42);
     }
 
-    // body / dress
+     
     ctx.fillStyle = L.coat;
     if (L.female) {
       ctx.beginPath();
@@ -3398,11 +3398,11 @@ const Passengers = {
     } else {
       ctx.fillRect(sx - 9, top + h * 0.26, 18, h * (sitting ? 0.5 : 0.52));
     }
-    // neckerchief — a visible, checkable detail
+     
     ctx.fillStyle = { red: '#c8443c', blue: '#4a6a9c', green: '#4f8a5a', grey: '#9a9a9a', yellow: '#d9b74a' }[d.attrs.scarf] || '#999';
     ctx.fillRect(sx - 7, top + h * 0.24, 14, 5);
 
-    // head
+     
     const headY = top + h * 0.15;
     ctx.fillStyle = L.skin;
     ctx.fillRect(sx - 6, headY - 6, 12, 12);
@@ -3412,7 +3412,7 @@ const Passengers = {
     ctx.fillStyle = '#2a2028';
     ctx.fillRect(sx + (f > 0 ? 1 : -4), headY - 2, 2.5, 2.5);
 
-    // hat
+     
     if (L.hat !== 'none') {
       ctx.fillStyle = L.hatColor;
       if (L.hat === 'wide') { ctx.fillRect(sx - 15, headY - 8, 30, 3); ctx.fillRect(sx - 8, headY - 15, 16, 8); }
@@ -3421,7 +3421,7 @@ const Passengers = {
       else { ctx.fillRect(sx - 8, headY - 11, 16, 6); ctx.fillRect(sx - 11, headY - 7, 6, 3); }
     }
 
-    // luggage — also visible and checkable
+     
     if (d.attrs.luggage > 0 && !ducking) {
       ctx.fillStyle = '#6b4a2c';
       ctx.fillRect(sx + 11 * f - 5, y - 15, 12, 15);
@@ -3433,7 +3433,7 @@ const Passengers = {
       }
     }
 
-    // conversation bubble
+     
     if (q.bubble > 0 && q.pose === 'talk') {
       ctx.globalAlpha = Math.min(1, q.bubble * 2);
       ctx.fillStyle = 'rgba(240,232,210,0.9)';
@@ -3442,7 +3442,7 @@ const Passengers = {
       for (let i = 0; i < 3; i++) ctx.fillRect(sx + 12 * f - 6 + i * 5, top - 11, 3, 2);
       ctx.globalAlpha = 1;
     }
-    // a questioned passenger is marked so the player can track progress
+     
     if (d.met) {
       ctx.fillStyle = 'rgba(120,190,130,0.85)';
       ctx.beginPath(); ctx.arc(sx, top - 22, 3, 0, TAU); ctx.fill();
@@ -3451,9 +3451,9 @@ const Passengers = {
   },
 };
 
-/* =============================================================
-   DIALOGUE — lightweight, data-driven, easy to extend
-   ============================================================= */
+
+
+
 const Dialogue = {
   active: false, target: null, kind: null,
   speaker: '', text: '', options: [], mode: 'line',
@@ -3542,7 +3542,7 @@ const Dialogue = {
         if (skipping) this.close();
         return;
       }
-      // once the line has been spoken, the questions come up on their own
+       
       if (this.reveal >= this.text.length) {
         this.options = this.buildOptions(mission);
         this.mode = 'menu';
@@ -3572,7 +3572,7 @@ const Dialogue = {
     ctx.strokeStyle = '#8a6a3c'; ctx.lineWidth = 2;
     ctx.strokeRect(21, y + 1, VIEW_W - 42, boxH - 2);
 
-    // who is speaking — a small portrait so the box never hides them
+     
     this.drawPortrait(ctx, px, y + 12, pw);
 
     ctx.fillStyle = '#e8c877';
@@ -3624,7 +3624,7 @@ const Dialogue = {
         else { ctx.fillRect(cx - 11, cy - 24, 22, 8); }
       }
     } else {
-      // an object: a magnifying glass
+       
       ctx.strokeStyle = '#c9a961'; ctx.lineWidth = 3;
       ctx.beginPath(); ctx.arc(cx - 2, cy - 6, 11, 0, TAU); ctx.stroke();
       ctx.beginPath(); ctx.moveTo(cx + 6, cy + 2); ctx.lineTo(cx + 15, cy + 12); ctx.stroke();
@@ -3645,11 +3645,11 @@ const Dialogue = {
     if (line) ctx.fillText(line, x, ly);
   },
 };
-/* =============================================================
-   TRAIN HEIST — 40 GAME
-   Mission runtime: camera, wave director, objectives, special
-   events, collisions and the in-game HUD.
-   ============================================================= */
+
+
+
+
+
 
 const Game = {
   mission: null,
@@ -3659,24 +3659,24 @@ const Game = {
   paused: false,
   ended: false,
 
-  /* runtime mission stats (read by OBJECTIVE_TEXT) */
+   
   kills: 0, escaped: 0, elapsed: 0, cargo: 100, passengers: 100,
   bossAlive: false, boss: null,
 
-  /* investigation phase */
-  phase: 'showdown',      // 'investigate' | 'showdown'
+   
+  phase: 'showdown',       
   case: null, focus: null, revealT: 0, investigateTime: 0,
   accusedIds: null, uiPause: false,
 
-  /* Difficulty comes from encounter design, not health bars: lower-risk
-     jobs give bandits slower, sloppier, more heavily telegraphed shots. */
+  
+
   diff: { dmg: 1, rate: 1, spread: 1, tell: 1 },
   setDifficulty(risk) {
     this.diff = {
-      dmg: 0.6 + risk * 0.08,        // 0.68 → 1.00
-      rate: 1.5 - risk * 0.1,        // 1.40 → 1.00  (higher = slower)
-      spread: 1.9 - risk * 0.18,     // 1.72 → 1.00  (higher = less accurate)
-      tell: 1.5 - risk * 0.1,        // 1.40 → 1.00  (higher = longer warning)
+      dmg: 0.6 + risk * 0.08,         
+      rate: 1.5 - risk * 0.1,         
+      spread: 1.9 - risk * 0.18,      
+      tell: 1.5 - risk * 0.1,         
     };
   },
 
@@ -3694,7 +3694,7 @@ const Game = {
   objectiveDone: false,
   reachHold: 0,
 
-  /* ---------------- lifecycle ---------------- */
+   
   start(missionDef) {
     this.mission = missionDef;
     rng = makeRng((Date.now() ^ (missionDef.id.length * 7919)) >>> 0);
@@ -3730,8 +3730,8 @@ const Game = {
     this.uiPause = false;
     this.tutorial = missionDef.tutorial ? 0 : -1;
 
-    /* Every job now opens as an investigation: the sheriff rides as a
-       passenger until he can name the gang. */
+    
+
     Passengers.clear();
     Dialogue.active = false;
     this.case = null; this.focus = null; this.revealT = 0;
@@ -3767,7 +3767,7 @@ const Game = {
   shake(a) { if (Save.data.settings.shake === false) return; this.shakeAmt = Math.min(16, this.shakeAmt + a); },
   announce(text, sub, dur) { this.announceText = text; this.announceSub = sub || ''; this.announceT = dur || 2.4; },
 
-  /* ---------------- spawning ---------------- */
+   
   spawnAt(type, x, y, lane) {
     const e = new Enemy(type, x, y);
     if (type === 'rider') { e.opts.side = rand() < 0.5 ? -1 : 1; e.y = 470; }
@@ -3786,7 +3786,7 @@ const Game = {
       case 'back':
         return { x: fit(Train.x1 - 40), y: FLOOR_Y };
       case 'roofAhead': {
-        // find a roof to appear on, walking outward from the ideal spot
+         
         let x = fit(P.x + dirAway * rand(420, 760));
         for (let i = 0; i < 6; i++) {
           if (Train.roofYAt(x) !== null) break;
@@ -3845,7 +3845,7 @@ const Game = {
 
     const remaining = Enemies.aliveCount;
     if (this.waveIndex >= m.waves.length) {
-      // objectives that need pressure keep recycling the last wave
+       
       if ((m.objective.type === 'survive' || m.objective.type === 'eliminate') && !this.objectiveDone && remaining <= 2) {
         this.waveTimer -= dt;
         if (this.waveTimer <= 0) {
@@ -3869,7 +3869,7 @@ const Game = {
     }
   },
 
-  /* ---------------- objective hooks ---------------- */
+   
   onKill(e) {
     this.kills++;
     Save.data.stats.kills++;
@@ -3904,7 +3904,7 @@ const Game = {
     FloatText.add(target.x, FLOOR_Y - 60, isPax ? 'PASSENGERS HIT!' : 'CARGO HIT!', '#ff7a5a', 15);
   },
 
-  /* ---------------- special events ---------------- */
+   
   fireEvent(type) {
     const run = this.runId;
     const later = (ms, fn) => setTimeout(() => { if (this.running && this.runId === run) fn(); }, ms);
@@ -3967,7 +3967,7 @@ const Game = {
     e.lightning = Math.max(0, e.lightning - dt * 2.2);
   },
 
-  /* ---------------- collisions ---------------- */
+   
   handleBullets(dt) {
     const P = this.player;
     Bullets.update(dt, (b) => {
@@ -4014,7 +4014,7 @@ const Game = {
     }
   },
 
-  /* ---------------- main update ---------------- */
+   
   update(dt) {
     if (!this.running || this.paused || this.ended) return;
     const P = this.player;
@@ -4035,11 +4035,11 @@ const Game = {
     this.updateWaves(dt);
     this.updateEvents(dt);
 
-    // train speed ebbs and flows a little for life
+     
     this.trainSpeed = 250 + Math.sin(this.elapsed * 0.35) * 26;
     Backdrop.update(dt, this.trainSpeed);
 
-    // weather particles
+     
     if (this.env.rain > 0.02 || this.env.snow > 0.02) {
       const snowy = this.env.snow > 0.5;
       for (const w of this.weather) {
@@ -4050,7 +4050,7 @@ const Game = {
       }
     }
 
-    // camera
+     
     const look = clamp(P.vx * 0.28, -110, 110);
     const targetCam = clamp(P.x + look - VIEW_W * 0.5, this.camMin(), this.camMax());
     this.cam += (targetCam - this.cam) * Math.min(1, dt * 7);
@@ -4112,9 +4112,9 @@ const Game = {
 
     if (this.objectiveDone) {
       this.clearT = (this.clearT || 0) + dt;
-      // objectives that are self-contained end as soon as they're met;
-      // "protect" jobs wait for the train to be clear, but never hang on
-      // a straggler we can't reach.
+       
+       
+       
       const instant = o.type === 'survive' || o.type === 'reach_engine' || o.type === 'eliminate';
       const bossDone = o.type === 'boss' && this.clearT > 2.2;
       if (instant || bossDone || Enemies.aliveCount === 0 || this.clearT > 16) this.finish(true, '');
@@ -4170,7 +4170,7 @@ const Game = {
     });
   },
 
-  /* ---------------- investigation phase ---------------- */
+   
   updateInvestigation(dt) {
     const P = this.player;
     this.investigateTime += dt;
@@ -4180,7 +4180,7 @@ const Game = {
     Particles.update(dt);
     FloatText.update(dt);
 
-    // the case file is always one key away, even mid-conversation
+     
     if (Input.pressed('notes')) {
       if (Dialogue.active) Dialogue.close();
       App.openCaseFile();
@@ -4202,7 +4202,7 @@ const Game = {
       if (this.focus.kind === 'person') Dialogue.openPerson(this.focus.ref, this);
       else Dialogue.openProp(this.focus.ref, this);
     }
-    // gentle nudge so an investigation can never stall out completely
+     
     if (this.investigateTime > this.nudgeAt && this.case.found < this.case.required) {
       this.nudgeAt += 45;
       const missing = this.case.clues.filter((c) => !c.found);
@@ -4236,7 +4236,7 @@ const Game = {
 
   canAccuse() { return this.case && this.case.found >= this.case.required; },
 
-  /* ---------------- accusation ---------------- */
+   
   resolveAccusation(ids) {
     const c = this.case;
     this.accusedIds = ids.slice();
@@ -4247,7 +4247,7 @@ const Game = {
     else this.finish(false, 'WRONG ACCUSATION — THE BANDITS GOT THE DROP ON YOU.');
   },
 
-  /* culprits stand up, draw, and the ride turns into a gunfight */
+   
   beginShowdown() {
     const m = this.mission;
     this.phase = 'showdown';
@@ -4274,7 +4274,7 @@ const Game = {
       const idx = Passengers.list.indexOf(q);
       if (idx >= 0) Passengers.list.splice(idx, 1);
     }
-    // a couple of accomplices break cover at the same time
+     
     for (let i = 0; i < 1 + m.risk; i++) this.spawnQueue.push({ type: i % 2 ? 'outlaw' : 'gunslinger', at: 'near' });
 
     this.waveIndex = 0;
@@ -4285,7 +4285,7 @@ const Game = {
     this.shake(10);
   },
 
-  /* short beat between the reveal and the first shot */
+   
   updateReveal(dt) {
     this.revealT -= dt;
     const P = this.player;
@@ -4355,7 +4355,7 @@ const Game = {
     ctx.restore();
   },
 
-  /* ---------------- rendering ---------------- */
+   
   draw(ctx) {
     const shakeX = this.shakeAmt > 0 ? rand(-this.shakeAmt, this.shakeAmt) : 0;
     const shakeY = this.shakeAmt > 0 ? rand(-this.shakeAmt, this.shakeAmt) * 0.6 : 0;
@@ -4377,7 +4377,7 @@ const Game = {
     FloatText.draw(ctx, cam);
     Backdrop.drawForeground(ctx);
 
-    // weather overlay — snow country gets a blizzard, not rain
+     
     if (this.env.snow > 0.5) {
       ctx.fillStyle = 'rgba(255,255,255,0.9)';
       const gust = 1 + this.env.rain * 1.4;
@@ -4396,7 +4396,7 @@ const Game = {
       ctx.globalAlpha = 1;
     }
 
-    // tunnel rock ceiling closing over the train
+     
     const tn = this.env.tunnel;
     if (tn > 0.01) {
       const th = 190 * tn;
@@ -4415,12 +4415,12 @@ const Game = {
       }
     }
 
-    // darkness (tunnel / night)
+     
     const darkness = Math.max(this.env.dark, tn * 0.66);
     if (darkness > 0.01) {
       ctx.fillStyle = 'rgba(4,6,14,' + darkness + ')';
       ctx.fillRect(0, 0, VIEW_W, VIEW_H);
-      // lantern pool around the sheriff
+       
       const px = this.player.x - cam, py = this.player.y - 24;
       const g = ctx.createRadialGradient(px, py, 12, px, py, 300);
       g.addColorStop(0, 'rgba(255,222,158,' + (0.62 * darkness) + ')');
@@ -4428,7 +4428,7 @@ const Game = {
       g.addColorStop(1, 'rgba(255,220,150,0)');
       ctx.fillStyle = g;
       ctx.fillRect(px - 300, py - 300, 600, 600);
-      // muzzle flashes and lamps still read: light the enemies faintly
+       
       ctx.globalCompositeOperation = 'lighter';
       ctx.globalAlpha = 0.10 * darkness;
       ctx.fillStyle = '#ffca7a';
@@ -4483,7 +4483,7 @@ const Game = {
   },
 
   drawSmoke(ctx, cam) {
-    // locomotive stack smoke
+     
     const eng = Train.cars[0];
     if (!eng) return;
     const sx = eng.x + 40 - cam;
@@ -4502,7 +4502,7 @@ const Game = {
     ctx.save();
     ctx.font = 'bold 13px "Courier New", monospace';
 
-    // health
+     
     const hw = 190, hx = 16, hy = 16;
     ctx.fillStyle = 'rgba(12,10,14,0.62)';
     ctx.fillRect(hx - 5, hy - 5, hw + 10, 44);
@@ -4516,7 +4516,7 @@ const Game = {
     ctx.fillStyle = '#efe6d2';
     ctx.fillText(Math.ceil(P.hp) + ' / ' + P.maxHp, hx + 2, hy + 32);
 
-    // ammo pips
+     
     const ax = hx + 92, ay = hy + 22;
     for (let i = 0; i < P.magSize; i++) {
       const filled = i < P.ammo;
@@ -4535,7 +4535,7 @@ const Game = {
       ctx.fillText('RELOAD  [R]', ax, ay + 26);
     }
 
-    // planted indicator
+     
     if (P.locked) {
       ctx.fillStyle = '#e8c877';
       ctx.fillRect(hx - 5 + 200, hy - 5, 74, 20);
@@ -4545,7 +4545,7 @@ const Game = {
       ctx.font = 'bold 13px "Courier New", monospace';
     }
 
-    // objective (top centre)
+     
     const otext = OBJECTIVE_TEXT[m.objective.type] ? OBJECTIVE_TEXT[m.objective.type](m.objective, this) : '';
     ctx.textAlign = 'center';
     ctx.fillStyle = 'rgba(12,10,14,0.62)';
@@ -4555,7 +4555,7 @@ const Game = {
     ctx.font = 'bold 13px "Courier New", monospace';
     ctx.fillText(otext, VIEW_W * 0.5, 27);
 
-    // protect meter
+     
     if (m.objective.type === 'protect_cargo' || m.objective.type === 'protect_passengers') {
       const v = m.objective.type === 'protect_cargo' ? this.cargo : this.passengers;
       const bw = 200;
@@ -4565,13 +4565,13 @@ const Game = {
       ctx.fillRect(VIEW_W * 0.5 - bw * 0.5, 40, bw * (v / 100), 8);
       ctx.strokeStyle = 'rgba(255,255,255,0.3)';
       ctx.strokeRect(VIEW_W * 0.5 - bw * 0.5 + 0.5, 40.5, bw - 1, 7);
-      // threshold marker
+       
       const th = m.objective.threshold / 100;
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(VIEW_W * 0.5 - bw * 0.5 + bw * th, 38, 2, 12);
     }
 
-    // right: bounty / kills / time
+     
     ctx.textAlign = 'right';
     ctx.fillStyle = 'rgba(12,10,14,0.62)';
     ctx.fillRect(VIEW_W - 156, 11, 146, 46);
@@ -4582,7 +4582,7 @@ const Game = {
     ctx.fillStyle = '#cfc3ad';
     ctx.fillText('KILLS ' + this.kills + '   ' + fmtTime(this.elapsed), VIEW_W - 18, 48);
 
-    // boss bar
+     
     if (this.bossAlive && this.boss) {
       const bw = 420, bx = VIEW_W * 0.5 - bw * 0.5, by = VIEW_H - 42;
       ctx.textAlign = 'center';
@@ -4599,7 +4599,7 @@ const Game = {
       ctx.strokeRect(bx + 0.5, by + 0.5, bw - 1, 11);
     }
 
-    // off-screen threat markers
+     
     ctx.textAlign = 'center';
     for (const e of Enemies.list) {
       if (!e.alive) continue;
@@ -4618,7 +4618,7 @@ const Game = {
       ctx.closePath(); ctx.fill();
     }
 
-    // announcement
+     
     if (this.announceT > 0) {
       const a = clamp(this.announceT, 0, 1);
       ctx.globalAlpha = a;
@@ -4636,7 +4636,7 @@ const Game = {
       ctx.globalAlpha = 1;
     }
 
-    // tutorial prompts
+     
     if (this.tutorial >= 0 && this.tutorialText) {
       ctx.textAlign = 'center';
       ctx.fillStyle = 'rgba(0,0,0,0.55)';
@@ -4667,12 +4667,12 @@ const Game = {
     ctx.textAlign = 'left';
   },
 };
-/* =============================================================
-   TRAIN HEIST — 50 UI
-   DOM overlay screens (menu / bounty board / upgrades / settings
-   / results). The canvas HUD handles everything during play, so
-   no DOM work happens inside the game loop.
-   ============================================================= */
+
+
+
+
+
+
 
 const UI = (function () {
   let root = null;
@@ -4705,7 +4705,7 @@ const UI = (function () {
   }
   const DIFF_WORDS = ['', 'Routine', 'Tricky', 'Hard', 'Brutal', 'Suicidal'];
 
-  /* ---------------- screens ---------------- */
+   
   const screens = {
     menu() {
       return '<div class="th-screen th-menu">' +
@@ -4811,11 +4811,11 @@ const UI = (function () {
         '<div class="th-actions"><button class="th-btn th-ghost" data-act="menu">MAIN MENU</button></div></div>';
     },
 
-    /* ---------- the sheriff's case file ---------- */
+     
     casefile() {
       const c = Game.case;
       if (!c) return '<div class="th-screen"></div>';
-      // only show columns the marshal has actually told us to look for
+       
       const cols = c.clues.filter((cl) => cl.found).map((cl) => cl.attr);
 
       let clueRows = '';
@@ -4857,7 +4857,7 @@ const UI = (function () {
         '</div></div></div>';
     },
 
-    /* ---------- accusation ---------- */
+     
     accuse() {
       const c = Game.case;
       if (!c) return '<div class="th-screen"></div>';
@@ -4998,10 +4998,10 @@ const UI = (function () {
 
   return { mount, show, hide };
 })();
-/* =============================================================
-   TRAIN HEIST — 60 MAIN
-   Application state machine, canvas setup and the frame loop.
-   ============================================================= */
+
+
+
+
 
 const App = {
   canvas: null, ctx: null, dpr: 1,
@@ -5023,7 +5023,7 @@ const App = {
     window.addEventListener('resize', () => this.resize());
     this.resize();
 
-    // idle/menu scenery
+     
     Train.build(['engine', 'tender', 'cargo', 'passenger', 'caboose']);
     Backdrop.setEnv('desert');
 
@@ -5097,9 +5097,9 @@ const App = {
     UI.show('results', r);
   },
 
-  /* ---------- case file / accusation overlays ----------
-     These sit on top of a frozen mission rather than replacing it, so
-     App.screen stays 'play' and the world keeps rendering behind. */
+  
+
+
   openCaseFile() {
     if (!Game.case) return;
     Game.uiPause = true;
@@ -5148,12 +5148,12 @@ const App = {
     UI.show('settings');
   },
 
-  /* ---------- frame ---------- */
+   
   frame(now) {
     requestAnimationFrame((t) => this.frame(t));
     let dt = (now - this.last) / 1000;
     this.last = now;
-    if (dt > 0.1) dt = 0.1;         // tab-switch guard
+    if (dt > 0.1) dt = 0.1;          
     this.acc += dt;
 
     const STEP = 1 / 60;
@@ -5171,7 +5171,7 @@ const App = {
 
   step(dt) {
     if (this.playing) {
-      if (Game.uiPause) return;          // a full-screen overlay is open
+      if (Game.uiPause) return;           
       if (Game.paused) {
         if (Input.pressed('pause')) { Game.paused = false; }
         else if (Input.pressed('quit')) {
@@ -5183,7 +5183,7 @@ const App = {
       }
       Game.update(dt);
     } else {
-      // slow scenic pan behind the menus
+       
       Backdrop.update(dt, 150);
       this.idleCam += dt * 26;
       const span = Math.max(1, Train.x1 - VIEW_W + 120);
@@ -5214,7 +5214,7 @@ const App = {
   },
 };
 
-/* small debug handle — handy for tinkering from the console */
+ 
 window.TrainHeist = { App, Game, Enemies, Train, Backdrop, Save, Physics, Bullets, Passengers, Dialogue, UI, makeCase, ATTRS, MISSIONS, ENEMY_TYPES, CAR_TYPES, UPGRADES };
 
 if (document.readyState === 'loading') window.addEventListener('DOMContentLoaded', () => App.init());

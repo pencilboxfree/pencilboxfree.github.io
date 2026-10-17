@@ -43,7 +43,7 @@ button{font-family:inherit}
 .screen.on{display:flex}
 @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 
-/* ---------- generic bits ---------- */
+ 
 .btn{
   cursor:pointer; border:2px solid var(--line); background:var(--panel); color:var(--cream);
   padding:12px 20px; border-radius:12px; font-size:16px; font-weight:700; letter-spacing:.04em;
@@ -62,7 +62,7 @@ button{font-family:inherit}
 .spacer{flex:1}
 .tag{font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--muted)}
 
-/* ---------- title screen ---------- */
+ 
 #menu{align-items:center; justify-content:center; text-align:center; gap:6px; padding:24px}
 .logo{position:relative; margin-bottom:6px}
 .logo h1{
@@ -83,7 +83,7 @@ button{font-family:inherit}
 .byline{margin-top:18px; font-size:11px; color:var(--muted); letter-spacing:.1em; position:relative; z-index:2}
 .floatChar{position:absolute; bottom:-6px; opacity:.5; pointer-events:none; z-index:1}
 
-/* ---------- mission select ---------- */
+ 
 .hdr{display:flex; align-items:center; gap:14px; padding:16px 20px; border-bottom:1px solid var(--line)}
 .hdr h3{margin:0; font-size:20px; letter-spacing:.12em; text-transform:uppercase}
 .body{flex:1; overflow:auto; padding:20px}
@@ -108,7 +108,7 @@ button{font-family:inherit}
 .pbar{height:6px; background:rgba(255,255,255,.09); border-radius:99px; margin-top:9px; overflow:hidden}
 .pbar i{display:block; height:100%; background:linear-gradient(90deg,var(--teal),var(--gold))}
 
-/* ---------- game screen ---------- */
+ 
 #game{display:none}
 #game.on{display:flex}
 .topbar{
@@ -144,7 +144,7 @@ button{font-family:inherit}
 .conf{position:absolute; width:9px; height:14px; border-radius:2px; animation:confF linear forwards}
 @keyframes confF{from{transform:translateY(-40px) rotate(0)}to{transform:translateY(560px) rotate(720deg)}}
 
-/* dialogue */
+ 
 .dialogue{
   position:absolute; left:0; right:0; bottom:0; padding:16px 18px 14px;
   background:linear-gradient(180deg,rgba(8,10,16,0),rgba(8,10,16,.86) 34%,rgba(8,10,16,.96));
@@ -159,7 +159,7 @@ button{font-family:inherit}
 .caret{display:inline-block; width:9px; height:17px; background:var(--gold); vertical-align:-2px; animation:blink .7s steps(1) infinite; margin-left:3px}
 @keyframes blink{50%{opacity:0}}
 
-/* choices */
+ 
 .choices{
   position:absolute; left:0; right:0; bottom:0; z-index:5; padding:14px 18px 16px;
   background:linear-gradient(180deg,rgba(8,10,16,0),rgba(8,10,16,.9) 30%,rgba(10,12,20,.99));
@@ -187,7 +187,7 @@ button{font-family:inherit}
 @keyframes pickPulse{0%{box-shadow:0 0 0 0 rgba(255,197,49,.7)}100%{box-shadow:0 0 0 22px rgba(255,197,49,0)}}
 .choice .hint{position:absolute; right:10px; top:6px; font-size:9px; color:var(--muted); letter-spacing:.14em}
 
-/* QTE */
+ 
 #qte{
   position:absolute; inset:0; z-index:8; display:none; align-items:center; justify-content:center;
   flex-direction:column; gap:16px; background:rgba(6,8,14,.62); backdrop-filter:blur(2px);
@@ -209,7 +209,7 @@ button{font-family:inherit}
 #qte .qtime i{display:block; height:100%; width:100%; background:linear-gradient(90deg,var(--gold),var(--red))}
 #qte .qsub{font-size:13px; color:var(--muted)}
 
-/* ending card */
+ 
 #endcard{
   position:absolute; inset:0; z-index:9; display:none; align-items:center; justify-content:center; padding:22px;
   background:rgba(6,8,14,.9);
@@ -231,7 +231,7 @@ button{font-family:inherit}
 .ecard .acts{display:flex; gap:10px; justify-content:center; flex-wrap:wrap; padding:0 18px 20px}
 .ecard .prog{padding:0 22px 16px; font-size:12px; color:var(--muted)}
 
-/* collection */
+ 
 .colTabs{display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap}
 .colTabs .btn.small.active{background:var(--gold); color:#2a1d00; border-color:#ffdf8c}
 .egrid{display:grid; grid-template-columns:repeat(4,1fr); gap:10px}
@@ -259,7 +259,7 @@ button{font-family:inherit}
   background:rgba(55,214,192,.18); color:var(--teal); padding:2px 7px; border-radius:99px; margin-top:2px}
 .ecard .chip{margin:0 0 6px}
 
-/* how to play */
+ 
 .howGrid{display:grid; grid-template-columns:1fr 1fr; gap:16px}
 .hcard{border:2px solid var(--line); border-radius:14px; padding:14px 16px; background:var(--panel)}
 .hcard h4{margin:0 0 8px; font-size:14px; letter-spacing:.14em; text-transform:uppercase; color:var(--gold)}
@@ -294,7 +294,7 @@ kbd{
   .logo h1{font-size:clamp(40px,13vw,66px)}
   #menu .menuBtns{width:min(300px,86vw)}
 
-  /* stack the scene, the dialogue and the choices instead of overlaying them */
+   
   #stageWrap{display:flex; flex-direction:column}
   #stage{position:relative; inset:auto; width:100%; aspect-ratio:16/9; flex:0 0 auto}
   #vignette{display:none}
@@ -313,7 +313,7 @@ kbd{
   .floatChar{display:none}
 }
 
-/* ---------- actor / prop animations (SVG groups, user units) ---------- */
+ 
 .a-none{}
 .a-walkIn{animation:aWalkIn 1s ease-out both}
 @keyframes aWalkIn{from{transform:translateX(-260px)}to{transform:none}}
@@ -358,7 +358,7 @@ kbd{
 .a-slam{animation:aSlam .5s cubic-bezier(.3,1.8,.5,1) both}
 @keyframes aSlam{from{transform:translateY(-160px) scale(1.2)}to{transform:none}}
 
-/* ---------- "will remember that" ---------- */
+ 
 .memoir{
   position:absolute; right:18px; top:16px; z-index:11; pointer-events:none;
   font-size:14.5px; font-style:italic; letter-spacing:.02em; color:#f4efe2;
@@ -374,7 +374,7 @@ kbd{
 }
 @media (max-width:760px){ .memoir{right:10px; top:10px; font-size:12.5px; padding:6px 11px} }
 
-/* ---------- relationship recap on the ending card ---------- */
+ 
 .relrow{display:flex; flex-wrap:wrap; gap:6px; justify-content:center; padding:0 22px 12px}
 .relpill{
   font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; font-weight:800;
@@ -387,7 +387,7 @@ kbd{
 .relpill.angry,.relpill.betrayed,.relpill.enemy{background:rgba(255,77,94,.16); color:var(--red); border-color:rgba(255,77,94,.4)}
 .relpill.bought,.relpill.greedy{background:rgba(164,118,255,.16); color:var(--violet); border-color:rgba(164,118,255,.4)}
 
-/* the QTE key doubles as a tap target on touch devices */
+ 
 #qte{ touch-action:manipulation }
 #qte .qkey{ cursor:pointer; user-select:none }
 </style>
@@ -395,7 +395,7 @@ kbd{
 <body>
 <div id="app"><div class="frame">
 
-  <!-- ============ MAIN MENU ============ -->
+   
   <section class="screen on" id="menu">
     <div class="logo">
       <div class="stamp">WANTED</div>
@@ -412,7 +412,7 @@ kbd{
     <svg class="floatChar" id="menuArt" viewBox="0 0 800 260" style="width:100%;max-width:900px;height:200px"></svg>
   </section>
 
-  <!-- ============ MISSION SELECT ============ -->
+   
   <section class="screen" id="missions">
     <div class="hdr">
       <button class="btn small" data-go="menu">‹ Back</button>
@@ -427,7 +427,7 @@ kbd{
     </div>
   </section>
 
-  <!-- ============ COLLECTION ============ -->
+   
   <section class="screen" id="collection">
     <div class="hdr">
       <button class="btn small" data-go="menu">‹ Back</button>
@@ -442,7 +442,7 @@ kbd{
     </div>
   </section>
 
-  <!-- ============ HOW TO PLAY ============ -->
+   
   <section class="screen" id="how">
     <div class="hdr"><button class="btn small" data-go="menu">‹ Back</button><h3>How To Play</h3></div>
     <div class="body">
@@ -474,7 +474,7 @@ kbd{
     </div>
   </section>
 
-  <!-- ============ GAME ============ -->
+   
   <section class="screen" id="game">
     <div class="topbar">
       <button class="btn small" id="quitBtn">‹ Quit</button>
@@ -515,14 +515,14 @@ kbd{
 <script>
 "use strict";
 
-/* =====================================================================
-   ART SYSTEM — original vector cartoon ("Bean Folk")
-   All characters/backdrops are procedural SVG. No image or audio assets.
-   Character origin = feet at (0,0), centred on x. Nominal height ~205u.
-   ===================================================================== */
+
+
+
+
+
 const ART = (() => {
 
-/* ---------- outfits: the whole cast ---------- */
+ 
 const OUTFITS = {
   rook:       {body:'#3a6fe0', trim:'#294fa4', skin:'#f0c193', hair:'#3a2a1c', hat:'beanie', hatC:'#e0533a', extra:'hoodie'},
   rookMask:   {body:'#3a6fe0', trim:'#294fa4', skin:'#f0c193', hat:'skimask', hatC:'#1d2436'},
@@ -549,7 +549,7 @@ const OUTFITS = {
   janitor:    {body:'#2f6f4f', trim:'#215239', skin:'#d79a67', hat:'cap', hatC:'#1d4430'}
 };
 
-/* ---------- poses: limb angles ---------- */
+ 
 const POSES = {
   stand:   {la:7,    ra:-7,   ll:4,   rl:-4,  tilt:0,  y:0},
   walk:    {la:26,   ra:-20,  ll:17,  rl:-13, tilt:1,  y:-2},
@@ -572,7 +572,7 @@ const POSES = {
   slump:   {la:24,   ra:-24,  ll:74,  rl:-74, tilt:10, y:38}
 };
 
-/* ---------- faces ---------- */
+ 
 function face(mood, skin, eyesOnly){
   const eye=(x,y,r=4.6)=>`<circle cx="${x}" cy="${y}" r="${r}" fill="#20242f"/>`;
   const brow=(x,y,rot,w=15)=>`<rect x="${x-w/2}" y="${y}" width="${w}" height="3.6" rx="1.8" fill="#20242f" transform="rotate(${rot} ${x} ${y+1.8})"/>`;
@@ -623,14 +623,14 @@ function face(mood, skin, eyesOnly){
     case 'flat':
       e=eye(-12,-4)+eye(12,-4); b=brow(-12,-17,0)+brow(12,-17,0);
       m=`<path d="M-9 10 h18" stroke="#20242f" stroke-width="3.2" stroke-linecap="round"/>`; break;
-    default: /* neutral */
+    default:  
       e=eye(-12,-4)+eye(12,-4);
       m=`<path d="M-8 9 Q0 14 8 9" stroke="#20242f" stroke-width="3.2" fill="none" stroke-linecap="round"/>`;
   }
   return eyesOnly ? b+e+ex : b+e+m+ex;
 }
 
-/* ---------- hats & extras ---------- */
+ 
 function hatSVG(kind,c){
   switch(kind){
     case 'beanie': return `<path d="M-37 -20 q0 -34 37 -34 q37 0 37 34 z" fill="${c}"/><rect x="-38" y="-22" width="76" height="12" rx="6" fill="${c}" opacity=".82"/>`;
@@ -645,7 +645,7 @@ function hatSVG(kind,c){
 }
 function hairSVG(c){ return `<path d="M-36 -24 q-4 -36 36 -36 q40 0 36 36 q-8 -16 -36 -16 q-28 0 -36 16 z" fill="${c}"/>`; }
 
-/* ---------- the character ---------- */
+ 
 function charSVG(key, pose='stand', mood='neutral', o={}){
   const k = OUTFITS[key] || OUTFITS.rook;
   const p = POSES[pose] || POSES.stand;
@@ -694,7 +694,7 @@ function charSVG(key, pose='stand', mood='neutral', o={}){
   </g>`;
 }
 
-/* ---------- held props (drawn in character space) ---------- */
+ 
 const PROPS_HELD = {
   bag:      `<g transform="translate(46,-92)"><path d="M-22 -16 q22 -12 44 0 l6 42 q-28 10 -56 0 z" fill="#e8e2cf" stroke="#b9b193" stroke-width="2"/><text x="0" y="18" font-size="22" text-anchor="middle" fill="#4a4327" font-family="Verdana" font-weight="bold">$</text></g>`,
   crowbar:  `<g transform="translate(-52,-100) rotate(-24)"><rect x="0" y="0" width="8" height="72" rx="4" fill="#c04a3a"/><path d="M0 0 q-16 -6 -14 -18 l10 2 q-2 8 8 10 z" fill="#c04a3a"/></g>`,
@@ -711,7 +711,7 @@ const PROPS_HELD = {
   cat:      `<g transform="translate(44,-102)"><ellipse cx="0" cy="8" rx="22" ry="14" fill="#5a637d"/><circle cx="16" cy="-4" r="12" fill="#5a637d"/><path d="M8 -14 l2 -10 l8 6 z M20 -16 l8 -8 l2 10 z" fill="#5a637d"/><circle cx="13" cy="-6" r="2" fill="#20242f"/><circle cx="21" cy="-6" r="2" fill="#20242f"/></g>`
 };
 
-/* ============================ BACKDROPS ============================ */
+ 
 const W=800,H=450;
 const sky=(a,b)=>`<rect width="${W}" height="${H}" fill="url(#g_${a})"/>`;
 function grad(id,c1,c2,vertical=true){
@@ -953,7 +953,7 @@ const BG = {
   dark: ()=>`<rect width="${W}" height="${H}" fill="url(#gDark)"/><circle cx="400" cy="220" r="260" fill="url(#gLamp)" opacity=".2"/>`
 };
 
-/* ---------- scene props (world space) ---------- */
+ 
 const PROPS = {
   alarmBell:  `<g transform="translate(700,70)"><circle r="26" fill="#e0303f"/><circle r="16" fill="#ff8b8b"/><rect x="-4" y="-40" width="8" height="18" fill="#5b6474"/></g>`,
   camera:     `<g transform="translate(690,60)"><rect x="-26" y="-12" width="46" height="24" rx="6" fill="#39405a"/><path d="M20 -8 l18 -10 l0 36 l-18 -10 z" fill="#39405a"/><circle cx="-20" cy="0" r="6" fill="#ff4d5e"/></g>`,
@@ -979,10 +979,10 @@ const PROPS = {
 };
 
 
-/* ============================ VEHICLES ============================
-   Side view. Origin = ground level, centred on x. Shown INSTEAD of the
-   character whenever someone is riding in something.
-   ================================================================== */
+
+
+
+
 const wheel=(x,r=26)=>`<circle cx="${x}" cy="${-r}" r="${r}" fill="#12151f"/><circle cx="${x}" cy="${-r}" r="${r*0.44}" fill="#9aa3bb"/><circle cx="${x}" cy="${-r}" r="${r*0.16}" fill="#5b6474"/>`;
 const shadow=(w)=>`<ellipse cx="0" cy="-2" rx="${w}" ry="9" fill="#000" opacity=".3"/>`;
 const glass='#8fb6e8';
@@ -1078,17 +1078,17 @@ const VEHICLES = {
 };
 function vehicleSVG(key, colour){ const f = VEHICLES[key]; return f ? f(colour) : VEHICLES.car(); }
 
-/* ---------- mission select thumbnails ---------- */
+ 
 function thumb(k){
   const inner = ({m1:BG.bankExt, m2:BG.prisonExt, m3:BG.labExt})[k]();
   const svg = `<svg viewBox="0 0 800 450" preserveAspectRatio="xMidYMid slice"><defs>${DEFS}</defs>${inner}</svg>`;
-  /* every def id starts with "g" — rename them so the live stage keeps sole ownership */
+   
   return svg.replace(/id="g/g,'id="tg').replace(/url\(#g/g,'url(#tg');
 }
 
 return {OUTFITS, POSES, charSVG, BG, PROPS, DEFS, thumb, face, VEHICLES, vehicleSVG};
 })();
-/* ================= tiny WebAudio blip synth (no files) ================= */
+ 
 const SFX = (() => {
   let ctx=null, muted=false, musicStop=null;
   const on = () => { if(!ctx){ try{ ctx = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} }
@@ -1139,7 +1139,7 @@ const SFX = (() => {
     sad:    ()=>seq([[440,0,.2],[415,.2,.2],[392,.4,.2],[349,.6,.5]],'triangle',.12),
     toggle(){ muted=!muted; if(!muted){on(); API.click();} return muted; },
     get muted(){ return muted; },
-    /* looping victory-ish music used for the fake-out */
+     
     music(kind){
       API.musicOff();
       if(!on()) return;
@@ -1154,15 +1154,15 @@ const SFX = (() => {
   };
   return API;
 })();
-/* =====================================================================
-   ENGINE — data-driven node graph, scene renderer, QTE, saves
-   ===================================================================== */
+
+
+
 const GAME = (() => {
 const $  = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const SAVE_KEY = 'rook3bd.save.v2';
 
-/* ---------------- save ---------------- */
+ 
 const blank = () => ({endings:{m1:{},m2:{},m3:{}}, unlocked:{m1:true,m2:false,m3:false}, memory:{}, rel:{}});
 let save = blank();
 function load(){
@@ -1177,8 +1177,8 @@ function load(){
 function persist(){ try{ localStorage.setItem(SAVE_KEY, JSON.stringify(save)); }catch(e){} }
 function wipe(){ save = blank(); runtime.rel = {}; persist(); }
 
-/* ---------------- helpers ---------------- */
-const M = () => MISSIONS;                       // filled by story files
+ 
+const M = () => MISSIONS;                        
 const found = mid => Object.keys(save.endings[mid]||{}).length;
 const mainFound   = mid => Object.keys(save.endings[mid]||{}).filter(k=>k[0]==='E').length;
 const secretFound = mid => Object.keys(save.endings[mid]||{}).filter(k=>k[0]==='S').length;
@@ -1193,7 +1193,7 @@ function checkUnlock(){
   persist();
 }
 
-/* ---------------- screens ---------------- */
+ 
 let current='menu';
 function show(id){
   $$('.screen').forEach(s=>s.classList.toggle('on', s.id===id));
@@ -1207,7 +1207,7 @@ function toast(msg){
   $('.frame').appendChild(t); setTimeout(()=>t.remove(),2700);
 }
 
-/* ---------------- mission select ---------------- */
+ 
 function renderMissions(){
   const box = $('#missionList'); box.innerHTML='';
   let tf=0, tt=0;
@@ -1228,7 +1228,7 @@ function renderMissions(){
   $('#totalProg').textContent = `${tf} / ${tt} endings found`;
 }
 
-/* ---------------- collection ---------------- */
+ 
 let colTab='m1';
 function renderCollection(){
   const tabs=$('#colTabs'); tabs.innerHTML='';
@@ -1268,17 +1268,17 @@ function renderCollection(){
   $('#colProg').textContent = `${mainFound(colTab)} / ${NUMBERED} endings · ${secretFound(colTab)} / ${secretTotal(colTab)} secret`;
 }
 
-/* =====================================================================
-   STORY STATE — simple flags. runtime.flags reset each run;
-   save.memory persists across missions so callbacks can span the story.
-   ===================================================================== */
-/* ---------------------------------------------------------------
-   RELATIONSHIPS
-   Every recurring character carries a trust score and a set of marks
-   (things they personally remember). A state is derived from both, so
-   one character can travel Stranger → Friendly → Trusting → Betrayed
-   → Enemy inside a single mission, and carry it into the next one.
-   --------------------------------------------------------------- */
+
+
+
+
+
+
+
+
+
+
+
 const REL_STATES = ['Stranger','Suspicious','Angry','Betrayed','Enemy','Friendly','Helpful','Trusting','Bought','Greedy'];
 function relOf(id){ return runtime.rel[id] || (runtime.rel[id] = {t:0, m:{}, bribes:0}); }
 function relState(id){
@@ -1294,7 +1294,7 @@ function relState(id){
   if(r.t >= 2)                  return 'Friendly';
   return 'Stranger';
 }
-/* apply one or more relationship changes: {who, t, mark, bribe, say} */
+ 
 function applyRel(spec){
   if(!spec) return;
   [].concat(spec).forEach(o=>{
@@ -1326,7 +1326,7 @@ function stateLine(id, st){
     Greedy:    `${t} wants more.`
   })[st] || `${who.name} will remember that.`;
 }
-/* commit persistent characters when a run actually finishes */
+ 
 function commitRel(){
   Object.keys(runtime.rel).forEach(id=>{
     const c = (typeof CHARS!=='undefined' && CHARS[id]);
@@ -1342,11 +1342,11 @@ function seedRel(){
   });
 }
 
-/* condition strings understand plain flags plus relationship syntax:
-     "perch.helped"       a mark that character carries
-     "perch:Trusting"     exact state
-     "perch~Helpful|Trusting"  any of these states
-     "perch>=4" / "perch<=-3"  trust threshold                      */
+
+
+
+
+
 function has(f){
   if(typeof f !== 'string') return false;
   let mm;
@@ -1364,7 +1364,7 @@ function testCond(o){
   if(o.ifNot  &&  (Array.isArray(o.ifNot)  ? o.ifNot.some(has)   : has(o.ifNot)))  return false;
   return true;
 }
-/* a target may be a plain id, or a list of {if/ifNot, to} rules tried in order */
+ 
 function resolveTo(to){
   if(typeof to === 'string') return to;
   if(!Array.isArray(to)) return null;
@@ -1383,13 +1383,13 @@ function rememberBanner(text){
   setTimeout(()=>el.remove(), 3400);
 }
 
-/* =====================================================================
-   RUNTIME
-   ===================================================================== */
+
+
+
 const runtime = {active:false, mid:null, node:null, stack:[], lines:[], li:0, typing:false, flags:{}, rel:{}, endingKey:null, seq:0};
 
-/* a delayed navigation must not fire after the player has left the scene
-   (quit, restart, or jumped to another mission in the meantime) */
+
+
 function later(fn, ms){
   const s = ++runtime.seq;
   setTimeout(()=>{ if(runtime.seq===s && runtime.active) fn(); }, ms);
@@ -1404,7 +1404,7 @@ function startMission(mid, at){
   goto(at || M()[mid].start, true);
 }
 
-/* ---------- keep the whole scene on screen at any aspect ratio ---------- */
+ 
 function fitStage(){
   const w=$('#stageWrap'), svg=$('#stageSvg');
   if(!w||!svg) return;
@@ -1413,7 +1413,7 @@ function fitStage(){
 }
 window.addEventListener('resize', fitStage);
 
-/* ---------- scene rendering ---------- */
+ 
 function renderScene(sc){
   const wrap=$('#stageWrap');
   fitStage();
@@ -1424,9 +1424,9 @@ function renderScene(sc){
     const inner = ART.PROPS[p.p]||'';
     return `<g transform="translate(${p.x||0},${p.y||0}) scale(${p.s||1})" class="a-${p.anim||'none'}">${inner}</g>`;
   }).join('');
-  const CS = 0.80;                       // keeps a full cast clear of the choice panel
+  const CS = 0.80;                        
   $('#castLayer').innerHTML = (sc.cast||[]).map(c=>{
-    const base = c.v ? 1 : CS;                       // vehicles are already scene-scaled
+    const base = c.v ? 1 : CS;                        
     const sy=(c.s||1)*base, sx=sy*(c.flip?-1:1);
     const body = c.v ? ART.vehicleSVG(c.v, c.colour)
                      : ART.charSVG(c.c, c.pose||'stand', c.mood||'neutral', {hold:c.hold});
@@ -1458,11 +1458,11 @@ function confetti(){
   setTimeout(()=>{ c.innerHTML=''; }, 4200);
 }
 
-/* ---------- dialogue typewriter ---------- */
+ 
 let typeTimer=null;
 function playLines(lines, done){
-  /* the scene's "lines finished" handler must fire exactly once, however
-     many times the player mashes Enter at the end of the dialogue */
+  
+
   let fired=false;
   runtime.lines = lines||[]; runtime.li=0;
   runtime.onDone = ()=>{ if(fired) return; fired=true; done && done(); };
@@ -1502,7 +1502,7 @@ function advanceText(){
   runtime.li++; SFX.click(); nextLine();
 }
 
-/* ---------- node navigation ---------- */
+ 
 function goto(id, isStart){
   const m = M()[runtime.mid];
   id = resolveTo(id);
@@ -1556,7 +1556,7 @@ function keyChoice(n){
   if(els[n]) pick(els[n], runtime.pending[n], runtime.pending);
 }
 
-/* ---------- QTE ---------- */
+ 
 const qte = {on:false, need:0, hits:0, keys:[], expect:0, endAt:0, raf:null, cfg:null};
 const KEYLABEL = {' ':'SPACE', 'e':'E', 'x':'X', 'arrows':'← →'};
 function startQTE(cfg){
@@ -1601,7 +1601,7 @@ function endQTE(win){
   later(()=>goto(win?c.ok:c.bad), 300);
 }
 
-/* ---------- endings ---------- */
+ 
 function playEnding(key){
   const m=M()[runtime.mid], e=m.endings[key];
   runtime.endingKey=key;
@@ -1665,7 +1665,7 @@ function rewind(){
   startMission(runtime.mid);
 }
 
-/* ---------- input ---------- */
+ 
 document.addEventListener('keydown', ev=>{
   if(qte.on){ ev.preventDefault(); qteHit(ev.key); return; }
   if(current!=='game') return;
@@ -1673,7 +1673,7 @@ document.addEventListener('keydown', ev=>{
   if(runtime.pending && ['1','2','3','4','5','6'].includes(ev.key)){ keyChoice(+ev.key-1); return; }
   if(ev.key==='Enter'||ev.key===' '){ ev.preventDefault(); advanceText(); }
 });
-/* touch/mouse equivalent of mashing: tap the key itself */
+ 
 $('#qte').addEventListener('pointerdown', ev=>{
   if(!qte.on) return;
   ev.preventDefault();
@@ -1686,7 +1686,7 @@ $('#stageWrap').addEventListener('click', ev=>{
   advanceText();
 });
 
-/* ---------- menu art ---------- */
+ 
 function menuArt(){
   const g = (c,x,pose,mood,extra)=>`<g transform="translate(${x},250) scale(.62)">${ART.charSVG(c,pose,mood,extra||{})}</g>`;
   $('#menuArt').innerHTML =
@@ -1694,7 +1694,7 @@ function menuArt(){
     g('guard',560,'walk','flat',{hold:'baton'}) + g('sci',690,'stand','sly');
 }
 
-/* ---------- boot ---------- */
+ 
 function init(){
   load(); checkUnlock(); menuArt(); fitStage();
   $$('[data-go]').forEach(b=> b.onclick=()=>{ SFX.click(); show(b.dataset.go); });
@@ -1706,19 +1706,19 @@ function init(){
 return {init, show, startMission, get save(){return save;}, renderMissions,
         _debug:{goto, relState, get runtime(){return runtime;}}};
 })();
-/* =====================================================================
-   STORY DATA
-   node   = {bg, cast, props, fx, sfx, set, mem, lines, choices|qte|auto}
-   choice = {t, to, if, ifNot, set, mem, remember}
-   "to" may be an id, or [{if:'flag', to:'x'}, {to:'y'}] tried in order.
-   ending = {n, name, type, card, bg, cast, lines, advance}
-   ===================================================================== */
+
+
+
+
+
+
+
 const MISSIONS = {};
 
-/* =====================================================================
-   RECURRING CAST — characters who track a relationship with the player.
-   persist:true means the relationship survives into later missions.
-   ===================================================================== */
+
+
+
+
 const CHARS = {
   dee:     {name:'Dee',          they:'She', persist:true},
   brumble: {name:'Brumble',      they:'He',  persist:true},
@@ -1738,12 +1738,12 @@ const CHARS = {
   bev:     {name:'Bev',          they:'She'}
 };
 
-/* actor shorthand */
+ 
 function P(c,x,pose,mood,o){ return Object.assign({c,x,y:344,pose:pose||'stand',mood:mood||'neutral',s:1}, o||{}); }
-/* vehicle shorthand — used INSTEAD of a person whenever someone is riding */
+ 
 function V(v,x,o){ return Object.assign({v,x,y:360,s:1}, o||{}); }
 
-/* ============================== MISSION 1 ============================== */
+ 
 MISSIONS.m1 = {
 no:1, title:'ROB THE BANK', tagline:'Four ways in. Most of them end in handcuffs.',
 start:'s0',
@@ -1764,7 +1764,7 @@ s0:{ crumb:'Outside the bank', bg:'bankExt', sfx:'door',
     {t:'Disguise', to:'c1'},
     {t:'Getaway car', to:'d1'}]},
 
-/* =============== A · FRONT DOOR =============== */
+ 
 a1:{ crumb:'Front door', bg:'bankExt',
   cast:[P('rook',300,'stand','flat')],
   lines:[['Dee','Mask?'],['Rook','Mask.']],
@@ -2221,7 +2221,7 @@ a35b:{ crumb:'Vault', bg:'vaultOpen', fx:'shake',
     {t:'Drop some', to:'a4'},
     {t:'Carry it all', to:'E7'}]},
 
-/* =============== B · TUNNEL =============== */
+ 
 b1:{ crumb:'Sewer', bg:'sewer', sfx:'splash',
   cast:[P('rook',280,'walk','flat',{anim:'walkIn',hold:'torch'}), P('dee',500,'point','sly')],
   lines:[['Dee','Vault floor. Nine metres that way.'],['Rook','And the smell?'],['Dee','Free.']],
@@ -2390,7 +2390,7 @@ b11:{ crumb:'Sewer › Upstream', bg:'sewer',
     {t:'Keep going', to:'E10'},
     {t:'Turn around', to:'b10'}]},
 
-/* =============== C · DISGUISE =============== */
+ 
 c1:{ crumb:'Disguise', bg:'alley',
   cast:[P('rookSuit',300,'stand','smug',{anim:'pop'}), P('dee',520,'shrug','flat')],
   lines:[['Dee','Suit. Lanyard. Name tag.'],['Rook','Which name?'],['Dee','GREG. Or GREH.']],
@@ -2517,7 +2517,7 @@ cQ3:{ crumb:'Disguise › Forty bags', bg:'vault', fx:'shake',
   cast:[P('rookSuit',300,'aim','panic',{anim:'shiver'})],
   qte:{key:'x', hits:20, time:5200, ok:'c8', bad:'E13', title:'MASH X', sub:'Lift with the legs.'}},
 
-/* =============== D · GETAWAY CAR =============== */
+ 
 d1:{ crumb:'Getaway car', bg:'getawayCar',
   cast:[V('car',330), P('dee',620,'point','angry',{anim:'walkInR'})],
   lines:[['Dee','You rob the bank FIRST.'],['Rook','The getaway is my best bit.'],['Dee','You have nothing to get away with.'],['Rook','Details.']],
@@ -2716,7 +2716,7 @@ d9e:{ crumb:'Open road', bg:'alley',
     {t:'Drive it anyway', to:'dQ1'}]}
 },
 
-/* ============================ ENDINGS ============================ */
+ 
 endings:{
 
 E1:{n:1, name:'Revolved', type:'fail', bg:'bankExt', fx:'shake', sfx:'fail',
@@ -2799,7 +2799,7 @@ E16:{n:16, name:'Highway Sunset', type:'escape', bg:'street', fx:'confetti', sfx
   lines:[['','Two hundred kilometres. Something with a saxophone on the radio.'],['Rook','The getaway was the good part.'],['Dee','It is on record. A LOT of records.']],
   card:'A clean cinematic escape, undone by a toll camera two states over.', advance:'m2'},
 
-/* ---------- consequence endings (someone remembered) ---------- */
+ 
 E17:{n:17, name:'Paid In Full', type:'fail', bg:'street', sfx:'sad',
   cast:[P('rookMask',280,'stand','flat',{hold:'bag'}), P('cop',620,'stand','sad',{anim:'walkInR'})],
   lines:[['','Brumble lets you walk. He keeps the four hundred. Everybody wins.'],['','Eleven days later he buys a fridge with it.'],['','The notes are from the drawer you emptied. The serial numbers are on a list.'],['','They arrest him on Tuesday. He gives them your description on Tuesday afternoon, in some detail, because he is annoyed about the fridge.']],
@@ -2840,7 +2840,7 @@ E24:{n:24, name:'Greg Was Watching', type:'fail', bg:'bankExt', sfx:'sad',
   lines:[['','One sealed bag. Out the front. A colleague holds the door.'],['','That colleague is Greg.'],['Greg','Morning.'],['Rook','Morning.'],['','Greg spent four hours in a meeting room this morning explaining something he did not do.'],['','Greg has been looking at you all day, very carefully, from about nine feet away.'],['Greg','(into his phone) Yes. He is leaving now. Blue suit.']],
   card:'You blamed Greg at 9:40. Greg was still thinking about it at 4:15.', advance:'m2'},
 
-/* ---------- secret endings ---------- */
+ 
 S1:{name:'Broom Closet Fortune', type:'secret', bg:'dark', fx:'flash', sfx:'secret',
   cast:[P('rookMask',300,'stand','shock',{hold:'gold'})],
   lines:[['','It is a broom closet. Obviously it is a broom closet.'],['','Behind the brooms, in a gap in the brick, is a canvas sack from 1931.'],['','It is on no manifest. Nobody can report it stolen.'],['Rook','...Huh.']],
@@ -2862,7 +2862,7 @@ S4:{name:'Terms Agreed', type:'secret', bg:'getawayCar', sfx:'secret',
   lines:[['','Negotiations take forty minutes. You lose on nearly every point.'],['','The squirrel keeps the engine block. You keep the glovebox.'],['Brumble','Sir, is this your car?'],['Rook','It is complicated.']],
   card:'Arrested for loitering after losing a property dispute to a rodent.', advance:'m2'}
 }};
-/* ============================== MISSION 2 ============================== */
+ 
 MISSIONS.m2 = {
 no:2, title:'ESCAPE THE PRISON', tagline:'Meridian County Correctional. One way out is lying to you.',
 start:'s0',
@@ -2884,7 +2884,7 @@ s0:{ crumb:'Cell 14', bg:'cell', sfx:'door',
     {t:'Hide in a laundry cart', to:'c1'},
     {t:'Escape through the vent', to:'d1'}]},
 
-/* =============== A · TUNNEL =============== */
+ 
 a1:{ crumb:'Tunnel', bg:'cell',
   cast:[P('rookJump',280,'crawl','sly',{hold:'spoon'}), P('inmate',580,'stand','flat',{s:1.08})],
   lines:[['','You have a spoon. Four months of sharpening.'],['Big Nev','That is a spoon.'],['Rook','That is a SHOVEL.']],
@@ -3058,7 +3058,7 @@ a9d:{ crumb:'Tunnel › Nev', bg:'cell',
     {t:'Do the time', to:'S2'},
     {t:'Dig anyway', to:'a2'}]},
 
-/* =============== B · THE KEY =============== */
+ 
 b1:{ crumb:"The key", bg:'cellBlock',
   cast:[P('rookJump',260,'stand','sly'), P('guard',610,'walk','flat',{hold:'baton'})],
   lines:[['','Officer Perch does the 22:00 walk. Fourth double shift this week.'],['Dee','You need the staff corridor key.'],['Rook','Which one is that?'],['Dee','The one you take.']],
@@ -3297,7 +3297,7 @@ b12d:{ crumb:'Infirmary › The gap', bg:'yard',
     {t:'Go through anyway', to:'b13'},
     {t:'Turn around', to:'d8'}]},
 
-/* ---- the long walk (looks like a win) ---- */
+ 
 b13:{ crumb:'Outside', bg:'forest', music:'hero', sfx:'coin',
   cast:[P('rookJump',300,'run','happy',{anim:'runIn'})],
   lines:[['','Wet grass. No siren. No lights. No shouting.'],['','Just trees, and your own breathing, and a road four hundred metres ahead.']],
@@ -3310,7 +3310,7 @@ b14:{ crumb:'The road', bg:'street', music:'hero', fx:'confetti',
   lines:[['','Dee is there. The van is there. The door is already open.'],['Dee','ELEVEN MONTHS. Eleven months on this road.'],['Rook','I know. I know.'],['Dee','Get in. We did it. Rook — we actually did it.'],['','The sun comes up over the ridge.']],
   auto:'E8', wait:1200},
 
-/* =============== C · LAUNDRY =============== */
+ 
 c1:{ crumb:'Laundry', bg:'laundry', sfx:'step',
   cast:[P('rookJump',260,'sneak','sly'), P('janitor',630,'walk','flat',{hold:'mop'})],
   props:[{p:'cart',x:-40,y:0}],
@@ -3468,7 +3468,7 @@ c8t:{ crumb:'The dock › Twitch', bg:'laundry', fx:'flash',
   lines:[['Rook','TWITCH!'],['Twitch','ON IT.'],['','Twitch drops a forty-litre pot of custard down the dock stairs.']],
   auto:'E20', wait:900},
 
-/* =============== D · THE VENT =============== */
+ 
 d1:{ crumb:'The vent', bg:'cell',
   cast:[P('rookJump',280,'reach','sly')],
   props:[{p:'ventGrate',x:400,y:-60}],
@@ -3614,7 +3614,7 @@ d10b:{ crumb:'The ditch', bg:'forest',
     {t:'Go the other way', to:'E9'}]}
 },
 
-/* ============================ ENDINGS ============================ */
+ 
 endings:{
 
 E1:{n:1, name:'Solid Foundation', type:'fail', bg:'cell', fx:'shake', sfx:'fail',
@@ -3697,7 +3697,7 @@ E16:{n:16, name:"The Warden's Office", type:'fail', bg:'court', fx:'flash', sfx:
   lines:[['','Warden Sump is in his office at 02:00, because Warden Sump has nowhere else to be.'],['Warden Sump','Rook.'],['Rook','Warden.'],['Warden Sump','That is my floor.'],['Rook','It is a lovely floor.']],
   card:'Tunnelled eleven months into the one room that is always occupied.'},
 
-/* ---------- consequence endings (someone remembered) ---------- */
+ 
 E17:{n:17, name:'Perch Takes The Cash', type:'fail', bg:'prisonExt', sfx:'sad',
   cast:[P('rookJump',280,'walk','happy',{hold:'keycard'}), P('guard',630,'stand','sad')],
   lines:[['','Perch does not look up as you walk out. That was the deal.'],['','You get eleven days.'],['','Then somebody in payroll notices that an officer on a prison officer\'s wage has paid off a car in cash.'],['','Perch is interviewed on a Tuesday. Perch is not a criminal. Perch lasts about nine minutes.'],['Perch','(quietly, on the tape) His name is Rook.']],
@@ -3738,7 +3738,7 @@ E24:{n:24, name:'Perch Remembers', type:'fail', bg:'prisonExt', fx:'flash', sfx:
   lines:[['','The gate is nine metres away. The key works. The corridor was empty. It has all gone perfectly.'],['','Officer Perch is on the gate tonight.'],['Perch','Rook.'],['Rook','Perch.'],['Perch','You held a letter over me. About Priya. About the only thing I ever told anyone in here.'],['Rook','...That was weeks ago.'],['Perch','Yes.'],['','He does not raise his voice. He just closes the gate.']],
   card:'You threatened him over a letter weeks ago. He was on the gate tonight.'},
 
-/* ---------- secret endings ---------- */
+ 
 S1:{name:'The Tunnel Club', type:'secret', bg:'dark', sfx:'secret',
   cast:[P('inmate',240,'stand','happy',{s:1.05}), P('rookJump',420,'stand','shock'), P('inmate2',600,'sit','smug',{s:.95}), P('janitor',700,'stand','neutral',{s:.9})],
   lines:[['','Forty metres in, it opens into a room. Nine men. A kettle.'],['Twitch','Ah. New member.'],['Rook','How long has this been here?'],['Twitch','Nineteen years.'],['Rook','And nobody escaped?'],['Twitch','Escaped? Rook, we have a KETTLE.'],['','You are still down there four years later. You run the kettle rota.']],
@@ -3759,7 +3759,7 @@ S4:{name:'Honest Shift', type:'secret', bg:'laundry', sfx:'secret',
   lines:[['','You do one honest shift, out of an instinct you cannot explain.'],['','You are extremely good at laundry logistics. You cut the turnaround by nine percent.'],['','Thursday the contractor offers you a job. Friday payroll notices you are an inmate.'],['','Monday the warden approves a work-release placement.'],['Dee','You escaped prison by getting EMPLOYED?'],['Rook','I escaped prison by being AMAZING at laundry.']],
   card:'Left prison legally, on a Tuesday, with a lanyard and dental.', advance:'m3', mem:{memClean:1}}
 }};
-/* ============================== MISSION 3 ============================== */
+ 
 MISSIONS.m3 = {
 no:3, title:'INFILTRATE THE LAB', tagline:'Helion Labs. Four ways in, and something under a tarp.',
 start:'s0',
@@ -3782,7 +3782,7 @@ s0:{ crumb:'Outside Helion Labs', bg:'labExt', sfx:'door',
     {t:'Steal a scientist ID', to:'c1'},
     {t:'Break into the hangar', to:'d1'}]},
 
-/* =============== A · SECURITY =============== */
+ 
 a1:{ crumb:'Security', bg:'labExt',
   cast:[P('rook',260,'sneak','flat')], props:['camera','sign'],
   lines:[['','Twenty-two metres of gravel. Gravel is the loudest substance in the universe.']],
@@ -3947,7 +3947,7 @@ a6:{ crumb:'Inside', bg:'labHall', sfx:'open',
   lines:[['','White. Silent. Smells of ozone and instant soup.'],['Dee','Are you inside?'],['Rook','I am inside a secret laboratory.'],['Dee','Say it less happily.']],
   auto:'h1', wait:600},
 
-/* =============== B · VENT =============== */
+ 
 b1:{ crumb:'Ventilation', bg:'labExt',
   cast:[P('rook',280,'reach','sly')], props:[{p:'ventGrate',x:520,y:60}],
   lines:[['','The roof intake is a metre across and unlocked.'],['Dee','If you get stuck I am not coming in after you.'],['Rook','You would.'],['Dee','I would send someone.']],
@@ -4065,7 +4065,7 @@ b7d:{ crumb:'Vent › Watching', bg:'vent', set:{heardName:1},
   lines:[['Dr. Pip','...the one from the bank. Yes. Rook.'],['Rook','(That is my name.)'],['Rook','(Why is that my name in here.)']],
   auto:'h4', wait:900},
 
-/* =============== C · THE ID =============== */
+ 
 c1:{ crumb:'Scientist ID', bg:'labExt',
   cast:[P('rook',270,'sneak','sly'), P('sci',580,'walk','sleep',{anim:'walkInR'})],
   lines:[['','19:00. The car park empties in one wave. Forty lanyards. Zero awareness.']],
@@ -4230,7 +4230,7 @@ c9:{ crumb:'ID › Lab floor', bg:'labRoom', sfx:'open',
     {t:"To Pip's office", to:'h4'},
     {t:'To the lift', to:'h3'}]},
 
-/* =============== D · HANGAR =============== */
+ 
 d1:{ crumb:'The hangar', bg:'hangar',
   cast:[P('rook',260,'sneak','sly',{anim:'walkIn'})],
   lines:[['','Eighty metres of corrugated steel and a door big enough to embarrass a cathedral.']],
@@ -4324,7 +4324,7 @@ d7b:{ crumb:'Hangar › Tools', bg:'hangar',
     {t:'Take the crowbar', to:'h5', set:{tools:1}},
     {t:'Leave it', to:'d6'}]},
 
-/* =============== ACT TWO =============== */
+ 
 h1:{ crumb:'Inside Helion', bg:'labHall',
   cast:[P('rook',270,'sneak','sly'), P('sci2',650,'type','flat')],
   props:['camera','sign'],
@@ -4406,7 +4406,7 @@ h3g:{ crumb:'Sub-Level 4 › The door', bg:'server',
     {t:'Pay him too', to:'E21'},
     {t:'Walk past him', to:'h5'}]},
 
-/* Dennis's bribe comes back at the very end */
+ 
 
 h3b:{ crumb:'The staff lift', bg:'labHall',
   cast:[P('rook',290,'stand','happy'), P('guard',610,'stand','happy')],
@@ -4567,7 +4567,7 @@ h10c:{ crumb:'Launch bay › Fuelling', bg:'hangar', fx:'shake',
     {t:'Start it up', to:'E12'}]}
 },
 
-/* ============================ ENDINGS ============================ */
+ 
 endings:{
 
 E1:{n:1, name:'Motion Sensor', type:'fail', bg:'labExt', fx:['flash','alarm'], sfx:'alarm',
@@ -4650,7 +4650,7 @@ E16:{n:16, name:'Escape Velocity', type:'escape', bg:'beach', fx:'confetti', sfx
   lines:[['','Down the coast at four hundred metres. Past the estuary. Past the wind farm.'],['','Past the exact stretch of road where Dee waited eleven months.'],['','You put it down on wet sand at low tide and walk away without looking back.'],['Dee','Where is the aircraft, Rook.'],['Rook','What aircraft.'],['Dee','...Good answer.'],['','Helion Labs never reports it missing. You spend a long time wondering why.']],
   card:'You got out, with the vehicle and with the story. Nobody ever came looking.'},
 
-/* ---------- consequence endings (someone remembered) ---------- */
+ 
 E17:{n:17, name:'The Incident Log', type:'fail', bg:'beach', sfx:'sad',
   cast:[P('rook',280,'stand','flat'), P('dee',560,'stand','sad')],
   lines:[['','You put it down on wet sand at low tide and walk away. Clean. Perfect. Nobody saw anything.'],['','Except Dennis has to write an incident report, because a rocket is missing and he was on the lift that night.'],['','Dennis is an honest man who once took twenty pounds, and it has been eating him alive.'],['Dennis','(written, in biro, halfway down page two) I should also mention a man gave me some money.'],['','They find you in eleven days.']],
@@ -4691,7 +4691,7 @@ E24:{n:24, name:'Bell At The Gate', type:'fail', bg:'labExt', sfx:'sad',
   lines:[['','Out through the side door at 04:00 with a lab coat and everything you came for.'],['','Dr. Bell is in the car park at 04:00, because Dr. Bell has not slept properly since somebody ate his lunch.'],['Dr. Bell','You.'],['Rook','Morning.'],['Dr. Bell','It was a chicken and stuffing.'],['Rook','It was very good.'],['Dr. Bell','I KNOW IT WAS VERY GOOD.'],['','He does not tackle you. He just stands in front of the car and shouts until people come.']],
   card:'A man remembered his sandwich for nineteen hours and was awake in the car park because of it.'},
 
-/* ---------- secret & true endings ---------- */
+ 
 S1:{name:'The Coffee Machine', type:'secret', bg:'labHall', sfx:'secret',
   cast:[P('rook',290,'stand','happy'), P('sci2',570,'stand','happy'), P('pip',690,'stand','neutral')],
   lines:[['','The machine grinds. It knows things. It asks you, by name, whether you would like it strong.'],['Rook','...How does it know my name.'],['','Two scientists come in. Neither asks who you are, because you are holding a mug.'],['','Nobody in the history of laboratories has ever challenged a person holding a mug.'],['','You stay nine months. You are promoted twice. You never find out what is on sub-level four.']],
@@ -4712,7 +4712,7 @@ S4:{name:'Three Bad Decisions', type:'true', bg:'rocketPad', fx:['flash','confet
   lines:[['','You pull the tarp all the way off.'],['','Underneath is a small, blunt, beautifully made craft. Four seats. No markings. ROOK painted on the side in slightly crooked white letters.'],['Dr. Pip','(from the doorway) Eleven months.'],['Rook','You have been building it for—'],['Dr. Pip','Since the bank. We needed someone who would get through a fence, a prison and a locked hill without being told to.'],['Dr. Pip','You cannot advertise for that.'],['Dee','Rook. I TOLD you there was a facility.'],['Rook','You KNEW?'],['Dee','I have been parked outside it for six weeks. What did you think I was doing.'],['','A bank. A mascot. A squirrel. A pigeon. A woman called Enid with a brick in her handbag.'],['','All of it arriving, somehow, exactly here.'],['Dr. Pip','Well?'],['Rook','...Do I get to keep the coffee machine?'],['Dr. Pip','No.'],['Rook','Then this is my fourth bad decision.']],
   card:'THE TRUE ENDING. Three bad decisions, and one deliberate one. They built it for you, and they spelled your name right.'}
 }};
-/* ---------------------------- boot ---------------------------- */
+ 
 GAME.init();
 </script>
 </body>

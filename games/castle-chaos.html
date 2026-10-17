@@ -1,6 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script>
+window.CreatorDNA = Object.freeze({
+  creator: "Coolbros1418",
+  game: "Castle Chaos",
+  gameId: "castle-chaos",
+  originId: "CDNA-O-3QQ6F-7JT4F",
+  conceptId: "CDNA-C-7T0Y8-P1KAV",
+  version: "3.2.0",
+  conceptDate: "2026-09-06T21:52:25Z",
+  released: "2026-09-12T16:28:40Z",
+  fingerprint: "941ebe8fbc3762055e532faed213dc9a23a3745adb7d302b292110880b56fc7b",
+  signature: "KjysHkRbq//yK+gxTL8R1ZCdx4KIpkg1+0Z+NKCNReN4OMzbxYtgNSTc00NLUzT7UefIHrsj2ykj0zJH/9/aCQ==",
+  publicKeyId: "f4e07b5fe705eb901a670d5d3845f0b61f2b1ff6aa73145eeb18404aa2f664f0",
+  algorithm: "Ed25519 over the canonical record JSON; SHA-256 for the fingerprint",
+  verify: "Ed25519 signature over the canonical Creator DNA record; check it with the Coolbros1418 public key."
+});
+</script>
+
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Castle Chaos</title>
@@ -21,12 +39,12 @@ const clamp=(v,a,b)=>v<a?a:v>b?b:v,rnd=(a,b)=>a+Math.random()*(b-a),ri=(a,b)=>Ma
 const pick=a=>a[Math.floor(Math.random()*a.length)],lerp=(a,b,t)=>a+(b-a)*t;
 const hit=(a,b)=>a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y;
 
-/* ============ save ============ */
+ 
 const SV={m:{},get(k,d){try{const v=localStorage.getItem(k);return v==null?(this.m[k]??d):JSON.parse(v)}catch(e){return this.m[k]??d}},
  set(k,v){this.m[k]=v;try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
 let META=SV.get('cc_meta',{endings:[],best:null,runs:0});
 
-/* ============ audio ============ */
+ 
 let AC=null,musicOn=true,musT=0,musStep=0;
 const ac=()=>{if(!AC){try{AC=new (window.AudioContext||window.webkitAudioContext)()}catch(e){}}return AC};
 function tone(f,d,type,v,f2,delay){const a=ac();if(!a)return;
@@ -74,7 +92,7 @@ function music(dt,mood){
   if(mood==='boss'&&musStep%2===1)noise(.05,.02,220);
 }
 
-/* ============ input ============ */
+ 
 const K={};let press={};
 const KEYMAP={ArrowLeft:'l',KeyA:'l',ArrowRight:'r',KeyD:'r',ArrowUp:'u',KeyW:'u',ArrowDown:'d',KeyS:'d',
  Space:'jump',KeyJ:'atk',KeyZ:'atk',KeyE:'use',ShiftLeft:'dash',ShiftRight:'dash',
@@ -86,8 +104,8 @@ addEventListener('keydown',e=>{
 addEventListener('keyup',e=>{const k=KEYMAP[e.code];if(k)K[k]=0});
 CV.addEventListener('pointerdown',()=>{ac();press.start=true});
 
-/* ============ world ============ */
-// tiles: 0 air 1 stone 3 oneway 4 spike 5 water 6 breakable 7 fake 8 reinforced
+ 
+ 
 const MW=320,MH=178;
 let T=new Uint8Array(MW*MH);
 const tid=(x,y)=>(x<0||y<0||x>=MW||y>=MH)?1:T[y*MW+x];
@@ -143,94 +161,94 @@ const spikes=(x,y,w)=>{for(let i=0;i<w;i++)setT(x+i,y,4)};
 
 function buildWorld(){
   T=new Uint8Array(MW*MH).fill(1);
-  // GATE
+   
   carve(1,80,29,12);plat(6,86,5);plat(14,83,6);plat(22,86,5);
-  // shaft up from gate (hidden behind a fake ceiling) -> archery yard
+   
   carve(2,72,6,9);fill(2,71,6,1,7);plat(2,79,4);plat(4,76,4);
-  // ARCHERY YARD (secret)
+   
   carve(1,58,24,13);plat(6,66,4);plat(12,63,4);plat(18,61,4);
-  // COURTYARD
+   
   carve(30,62,35,30);plat(33,86,6);plat(42,81,7);plat(52,76,7);plat(38,70,6);plat(50,66,7);plat(58,71,6);
-  carve(28,86,4,6);                       // gate <-> courtyard
-  carve(63,72,5,7);fill(63,79,5,1,1);     // courtyard -> hall (with floor)
-  carve(46,92,4,6);fill(46,92,4,1,6);plat(46,97,3);  // well (breakable) <-> dungeon
-  // GREAT HALL
+  carve(28,86,4,6);                        
+  carve(63,72,5,7);fill(63,79,5,1,1);      
+  carve(46,92,4,6);fill(46,92,4,1,6);plat(46,97,3);   
+   
   carve(66,58,43,25);plat(70,76,8);plat(82,72,9);plat(95,76,8);plat(88,66,8);plat(74,64,7);plat(100,68,6);
-  carve(104,71,9,5);fill(103,76,7,1,1);   // hall -> library walkway
-  carve(72,83,3,16);plat(72,95,2);plat(73,91,2);plat(72,87,2);  // hall hatch <-> dungeon
-  carve(103,80,94,3);                     // long low corridor: hall -> tower base
-  // LIBRARY
+  carve(104,71,9,5);fill(103,76,7,1,1);    
+  carve(72,83,3,16);plat(72,95,2);plat(73,91,2);plat(72,87,2);   
+  carve(103,80,94,3);                      
+   
   carve(110,48,33,28);plat(114,70,8);plat(126,66,9);plat(114,60,8);plat(128,56,9);plat(118,52,6);
-  fill(136,66,3,10,6);carve(139,66,4,10);plat(139,72,4);plat(139,68,4);   // breakable bookcase -> hidden stair
-  carve(143,68,3,8);                      // library -> armory (iron door sits here)
-  carve(120,44,4,6);                      // library -> rooftops
-  // ARMORY
+  fill(136,66,3,10,6);carve(139,66,4,10);plat(139,72,4);plat(139,68,4);    
+  carve(143,68,3,8);                       
+  carve(120,44,4,6);                       
+   
   carve(146,52,22,20);plat(150,66,6);plat(158,62,7);plat(150,58,6);
-  carve(168,66,4,7);                      // armory -> kitchen
-  // KITCHEN
+  carve(168,66,4,7);                       
+   
   carve(172,54,22,18);plat(176,66,7);plat(185,62,6);plat(176,58,6);
-  carve(194,66,4,7);                      // kitchen -> tower (brass door sits here)
-  // ROYAL TOWER
+  carve(194,66,4,7);                       
+   
   carve(198,8,20,77);
   for(let i=0;i<17;i++){const y=80-i*4;plat(i%2?200:210,y,7)}
   carve(196,80,4,4);
-  carve(194,20,5,5);                      // tower -> rooftops
-  carve(218,14,4,7);                      // tower -> throne
-  // THRONE
+  carve(194,20,5,5);                       
+  carve(218,14,4,7);                       
+   
   carve(222,8,26,16);plat(226,18,6);plat(240,18,6);
-  // ROOFTOPS
+   
   carve(122,12,74,12);
   for(let i=0;i<8;i++)plat(126+i*8,18-((i%3)*3),5);
-  carve(120,20,4,26);                     // roof <-> library top
-  // DUNGEONS
+  carve(120,20,4,26);                      
+   
   carve(38,98,62,16);plat(44,108,7);plat(56,104,8);plat(70,108,7);plat(84,104,8);plat(45,103,5);plat(66,103,5);plat(66,99,5);
   spikes(64,113,4);fill(52,110,3,4,6);
-  carve(40,114,4,6);                      // dungeon -> sewers
-  fill(100,108,4,6,8);carve(104,108,42,6);// reinforced wall -> speedway (heavy strike)
-  // SEWERS
+  carve(40,114,4,6);                       
+  fill(100,108,4,6,8);carve(104,108,42,6); 
+   
   carve(26,118,84,16);fill(60,130,22,4,5);
   plat(32,128,8);plat(46,124,8);plat(66,124,8);plat(84,128,8);plat(96,124,8);plat(36,124,6);plat(38,120,5);
   spikes(90,133,4);
-  carve(20,124,6,8);fill(25,124,1,8,7);   // fake wall -> garage
-  fill(66,134,3,1,6);carve(64,135,6,3);plat(66,137,3);  // breakable sewer floor -> drain bowl
-  carve(110,120,4,7);                     // sewers -> quiet room
-  // GARAGE
+  carve(20,124,6,8);fill(25,124,1,8,7);    
+  fill(66,134,3,1,6);carve(64,135,6,3);plat(66,137,3);   
+  carve(110,120,4,7);                      
+   
   carve(4,118,18,12);plat(8,126,6);
-  // DRAIN BOWL
+   
   carve(60,138,26,9);plat(64,144,5);plat(76,142,5);plat(66,141,4);
-  // SPEEDWAY
+   
   carve(146,104,34,10);plat(154,110,6);plat(168,110,6);
-  // QUIET ROOM
+   
   carve(114,120,24,10);plat(120,126,5);plat(130,126,5);
-  // SIGNAL ARENA
+   
   carve(142,116,26,14);plat(146,124,6);plat(158,124,6);
-  // ---------- SCRIPTORIUM (above the library, off the roof shaft) ----------
+   
   carve(112,32,30,14);plat(116,44,8);plat(128,40,8);plat(116,36,8);
-  // ---------- GREENHOUSE (above the kitchen) ----------
+   
   carve(170,36,28,14);plat(174,46,7);plat(184,42,7);plat(174,40,6);
-  carve(176,50,4,6);                       // kitchen -> greenhouse shaft
+  carve(176,50,4,6);                        
   plat(176,54,4);
-  // ---------- BELL TOWER (right of the throne) ----------
+   
   carve(250,8,22,22);plat(254,24,7);plat(262,20,7);plat(254,16,7);
-  carve(246,16,6,6);                       // throne -> bell tower
-  // ---------- UNDERCROFT (under the tower base) ----------
+  carve(246,16,6,6);                        
+   
   carve(198,86,40,20);plat(202,100,8);plat(214,96,8);plat(226,100,8);plat(206,92,8);plat(200,95,4);plat(200,90,4);
-  carve(200,85,4,4);                       // tower base -> undercroft
-  // ---------- CATACOMBS ----------
+  carve(200,85,4,4);                        
+   
   carve(180,110,58,20);plat(186,124,8);plat(200,120,8);plat(214,124,8);plat(226,118,8);
   spikes(206,129,4);
-  fill(210,106,4,4,8);carve(210,106,4,0);  // reinforced floor: undercroft -> catacombs (heavy strike)
-  carve(178,128,6,7);                      // catacombs -> lower tunnel
-  carve(110,131,72,4);                     // long tunnel: sewers <-> catacombs
-  // ---------- CISTERN (below the sewers, beside the drain bowl) ----------
+  fill(210,106,4,4,8);carve(210,106,4,0);   
+  carve(178,128,6,7);                       
+  carve(110,131,72,4);                      
+   
   carve(28,140,30,14);plat(32,150,8);plat(44,146,8);plat(32,144,7);plat(52,145,5);
-  carve(56,142,6,4);                       // cistern <-> drain bowl
-  // THE LONG HALLWAY (only reachable through the portal)
+  carve(56,142,6,4);                        
+   
   carve(276,158,42,14);
-  carve(138,124,5,6);                     // quiet room -> signal (rune door)
+  carve(138,124,5,6);                      
 }
 
-/* ============ spawn data ============ */
+ 
 const SPAWNS=[
 ['lore',22,91,'THE MASON WAS PAID FOR TWENTY WALLS. HE BUILT NINETEEN.'],
  ['sign',4,91,'ARROWS/AD MOVE   SPACE JUMP (hold = higher)   J ATTACK   CTRL SNEAK   E USE   TAB MAP'],
@@ -331,7 +349,7 @@ const PROPW={sign:[46,40],lore:[26,26],torch:[14,26],brazier:[24,30],crate:[30,3
  ability_bow:[30,30],quiver:[20,26],spentarrow:[18,8],
  door_iron:[26,120],door_brass:[26,120],shrine:[28,34],monolith:[40,110],backportal:[60,90]};
 
-/* ============ state ============ */
+ 
 let S,P,ents,parts,props,rings,cam,shake,hitstop,msg,msgT,state,fade,fadeTo,timeT,popups,banner,bannerT,curArea,explored,bossBar,ending;
 const flash={t:0,c:'#fff'};
 
@@ -372,7 +390,7 @@ function spawnEnemy(t,px,py){
   ents.push(e);return e;
 }
 
-/* ============ collision ============ */
+ 
 function tileSolidRect(b,wantOneway){
   const x0=Math.floor(b.x/TS),x1=Math.floor((b.x+b.w-.01)/TS);
   const y0=Math.floor(b.y/TS),y1=Math.floor((b.y+b.h-.01)/TS);
@@ -404,7 +422,7 @@ function moveBody(e,dx,dy,isPlayer){
   e.x=clamp(e.x,0,MW*TS-e.w);
 }
 
-/* ============ player ============ */
+ 
 function updPlayer(dt){
   if(P.dead)return;
   P.crouch=!!K.sneak&&P.onGround&&P.atk<=0&&P.draw<=0;
@@ -431,7 +449,7 @@ function updPlayer(dt){
   moveBody(P,P.vx*dt,0,true);moveBody(P,0,P.vy*dt,true);
   if(P.onGround){
     if(!wasG&&P.vy>=0){SFX.land();
-      // a crouched landing is a soft one
+       
       if(!K.sneak)noiseAt(P.x+11,P.y+34,P.vy>500?600:400,P.vy>500?.42:.22);
       else if(P.vy>600)noiseAt(P.x+11,P.y+34,260,.12);
       if(P.vy>500)for(let i=0;i<5;i++)parts.push({x:P.x+11,y:P.y+34,vx:rnd(-70,70),vy:rnd(-40,0),life:.3,t:0,c:'#bbb',s:2})}
@@ -447,14 +465,14 @@ function updPlayer(dt){
   }
   if(inWater){P.vy=Math.min(P.vy,140);P.vx*=.95}
   if(P.y>MH*TS+200)respawn(true);
-  // footstep noise: sprinting carries, walking carries less, crouching is silent
+   
   P.nz=Math.max(0,P.nz-dt);
   if(P.onGround&&Math.abs(P.vx)>60&&P.nz<=0&&!K.sneak){
     const fast=Math.abs(P.vx)>300;
     P.nz=fast?.2:.3;
     noiseAt(P.x+11,P.y+34,fast?560:360,fast?.26:.14);
   }
-  // weapons
+   
   P.atkCD=Math.max(0,P.atkCD-dt);P.comboT=Math.max(0,P.comboT-dt);if(P.comboT<=0)P.combo=0;
   P.bowCD=Math.max(0,P.bowCD-dt);
   if(press.swap&&S.abil.bow){S.weapon=S.weapon==='bow'?'sword':'bow';P.draw=0;SFX.pick();
@@ -491,7 +509,7 @@ function updPlayer(dt){
   }
   P.inv=Math.max(0,P.inv-dt);P.hurtT=Math.max(0,(P.hurtT||0)-dt);
   P.anim+=dt*(Math.abs(P.vx)>20?10:4);
-  // arrows and quivers are picked up by walking over them
+   
   for(const o of props){
     if(o.t!=='spentarrow'&&o.t!=='quiver')continue;
     if(!hit({x:P.x-12,y:P.y-12,w:P.w+24,h:P.h+24},o))continue;
@@ -543,15 +561,15 @@ function addChaos(n){
     for(let i=0;i<6;i++){const a=pick(AREAS.filter(a=>a.mood!=='secret'&&a.mood!=='boss'));
       const e=spawnEnemy(i%2?'archer':'grunt',(a.x+ri(3,a.w-4))*TS,(a.y+a.h-3)*TS);if(e)e.alarm=1}}
 }
-/* ============ sound: what the blind things hear ============ */
-// a straight line of stone muffles a sound but never blocks it completely
+ 
+ 
 function muffle(x1,y1,x2,y2){
   const d=Math.hypot(x2-x1,y2-y1),st=Math.max(1,Math.round(d/14));let solid=0;
   for(let i=1;i<st;i++){const t=i/st;
     if(isSolid(tid(Math.floor((x1+(x2-x1)*t)/TS),Math.floor((y1+(y2-y1)*t)/TS))))solid++}
   return 1/(1+solid*.5);
 }
-// every loud thing the player does goes through here
+ 
 function noiseAt(x,y,r,gain,quiet){
   if(!quiet)rings.push({x,y,r:0,max:r,life:.5,t:0});
   for(const e of ents){
@@ -712,7 +730,7 @@ function loadGame(){
   return true;
 }
 
-/* ============ enemies ============ */
+ 
 function updEnemy(e,dt){
   if(e.dead)return;
   e.anim+=dt*8;e.flash=Math.max(0,e.flash-dt);e.cd=Math.max(0,e.cd-dt);
@@ -773,12 +791,12 @@ function updEnemy(e,dt){
      else e.vx=lerp(e.vx,e.face*e.sp*.7,dt*4);
      break}
    case 'warden':{
-     // BLIND. it has no eyes at all: everything it knows, it heard.
+      
      if(e.alert==null){e.alert=0;e.press=0;e.recover=0;e.tele=0;e.mode=0;
        e.heard=null;e.track=0;e.hunt=false;e.calmT=0;e.sweep=0}
      e.recover=Math.max(0,e.recover-dt);e.vuln=e.recover>0;
      e.track=Math.max(0,e.track-dt);
-     // hearing fades, but not instantly: a sound hangs in its head for a moment
+      
      e.calmT=Math.max(0,(e.calmT||0)-dt);
      if(e.calmT<=0)e.alert=clamp(e.alert-dt*(e.hunt?.1:.16),0,1);
      if(e.hunt&&e.alert<.45&&e.track<=0){e.hunt=false;e.mode=0;e.tele=0;e.press=0;
@@ -786,7 +804,7 @@ function updEnemy(e,dt){
      if(e.hunt&&!e.aggro){e.aggro=true;SFX.hunt();shake=Math.max(shake,8);
        if(!S.flags.wardenHunt){S.flags.wardenHunt=1;showMsg('IT HEARD THAT.',2.6)}}
      if(!e.hunt&&e.aggro&&e.alert<.2){e.aggro=false;if(bossBar&&bossBar.e===e)bossBar=null}
-     // where it believes the noise came from
+      
      let tgt=null;
      if(e.hunt)tgt=e.track>0?{x:px,y:py}:(e.heard||null);
      else if(e.alert>.2)tgt=e.heard;
@@ -804,12 +822,12 @@ function updEnemy(e,dt){
            else if(near<620){e.mode=2;e.tele=.7;e.vx=0;tone(90,.6,'sawtooth',.05,55)}
          }
        } else if(e.alert>.2&&tgt){
-         // walk to the noise and search around it — never attacks in this state
+          
          if(Math.abs(hx)>34){e.vx=lerp(e.vx,e.face*e.sp*.62,dt*3);e.sweep=0}
          else{e.vx*=.82;e.sweep+=dt;
            if(e.sweep>1.1){e.sweep=0;e.face*=-1;tone(150,.18,'sine',.03,110)}}
        } else {
-         // calm: drifts back to its post, hears everything, attacks nothing
+          
          const hb=e.home.x-(e.x+e.w/2);
          if(Math.abs(hb)>40){e.face=hb>0?1:-1;e.vx=lerp(e.vx,e.face*e.sp*.4,dt*2)}
          else e.vx*=.86;
@@ -830,7 +848,7 @@ function updEnemy(e,dt){
          e.mode=0;e.cd=1.7;e.recover=1.25;e.press=0;
        }
      }
-     // leash: never let it get stuck far from its post
+      
      if(Math.hypot(e.x-e.home.x,e.y-e.home.y)>900){e.x=e.home.x-e.w/2;e.y=e.home.y-e.h;e.vx=0;e.mode=0;e.tele=0;
        e.hunt=false;e.alert=Math.min(e.alert,.3);e.track=0}
      break}
@@ -838,7 +856,7 @@ function updEnemy(e,dt){
      e.life-=dt;e.anim+=dt;e.x+=e.vx*dt;
      const probe={x:e.x+(e.vx>0?e.w-6:0),y:e.y+6,w:6,h:e.h-8};
      if(e.life<=0||tileSolidRect(probe))e.dead=true;
-     // ride the floor: sink/rise with the ground so it hugs terrain
+      
      const below={x:e.x+8,y:e.y+e.h,w:e.w-16,h:6};
      if(!tileSolidRect(below,true)&&e.y<MH*TS-200)e.y+=190*dt;
      const up={x:e.x+8,y:e.y+e.h-14,w:e.w-16,h:8};
@@ -859,7 +877,7 @@ function updEnemy(e,dt){
      if(e.life<=0){e.dead=true;return}
      if(tileSolidRect(e)){
        e.dead=true;SFX.stick();boom(e.x,e.y,4,'#cdbf9a',90);
-       // the sound of an arrow landing is somewhere ELSE — use it
+        
        noiseAt(e.x,e.y,540,.45);
        const d=PROPW.spentarrow;
        props.push({t:'spentarrow',key:null,x:e.x-d[0]/2,y:e.y-d[1]/2,w:d[0],h:d[1],life:26});
@@ -892,7 +910,7 @@ function updEnemy(e,dt){
   else if(bossBar&&bossBar.e===e&&(e.dead||Math.hypot((P.x-e.x),(P.y-e.y))>900))bossBar=null;
 }
 
-/* ============ endings ============ */
+ 
 function endGame(kind){
   let id,title,text;
   const secrets=Object.keys(S.flags).filter(f=>f.startsWith('seen_')).length;
@@ -913,7 +931,7 @@ function endGame(kind){
   SV.set('cc_meta',META);SV.set('cc_run',null);
 }
 
-/* ============ drawing ============ */
+ 
 function rect(x,y,w,h,c){X.fillStyle=c;X.fillRect(x|0,y|0,Math.ceil(w),Math.ceil(h))}
 function txt(t,x,y,s,c,al,w){X.fillStyle=c;X.font=(w||700)+' '+s+'px ui-monospace,monospace';X.textAlign=al||'left';X.fillText(t,x|0,y|0)}
 function glyph(cx,cy,r,c){
@@ -1155,30 +1173,30 @@ function drawEnemy(e){
     const g=X.createRadialGradient(x+e.w/2,y+22,0,x+e.w/2,y+22,70+al*40);
     g.addColorStop(0,'rgba(124,224,214,'+(.10+al*.22)+')');g.addColorStop(1,'rgba(124,224,214,0)');
     X.fillStyle=g;X.beginPath();X.arc(x+e.w/2,y+22,70+al*40,0,7);X.fill();X.restore();
-    // legs
+     
     const sw2=Math.abs(e.vx)>10?Math.sin(e.anim*.8)*5:0;
     X.strokeStyle='#16262b';X.lineWidth=7;X.lineCap='round';
     X.beginPath();X.moveTo(x+e.w*.34,y+e.h-20);X.lineTo(x+e.w*.34+sw2,y+e.h);
     X.moveTo(x+e.w*.66,y+e.h-20);X.lineTo(x+e.w*.66-sw2,y+e.h);X.stroke();
-    // torso
+     
     X.fillStyle=e.flash>0?'#fff':'#243a41';
     X.beginPath();X.moveTo(x+4,y+14);X.lineTo(x+e.w-4,y+14);X.lineTo(x+e.w-9,y+e.h-18);X.lineTo(x+9,y+e.h-18);X.closePath();X.fill();
-    // ribs
+     
     X.strokeStyle='rgba(124,224,214,.25)';X.lineWidth=2;
     for(let i=0;i<4;i++){X.beginPath();X.moveTo(x+8,y+24+i*8);X.lineTo(x+e.w-8,y+24+i*8);X.stroke()}
-    // arms
+     
     X.strokeStyle='#1c2f35';X.lineWidth=8;
     const rea=(e.mode===1?.9:0)*(1-clamp(e.tele/.55,0,1));
     X.beginPath();X.moveTo(x+6,y+20);X.lineTo(x-6-rea*14,y+e.h-6);
     X.moveTo(x+e.w-6,y+20);X.lineTo(x+e.w+6+rea*14,y+e.h-6);X.stroke();X.lineWidth=1;
-    // head
+     
     X.fillStyle='#1b2c31';X.beginPath();X.ellipse(x+e.w/2,y+8,12,10,0,0,7);X.fill();
-    // core
+     
     const pulse=1+Math.sin(timeT*(4+al*8))*.18;
     X.save();X.globalCompositeOperation='lighter';
     X.fillStyle=core;X.beginPath();X.arc(x+e.w/2,y+30,6*pulse,0,7);X.fill();
     X.globalAlpha=.5;X.beginPath();X.arc(x+e.w/2,y+30,13*pulse,0,7);X.fill();X.restore();
-    // telegraphs
+     
     if(e.mode&&e.tele>0){
       const k=1-clamp(e.tele/(e.mode===1?.55:e.mode===3?.5:.7),0,1);
       X.strokeStyle='rgba(255,120,120,'+(.35+k*.5)+')';X.lineWidth=3;
@@ -1188,7 +1206,7 @@ function drawEnemy(e){
         X.beginPath();X.moveTo(x-140*k,y+e.h-8);X.lineTo(x+e.w+140*k,y+e.h-8);X.stroke()}
       X.lineWidth=1;
     }
-    // it has no eyes — draw what it is doing with its ears instead
+     
     if(e.hunt){txt('!',x+e.w/2,y-12,18,'#e0364c','center',900);
       X.strokeStyle='rgba(224,54,76,.45)';X.lineWidth=2;
       X.beginPath();X.arc(x+e.w/2,y+20,30+Math.sin(timeT*9)*4,0,7);X.stroke();X.lineWidth=1}
@@ -1197,7 +1215,7 @@ function drawEnemy(e){
       X.strokeStyle='rgba(255,220,160,'+(.14+al*.4).toFixed(2)+')';X.lineWidth=2;
       X.beginPath();X.arc(x+e.w/2,y+20,18+al*44,-2.4,-.74);X.stroke();
       X.beginPath();X.arc(x+e.w/2,y+20,18+al*44,.74,2.4);X.stroke();X.lineWidth=1}
-    // where it thinks the sound came from
+     
     if(e.heard&&!e.hunt&&al>.2){
       X.strokeStyle='rgba(255,220,160,.3)';X.lineWidth=1.5;
       X.beginPath();X.arc(e.heard.x,e.heard.y,7+Math.sin(timeT*5)*2,0,7);X.stroke();X.lineWidth=1}
@@ -1234,7 +1252,7 @@ function drawEnemy(e){
     glyph(x+e.w/2,y+e.h/2,15,'#bffcf6')}
 }
 
-/* ============ UI ============ */
+ 
 function heartIcon(x,y,fillAmt){
   X.fillStyle=fillAmt>0?'#e0364c':'#3a2028';
   X.beginPath();X.arc(x+5,y+5,5,0,7);X.arc(x+13,y+5,5,0,7);
@@ -1259,7 +1277,7 @@ function ui(){
   if(S.abil.board){txt('BOARD(SHIFT)',ix,H-18,10,'#f9a');ix+=96}
   if(S.abil.bow){txt(S.weapon==='bow'?('BOW  '+S.arrows):'SWORD (Q)',ix,H-18,10,S.weapon==='bow'?'#e6dcc0':'#c9ccd4')}
   if(P.crouch)txt('QUIET',W/2,H-92,10,'rgba(124,224,214,.75)','center',800);
-  {// what the blind thing below can hear of you
+  { 
    let wd=null,bd=1400;
    for(const e of ents)if(e.ai==='warden'&&!e.dead){
      const d=Math.hypot(e.x-P.x,e.y-P.y);if(d<bd){bd=d;wd=e}}
@@ -1316,7 +1334,7 @@ function drawMiniMap(){
     const a=areaAt((cx*8+4)*TS,(cy*8+4)*TS),pl=PAL[a.pal];
     X.fillStyle=a.mood==='secret'?'#1d5a58':a.mood==='boss'?'#5a2030':pl.t1;
     X.fillRect(mx+c*CW,my+r*CW,CW-1,CW-1);
-    // connection ticks: draw a lighter edge where a neighbouring cell is also explored
+     
     X.fillStyle='rgba(255,255,255,.14)';
     if(explored[cy+'_'+(cx+1)])X.fillRect(mx+c*CW+CW-1,my+r*CW+2,1,CW-5);
     if(explored[(cy+1)+'_'+cx])X.fillRect(mx+c*CW+2,my+r*CW+CW-1,CW-5,1);
@@ -1441,7 +1459,7 @@ function drawEnding(){
   const cd=CARD[ending.id]||CARD.crown;
   const g=X.createLinearGradient(0,0,W,H);g.addColorStop(0,cd.c1);g.addColorStop(1,'#05070c');
   X.fillStyle=g;X.fillRect(0,0,W,H);
-  // comic burst
+   
   X.save();X.translate(W/2,214);
   X.fillStyle='rgba(255,255,255,.06)';
   for(let i=0;i<16;i++){const a=i/16*6.28+timeT*.15;
@@ -1449,7 +1467,7 @@ function drawEnding(){
     X.lineTo(Math.cos(a+.16)*520,Math.sin(a+.16)*520);X.fill()}
   X.restore();
   drawCardArt(cd.art,W/2,206);
-  // big ridiculous title
+   
   X.save();X.translate(W/2,H-186);X.rotate(-.03);
   X.font='900 40px ui-monospace,monospace';X.textAlign='center';
   const tw=X.measureText(cd.big).width;
@@ -1469,7 +1487,7 @@ function drawEnding(){
   txt('ENTER — NEW RUN',W/2,H-10,14,Math.sin(timeT*4)>0?'#ffe9a8':'rgba(255,233,168,.4)','center',900);
 }
 
-/* ============ opening cutscene ============ */
+ 
 const INTRO=[
  {d:3.0,art:'castle',t:['A LETTER CAME FROM THE CASTLE.']},
  {d:3.2,art:'letter',t:['IT SAID: COME AT ONCE.','IT DID NOT SAY WHY.']},
@@ -1543,7 +1561,7 @@ function drawIntro(){
   txt('SPACE — SKIP',W/2,H-24,11,'rgba(255,255,255,.35)','center',700);
 }
 
-/* ============ loop ============ */
+ 
 let last=performance.now();
 state='title';cam={x:0,y:0};timeT=0;
 newGame();state='title';

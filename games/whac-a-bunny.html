@@ -6,9 +6,9 @@
 <title>Whac-A-Bunny</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='26' font-size='26'>%F0%9F%90%B0</text></svg>">
 
-<!-- ============================================================
-     STYLES
-     ============================================================ -->
+
+
+
 <style>
   :root {
     --sky: #aee7ff;
@@ -40,7 +40,7 @@
     overflow: hidden;
   }
 
-  /* ---------- HUD ---------- */
+   
   #hud {
     display: flex;
     gap: 16px;
@@ -76,12 +76,12 @@
   }
   #sound-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--dirt-dark); }
 
-  /* ---------- GAME BOARD ---------- */
+   
   #game {
     position: relative;
     width: min(92vw, 66vh, 560px);
     aspect-ratio: 1;
-    cursor: none; /* replaced by hammer cursor */
+    cursor: none;  
   }
 
   #grid {
@@ -100,7 +100,7 @@
     justify-content: center;
   }
 
-  /* dark hole opening (BEHIND the bunny) */
+   
   .hole {
     position: absolute;
     bottom: 0;
@@ -111,7 +111,7 @@
     z-index: 1;
   }
 
-  /* front lip of the hole (IN FRONT of the bunny) — lower half only */
+   
   .hole-front {
     position: absolute;
     bottom: 0;
@@ -124,7 +124,7 @@
     z-index: 3;
   }
 
-  /* grass tufts on mound edge */
+   
   .hole::before, .hole::after {
     content: "";
     position: absolute;
@@ -137,7 +137,7 @@
   .hole::before { left: 8%; }
   .hole::after  { right: 8%; transform: scaleX(-1); }
 
-  /* clipping window so bunny rises out of the hole's opening */
+   
   .bunny-window {
     position: absolute;
     bottom: 19%;
@@ -155,13 +155,13 @@
     left: 50%;
     width: 78%;
     transform: translateX(-50%) translateY(105%);
-    transition: transform .18s cubic-bezier(.34,1.56,.64,1); /* springy pop */
+    transition: transform .18s cubic-bezier(.34,1.56,.64,1);  
     pointer-events: none;
   }
   .bunny.up   { transform: translateX(-50%) translateY(0); }
   .bunny.bonk { transform: translateX(-50%) translateY(30%) scaleY(.75); transition: transform .1s ease-in; }
 
-  /* hit star burst */
+   
   .burst {
     position: absolute;
     left: 50%;
@@ -178,7 +178,7 @@
     100% { transform: translate(-50%,-50%) scale(1.4) rotate(40deg); opacity: 0; }
   }
 
-  /* floating +1 */
+   
   .plus-one {
     position: absolute;
     left: 50%;
@@ -198,7 +198,7 @@
     100% { opacity: 0; transform: translateX(-50%) translateY(-45px); }
   }
 
-  /* ---------- HAMMER CURSOR ---------- */
+   
   #hammer {
     position: fixed;
     width: clamp(56px, 9vw, 84px);
@@ -211,7 +211,7 @@
   }
   #hammer.swing { transform: translate(-30%, -75%) rotate(28deg); }
 
-  /* ---------- OVERLAYS (start / game over) ---------- */
+   
   .overlay {
     position: absolute;
     inset: 0;
@@ -250,18 +250,18 @@
 </head>
 <body>
 
-<!-- ============================================================
-     HUD
-     ============================================================ -->
+
+
+
 <div id="hud">
   <div class="hud-box">🥕 <span id="score">0</span></div>
   <div class="hud-box" id="timer-box">⏱ <span id="timer">60</span>s</div>
   <button id="sound-btn" title="Toggle sound">🔊</button>
 </div>
 
-<!-- ============================================================
-     GAME BOARD
-     ============================================================ -->
+
+
+
 <div id="game">
   <div id="grid"></div>
 
@@ -279,47 +279,47 @@
   </div>
 </div>
 
-<!-- ============================================================
-     HAMMER CURSOR (SVG)
-     ============================================================ -->
+
+
+
 <svg id="hammer" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
   <rect x="44" y="34" width="12" height="58" rx="5" fill="#c98a4b" stroke="#8a5a2b" stroke-width="3"/>
   <rect x="18" y="8" width="64" height="30" rx="10" fill="#9e9e9e" stroke="#5c5c5c" stroke-width="3"/>
   <rect x="24" y="13" width="14" height="8" rx="4" fill="#cfcfcf"/>
 </svg>
 
-<!-- ============================================================
-     BUNNY SVG TEMPLATE
-     ============================================================ -->
+
+
+
 <template id="bunny-template">
   <svg class="bunny" viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg">
-    <!-- ears -->
+     
     <ellipse cx="35" cy="26" rx="10" ry="24" fill="#f5f0ea" stroke="#b7a99a" stroke-width="3"/>
     <ellipse cx="65" cy="26" rx="10" ry="24" fill="#f5f0ea" stroke="#b7a99a" stroke-width="3"/>
     <ellipse cx="35" cy="28" rx="5" ry="16" fill="#ffb6c1"/>
     <ellipse cx="65" cy="28" rx="5" ry="16" fill="#ffb6c1"/>
-    <!-- head/body -->
+     
     <ellipse cx="50" cy="78" rx="34" ry="38" fill="#f5f0ea" stroke="#b7a99a" stroke-width="3"/>
-    <!-- eyes -->
+     
     <circle cx="38" cy="70" r="5" fill="#2d2a26"/>
     <circle cx="62" cy="70" r="5" fill="#2d2a26"/>
     <circle cx="40" cy="68" r="1.8" fill="#fff"/>
     <circle cx="64" cy="68" r="1.8" fill="#fff"/>
-    <!-- nose + mouth -->
+     
     <ellipse cx="50" cy="82" rx="5" ry="4" fill="#ff8fa3"/>
     <path d="M50 86 Q50 92 44 93 M50 86 Q50 92 56 93" fill="none" stroke="#b7a99a" stroke-width="2.5" stroke-linecap="round"/>
-    <!-- teeth -->
+     
     <rect x="45" y="90" width="5" height="8" rx="2" fill="#fff" stroke="#b7a99a" stroke-width="1.5"/>
     <rect x="50" y="90" width="5" height="8" rx="2" fill="#fff" stroke="#b7a99a" stroke-width="1.5"/>
-    <!-- cheeks -->
+     
     <circle cx="26" cy="82" r="6" fill="#ffd3dc" opacity=".8"/>
     <circle cx="74" cy="82" r="6" fill="#ffd3dc" opacity=".8"/>
   </svg>
 </template>
 
-<!-- ============================================================
-     STAR BURST SVG TEMPLATE
-     ============================================================ -->
+
+
+
 <template id="burst-template">
   <svg class="burst" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
     <polygon points="50,0 61,35 98,35 68,57 79,91 50,70 21,91 32,57 2,35 39,35"
@@ -330,12 +330,12 @@
 <script>
 "use strict";
 
-/* ============================================================
-   CONSTANTS & STATE
-   ============================================================ */
-const GAME_LENGTH   = 60;          // seconds
-const BUNNY_VISIBLE = 1100;        // ms bunny stays up
-const SPAWN_MIN     = 700;         // ms between spawns
+
+
+
+const GAME_LENGTH   = 60;           
+const BUNNY_VISIBLE = 1100;         
+const SPAWN_MIN     = 700;          
 const SPAWN_MAX     = 1600;
 
 const state = {
@@ -343,15 +343,15 @@ const state = {
   score: 0,
   timeLeft: GAME_LENGTH,
   soundOn: true,
-  activeCell: -1,        // index of cell with a live bunny, -1 = none
+  activeCell: -1,         
   spawnTimer: null,
   hideTimer: null,
   clockTimer: null,
 };
 
-/* ============================================================
-   DOM SETUP — build the 3x3 grid of burrows
-   ============================================================ */
+
+
+
 const grid  = document.getElementById("grid");
 const cells = [];
 
@@ -396,9 +396,9 @@ const startScr   = document.getElementById("start-screen");
 const overScr    = document.getElementById("gameover-screen");
 const finalScore = document.getElementById("final-score");
 
-/* ============================================================
-   AUDIO — tiny WebAudio synth (no external files)
-   ============================================================ */
+
+
+
 let audioCtx = null;
 
 function getCtx() {
@@ -423,14 +423,14 @@ function tone(freq, duration, type = "sine", volume = 0.25, slideTo = null) {
 }
 
 const sfx = {
-  pop:  () => tone(300, 0.12, "sine", 0.2, 600),                 // rising blip
+  pop:  () => tone(300, 0.12, "sine", 0.2, 600),                  
   hit:  () => { tone(880, 0.08, "square", 0.18); tone(1320, 0.12, "square", 0.12); },
-  miss: () => tone(220, 0.2, "sawtooth", 0.12, 110),             // sad slide down
+  miss: () => tone(220, 0.2, "sawtooth", 0.12, 110),              
 };
 
-/* ============================================================
-   BUNNY SPAWN / HIDE LOGIC
-   ============================================================ */
+
+
+
 function randomDelay() {
   return SPAWN_MIN + Math.random() * (SPAWN_MAX - SPAWN_MIN);
 }
@@ -438,7 +438,7 @@ function randomDelay() {
 function spawnBunny() {
   if (!state.playing) return;
 
-  // pick a random cell different from the last one
+   
   let idx;
   do { idx = Math.floor(Math.random() * 9); } while (idx === state.activeCell);
 
@@ -447,10 +447,10 @@ function spawnBunny() {
   cells[idx].bunny.classList.add("up");
   sfx.pop();
 
-  // bunny retreats after BUNNY_VISIBLE ms
+   
   state.hideTimer = setTimeout(() => hideBunny(idx), BUNNY_VISIBLE);
 
-  // schedule next spawn
+   
   state.spawnTimer = setTimeout(spawnBunny, randomDelay());
 }
 
@@ -459,9 +459,9 @@ function hideBunny(idx) {
   if (state.activeCell === idx) state.activeCell = -1;
 }
 
-/* ============================================================
-   INPUT — hammer cursor + click handling
-   ============================================================ */
+
+
+
 function moveHammer(x, y) {
   hammer.style.display = "block";
   hammer.style.left = x + "px";
@@ -474,7 +474,7 @@ gameEl.addEventListener("pointerleave", () => { hammer.style.display = "none"; }
 gameEl.addEventListener("pointerdown", e => {
   moveHammer(e.clientX, e.clientY);
 
-  // hammer swing animation
+   
   hammer.classList.add("swing");
   setTimeout(() => hammer.classList.remove("swing"), 90);
 
@@ -500,21 +500,21 @@ function hitBunny(idx) {
 
   const c = cells[idx];
 
-  // squash then retreat
+   
   c.bunny.classList.add("bonk");
   setTimeout(() => { c.bunny.classList.remove("up", "bonk"); }, 110);
 
-  // star burst + floating +1 (restart animations)
+   
   for (const el of [c.burst, c.plusOne]) {
     el.classList.remove("show");
-    void el.offsetWidth; // reflow to retrigger animation
+    void el.offsetWidth;  
     el.classList.add("show");
   }
 }
 
-/* ============================================================
-   GAME FLOW — start, clock, game over
-   ============================================================ */
+
+
+
 function startGame() {
   state.playing  = true;
   state.score    = 0;
@@ -552,9 +552,9 @@ function endGame() {
   overScr.classList.remove("hidden");
 }
 
-/* ============================================================
-   UI BUTTONS
-   ============================================================ */
+
+
+
 document.getElementById("start-btn").addEventListener("click", () => { getCtx(); startGame(); });
 document.getElementById("restart-btn").addEventListener("click", startGame);
 

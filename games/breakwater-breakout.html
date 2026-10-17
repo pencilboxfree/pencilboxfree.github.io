@@ -270,7 +270,7 @@ const ENDINGS = [
   { id:'lost', title:'Lost in the Dark', type:'fail', desc:'Wandered the tunnels without a light until rescued.' },
 ];
 const NPC_DEFS = [
-  /* BREAKWATER */
+   
   { id:'dex', fac:'breakwater', rel0:5, name:'Dex Malone', nick:'Lockpick', role:'inmate', cell:1, job:'workshop', fav:['library','yard','hall'],
     look:{ skin:'#e0ac69', hair:'#2b1d14', hs:0, shirt:'#ff8f00', acc:'beanie', accColor:'#3949ab' },
     persona:'Friendly escape veteran. Seven attempts, zero regrets.', likes:['coffee','candy'],
@@ -428,7 +428,7 @@ const NPC_DEFS = [
     greet:['I have eleven minutes. Go.','Good to see you. Sit.','My best-behaved client!'],
     chat:['Parole boards read conduct reports, not excuses.','Every strike on your record costs you.','I visit on odd days. Even days I sleep.'] },
 
-  /* IRONHOLD MAXIMUM SECURITY */
+   
   { id:'ledger', fac:'ironhold', name:'Leon Pratt', nick:'Ledger', role:'inmate', cell:1, job:'workshop', fav:['cellblock','library','cellblock'], likes:['coffee','book'],
     look:{ skin:'#e0ac69', hair:'#5d4037', hs:0, shirt:'#d84315', acc:'glasses', accColor:'#212121' },
     persona:'Bookkeeper for a crime family. Remembers every number he has ever seen.',
@@ -524,7 +524,7 @@ const NPC_DEFS = [
     greet:['Name and injury.','Sit. Let me see.','Back again? Careful.'],
     chat:['Slab sends me two patients a week.','Knocked out? You wake up here. Minus your pocket money, usually.'] },
 
-  /* CAMP KESTREL */
+   
   { id:'ward', fac:'kestrel', name:'Capt. Ellis Ward', nick:'The Captain', role:'inmate', cell:0, bed:[14,10], home:[14,11], job:null, fav:['compound','library','yard'], likes:['coffee','book'],
     look:{ skin:'#f1c27d', hair:'#8d6e63', hs:0, shirt:'#6d6a4e', pants:'#4e4b36', acc:'cap', accColor:'#4e4b36' },
     persona:'Senior prisoner officer. Runs the escape committee with a pencil and a very straight face.',
@@ -726,7 +726,7 @@ let FAC = null;
 const FACILITIES = (() => {
   const between = (t, a, b) => a <= b ? (t >= a && t < b) : (t >= a || t < b);
 
-  /* ---------------- BREAKWATER PENITENTIARY ---------------- */
+   
   function buildBreakwater() {
     const C = MapGen.canvas(82, 54, ':');
     const { set, fill } = C;
@@ -914,7 +914,7 @@ const FACILITIES = (() => {
     service: [780, 820], visitHours: [720, 840],
   };
 
-  /* ---------------- IRONHOLD MAXIMUM SECURITY ---------------- */
+   
   function buildIronhold() {
     const C = MapGen.canvas(72, 60, ':');
     const { set, fill } = C;
@@ -1059,7 +1059,7 @@ const FACILITIES = (() => {
     service: null, visitHours: null,
   };
 
-  /* ---------------- CAMP KESTREL (WAR PRISON) ---------------- */
+   
   function buildKestrel() {
     const C = MapGen.canvas(84, 60, ':');
     const { set, fill, ring } = C;

@@ -13,11 +13,11 @@
 <meta name="twitter:card" content="summary">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%23070b16'/><circle cx='11' cy='13' r='3.4' fill='%23f2f7ff'/><rect x='9.4' y='16' width='3.2' height='7' rx='1.4' fill='%23f2f7ff'/><rect x='13' y='11.4' width='15' height='2.6' rx='1.3' fill='%2335e0ff'/></svg>">
 <style>
-/* ============================================================
-   STICKMAN LASER TAG
-   Pencilbox Games - DOM screens (menu, arenas, armory, settings,
-   pause, results) and the HUD. Everything in play is canvas-drawn.
-   ============================================================ */
+
+
+
+
+
 :root {
   --bg-deep:      #05080f;
   --bg-panel:     rgba(14, 20, 34, 0.94);
@@ -70,7 +70,7 @@ html, body {
 
 .layer { position: absolute; inset: 0; }
 
-/* ---------- screens ---------- */
+ 
 
 .screen {
   display: flex; align-items: center; justify-content: center;
@@ -109,7 +109,7 @@ html, body {
   letter-spacing: 0.16em; text-transform: uppercase;
 }
 
-/* ---------- title ---------- */
+ 
 
 .game-title {
   font-size: 38px; font-weight: 800; line-height: 1.02;
@@ -145,7 +145,7 @@ html, body {
 }
 .equipped-line strong { color: var(--text); letter-spacing: 0.04em; }
 
-/* ---------- buttons ---------- */
+ 
 
 .btn-col { display: flex; flex-direction: column; gap: 10px; }
 .btn-row { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
@@ -177,7 +177,7 @@ html, body {
 
 .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
 
-/* ---------- shop ---------- */
+ 
 
 .coin-pill {
   font-family: var(--mono); font-size: 13px; font-weight: 700;
@@ -232,7 +232,7 @@ html, body {
   text-align: center; padding: 10px 0 2px; font-weight: 700;
 }
 
-/* ---------- settings ---------- */
+ 
 
 .setting {
   display: flex; align-items: center; gap: 14px;
@@ -269,7 +269,7 @@ html, body {
 .setting input[type=checkbox]:checked { background: rgba(53, 224, 255, 0.3); }
 .setting input[type=checkbox]:checked::after { transform: translateX(20px); background: var(--accent); }
 
-/* ---------- how to play ---------- */
+ 
 
 .howto-list { list-style: none; display: flex; flex-direction: column; gap: 11px; }
 .howto-list li {
@@ -282,7 +282,7 @@ html, body {
 }
 .howto-list strong { color: var(--text); }
 
-/* ---------- results ---------- */
+ 
 
 .results-list { display: flex; flex-direction: column; gap: 2px; margin-bottom: 22px; }
 .results-row {
@@ -300,7 +300,7 @@ html, body {
 }
 #results-title.victory { color: var(--good); }
 
-/* ---------- HUD ---------- */
+ 
 
 #hud { pointer-events: none; }
 
@@ -341,7 +341,7 @@ html, body {
   background: linear-gradient(0deg, rgba(5,8,15,0.75), transparent);
 }
 
-/* per-player card: name, health, cooldown, ammo */
+ 
 .pcard {
   width: 260px; flex: none;
   border-left: 3px solid var(--accent);
@@ -359,7 +359,7 @@ html, body {
   border: 1px solid var(--line);
   overflow: hidden;
 }
-/* Fills as the gun cools: full width = ready, empty = just fired. */
+ 
 .cooldown-fill {
   height: 100%; width: 100%;
   background: linear-gradient(90deg, rgba(53,224,255,0.45), var(--accent));
@@ -383,7 +383,7 @@ html, body {
   flex: 1; display: flex; flex-direction: column; align-items: center; gap: 9px;
 }
 
-/* Carried guns. Click a slot, press its number, or scroll to switch. */
+ 
 .gun-grid {
   display: flex; gap: 7px;
   pointer-events: auto;
@@ -449,7 +449,7 @@ html, body {
   to   { opacity: 1; transform: none; }
 }
 
-/* ---------- arena picker ---------- */
+ 
 
 .arena-grid {
   display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px;
@@ -470,7 +470,7 @@ html, body {
 .arena-map { display: block; width: 100%; height: auto; border-radius: 6px; background: rgba(0,0,0,0.3); }
 .arena-tag { font-size: 9.5px; letter-spacing: 0.18em; color: var(--accent); margin-top: 9px; min-height: 12px; }
 
-/* ---------- toast ---------- */
+ 
 
 .toast {
   position: absolute; left: 50%; bottom: 46px; transform: translateX(-50%);
@@ -483,7 +483,7 @@ html, body {
 }
 .toast.bad { border-color: rgba(255,77,94,0.55); color: #ffc8cd; }
 
-/* ---------- responsive ---------- */
+ 
 
 @media (max-width: 1100px) {
   .pcard { width: 210px; }
@@ -499,8 +499,8 @@ html, body {
   .hud-hint { display: none; }
   .hud-top, .hud-bottom { padding: 10px 14px; }
 
-  /* Space is tight: shrink the player card and let the slots keep only the
-     number, colour and ammo. Six of them must still fit on one line. */
+  
+
   .pcard { width: 150px; padding-left: 8px; }
   .pcard-ammo { font-size: 17px; }
   .pcard-state { display: none; }
@@ -523,7 +523,7 @@ html, body {
 
   <canvas id="game-canvas"></canvas>
 
-  <!-- ============ HUD ============ -->
+   
   <div id="hud" class="layer hidden">
     <div class="hud-top">
       <div class="hud-status" id="hud-status">
@@ -538,7 +538,7 @@ html, body {
     </div>
 
     <div class="hud-bottom">
-      <!-- player card template x2 -->
+       
       <div class="pcard" id="pcard-1">
         <div class="pcard-head"><span class="pcard-weapon" id="pweapon-1">Pulse Pistol</span></div>
         <div class="bar bar-health"><div id="phealth-1" class="bar-fill"></div></div>
@@ -561,7 +561,7 @@ html, body {
     </div>
   </div>
 
-  <!-- ============ MAIN MENU ============ -->
+   
   <div id="screen-menu" class="layer screen">
     <div class="panel panel-title">
       <h1 class="game-title">STICKMAN<span>LASER TAG</span></h1>
@@ -585,7 +585,7 @@ html, body {
     </div>
   </div>
 
-  <!-- ============ ARENA PICKER ============ -->
+   
   <div id="screen-arenas" class="layer screen hidden">
     <div class="panel panel-wide">
       <div class="panel-head"><h2>ARENAS</h2></div>
@@ -594,7 +594,7 @@ html, body {
     </div>
   </div>
 
-  <!-- ============ SHOP ============ -->
+   
   <div id="screen-shop" class="layer screen hidden">
     <div class="panel panel-wide">
       <div class="panel-head">
@@ -608,7 +608,7 @@ html, body {
     </div>
   </div>
 
-  <!-- ============ SETTINGS ============ -->
+   
   <div id="screen-settings" class="layer screen hidden">
     <div class="panel">
       <div class="panel-head"><h2>SETTINGS</h2></div>
@@ -644,7 +644,7 @@ html, body {
     </div>
   </div>
 
-  <!-- ============ HOW TO PLAY ============ -->
+   
   <div id="screen-howto" class="layer screen hidden">
     <div class="panel">
       <div class="panel-head"><h2>HOW TO PLAY</h2></div>
@@ -662,7 +662,7 @@ html, body {
     </div>
   </div>
 
-  <!-- ============ PAUSE ============ -->
+   
   <div id="screen-pause" class="layer screen hidden">
     <div class="panel panel-narrow">
       <div class="panel-head"><h2>PAUSED</h2></div>
@@ -674,7 +674,7 @@ html, body {
     </div>
   </div>
 
-  <!-- ============ RESULTS ============ -->
+   
   <div id="screen-results" class="layer screen hidden">
     <div class="panel panel-narrow">
       <div class="panel-head"><h2 id="results-title">ELIMINATED</h2></div>
@@ -695,8 +695,8 @@ html, body {
 <script>
 "use strict";
 
-/* Creator DNA — provenance record. Data only: no UI, no gameplay effect.
-   Verify with the public key at tools/creator-dna/coolbros1418.pub.pem. */
+
+
 window.CreatorDNA = Object.freeze({
   creator: "Coolbros1418",
   game: "Stickman Laser Tag",
@@ -711,11 +711,11 @@ window.CreatorDNA = Object.freeze({
   algorithm: "Ed25519 over the canonical record JSON; SHA-256 for all digests",
   verify: "node tools/creator-dna/creator-dna.js verify --record <this file> --src <source folder>"
 });
-/* ==========================================================================
-   SaveManager — browser-storage persistence.
-   Shared-style save layer: one namespaced key, versioned, fail-safe.
-   Reusable across games in the collection: change STORAGE_KEY + defaults().
-   ========================================================================== */
+
+
+
+
+
 
 (function (global) {
   'use strict';
@@ -726,7 +726,7 @@ window.CreatorDNA = Object.freeze({
     return {
       version: 1,
       coins: 0,
-      owned: ['pistol'],       // pistol is free / starter
+      owned: ['pistol'],        
       equipped: 'pistol',
       bestWave: 0,
       bestScore: 0,
@@ -736,7 +736,7 @@ window.CreatorDNA = Object.freeze({
         sfx: 70,
         shake: true,
         damageNumbers: true,
-        arena: 'court'      // arena id, or 'random'
+        arena: 'court'       
       }
     };
   }
@@ -788,13 +788,13 @@ window.CreatorDNA = Object.freeze({
   var writeTimer = null;
   function save() {
     if (!available) return;
-    // Debounced: gameplay can call save() freely without hitting storage every frame.
+     
     if (writeTimer) return;
     writeTimer = global.setTimeout(function () {
       writeTimer = null;
       try {
         global.localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-      } catch (e) { /* quota or private mode — progress stays in memory */ }
+      } catch (e) {   }
     }, 120);
   }
 
@@ -803,7 +803,7 @@ window.CreatorDNA = Object.freeze({
     if (writeTimer) { global.clearTimeout(writeTimer); writeTimer = null; }
     try {
       global.localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-    } catch (e) { /* ignore */ }
+    } catch (e) {   }
   }
 
   var SaveManager = {
@@ -866,10 +866,10 @@ window.CreatorDNA = Object.freeze({
 
   global.SaveManager = SaveManager;
 })(window);
-/* ==========================================================================
-   AudioManager — 100% procedural WebAudio. No external files, no libraries.
-   All sounds and music are synthesised at runtime and are original.
-   ========================================================================== */
+
+
+
+
 
 (function (global) {
   'use strict';
@@ -903,7 +903,7 @@ window.CreatorDNA = Object.freeze({
     musicBus.gain.value = volumes.music * 0.5;
     musicBus.connect(master);
 
-    // Reusable white-noise buffer (1s) — shotgun, impacts, hats.
+     
     var len = ctx.sampleRate;
     noiseBuffer = ctx.createBuffer(1, len, ctx.sampleRate);
     var chan = noiseBuffer.getChannelData(0);
@@ -966,31 +966,31 @@ window.CreatorDNA = Object.freeze({
     src.stop(t + opts.dur + 0.02);
   }
 
-  /* ---------------- music: original driving arena loop ---------------- */
+   
 
-  // A natural-minor riff (A minor) built from scale degrees — original melody.
+   
   var BASS = [0, 0, 7, 0, 5, 0, 3, 5, 0, 0, 7, 10, 8, 7, 5, 3];
-  var ROOT = 55; // A1
+  var ROOT = 55;  
 
   function midiToFreq(semi) { return ROOT * Math.pow(2, semi / 12); }
 
   function scheduleMusic() {
     if (!ctx) return;
     var lookahead = 0.25;
-    var stepDur = 60 / 148 / 2; // 148 BPM, eighth notes
+    var stepDur = 60 / 148 / 2;  
 
     while (nextNoteTime < ctx.currentTime + lookahead) {
       var t = nextNoteTime;
       var step = musicStep % 16;
       var semi = BASS[step];
 
-      // bass pulse
+       
       pluck(midiToFreq(semi), t, stepDur * 0.92, 'sawtooth', 0.22, 420);
-      // octave stab on the off-beats of every other bar
+       
       if (step % 4 === 2) pluck(midiToFreq(semi + 12), t, stepDur * 0.5, 'square', 0.07, 1400);
-      // kick
+       
       if (step % 4 === 0) kick(t);
-      // hat
+       
       if (step % 2 === 1) hat(t);
 
       musicStep++;
@@ -1044,7 +1044,7 @@ window.CreatorDNA = Object.freeze({
   }
 
   var AudioManager = {
-    /** Must be called from a user gesture (browser autoplay policy). */
+     
     unlock: function () {
       ensureContext();
       if (ctx && ctx.state === 'suspended') ctx.resume();
@@ -1075,7 +1075,7 @@ window.CreatorDNA = Object.freeze({
     suspend: function () { if (ctx && ctx.state === 'running') ctx.suspend(); },
     resume: function () { if (ctx && ctx.state === 'suspended') ctx.resume(); },
 
-    /** Weapon fire — driven by the `sound` block on each weapon definition. */
+     
     fire: function (s) {
       if (!ctx) return;
       switch (s.kind) {
@@ -1096,7 +1096,7 @@ window.CreatorDNA = Object.freeze({
           tone({ wave: 'square', from: s.from * 1.5, to: s.to, dur: s.dur * 0.5, gain: 0.07 });
           break;
         case 'minigun':
-          // fires ~12x a second, so it has to stay small and low in the mix
+           
           tone({ wave: 'square', from: s.from, to: s.to, dur: s.dur, gain: 0.085, filter: 1800 });
           noise({ from: 1500, to: 500, dur: 0.045, gain: 0.05, q: 1.4, filterType: 'lowpass' });
           break;
@@ -1147,18 +1147,18 @@ window.CreatorDNA = Object.freeze({
 
   global.AudioManager = AudioManager;
 })(window);
-/* ==========================================================================
-   InputManager — keyboard + mouse + touch.
 
-   Keys are tracked by physical `event.code` (KeyW, Space, Digit1…) so bindings
-   survive keyboard layouts. Aim is reported in arena-space coordinates.
-   ========================================================================== */
+
+
+
+
+
 
 (function (global) {
   'use strict';
 
-  var keys = Object.create(null);        // by key value, e.g. 'r', 'Escape'
-  var codes = Object.create(null);       // by physical code, e.g. 'KeyR'
+  var keys = Object.create(null);         
+  var codes = Object.create(null);        
   var pressedKeys = Object.create(null);
   var pressedCodes = Object.create(null);
 
@@ -1167,7 +1167,7 @@ window.CreatorDNA = Object.freeze({
   var view = { scale: 1, offsetX: 0, offsetY: 0 };
   var canvas = null;
 
-  // Codes that must never scroll or activate the page while playing.
+   
   var SWALLOW = {
     Space: 1, ArrowUp: 1, ArrowDown: 1, ArrowLeft: 1, ArrowRight: 1,
     Tab: 1, Slash: 1, Enter: 1, NumpadEnter: 1
@@ -1240,7 +1240,7 @@ window.CreatorDNA = Object.freeze({
         e.preventDefault();
       }, { passive: false });
 
-      // Touch: drag to aim, tap to fire. (A movement stick is future work.)
+       
       canvas.addEventListener('touchstart', function (e) {
         if (!e.touches.length) return;
         updatePointerFromEvent(e.touches[0]);
@@ -1263,15 +1263,15 @@ window.CreatorDNA = Object.freeze({
       view.scale = scale; view.offsetX = offsetX; view.offsetY = offsetY;
     },
 
-    /* --- key-value queries (menus, pause, single-key actions) --- */
+     
     isDown: function (k) { return !!keys[k]; },
     wasPressed: function (k) { return !!pressedKeys[k]; },
 
-    /* --- physical-code queries (gameplay bindings) --- */
+     
     codeDown: anyDown,
     codePressed: anyPressed,
 
-    /** Normalised movement vector for one player's control set. */
+     
     moveVectorFrom: function (c, out) {
       var x = 0, y = 0;
       if (anyDown(c.left)) x -= 1;
@@ -1283,7 +1283,7 @@ window.CreatorDNA = Object.freeze({
       return out;
     },
 
-    /** Wheel movement since the last read, as -1 / 0 / +1. Clears on read. */
+     
     takeWheel: function () {
       if (wheelDelta === 0) return 0;
       var dir = wheelDelta > 0 ? 1 : -1;
@@ -1294,7 +1294,7 @@ window.CreatorDNA = Object.freeze({
     get firing() { return pointer.down; },
     get firePressed() { return pointer.downThisFrame; },
 
-    /** Call at the very end of each frame. */
+     
     endFrame: function () {
       for (var k in pressedKeys) delete pressedKeys[k];
       for (var c in pressedCodes) delete pressedCodes[c];
@@ -1314,31 +1314,31 @@ window.CreatorDNA = Object.freeze({
 
   global.InputManager = InputManager;
 })(window);
-/* ==========================================================================
-   Weapons — data-driven laser gun definitions.
-   Adding a gun = adding one entry here. Shop, HUD, rendering and audio all
-   read from these definitions, so nothing else needs to change.
-   ========================================================================== */
+
+
+
+
+
 
 (function (global) {
   'use strict';
 
-  /*  Field reference
-      damage      damage per bolt (per pellet for the shotgun)
-      fireDelay   seconds between shots
-      pellets     bolts per trigger pull
-      spread      cone half-angle in radians (accuracy)
-      speed       bolt speed, px/s
-      range       max bolt travel, px
-      mag         magazine size
-      reload      reload time in seconds
-      recoil      camera kick + aim punch
-      pierce      bolt continues through a target it kills
-      beam        visual: colour, core/glow width, trail length
-      sound       synth profile handed to AudioManager.fire()
-      bars        0..1 values used to draw the shop stat bars
-      shape       gun silhouette in gun-local space: [x, y, w, h] rectangles
-  */
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   var WEAPONS = {
 
@@ -1435,7 +1435,7 @@ window.CreatorDNA = Object.freeze({
 
   var ORDER = ['pistol', 'smg', 'shotgun', 'rifle', 'sniper', 'minigun'];
 
-  /** Enemy loadouts: same guns, retuned so they stay fair to fight. */
+   
   var ENEMY_PROFILES = {
     grunt: {
       weapon: 'pistol', damageScale: 0.42, fireDelayScale: 2.3, spreadAdd: 0.09,
@@ -1459,7 +1459,7 @@ window.CreatorDNA = Object.freeze({
     }
   };
 
-  /** Draw a gun silhouette in gun-local space (muzzle pointing +x). */
+   
   function drawGunShape(ctx, def, scale, bodyColor, accentColor) {
     var rects = def.shape;
     ctx.save();
@@ -1469,14 +1469,14 @@ window.CreatorDNA = Object.freeze({
       var r = rects[i];
       ctx.fillRect(r[0], r[1], r[2], r[3]);
     }
-    // muzzle emitter
+     
     var muzzleX = muzzleOffset(def);
     ctx.fillStyle = accentColor;
     ctx.fillRect(muzzleX - 3, -1.6, 3, 3.2);
     ctx.restore();
   }
 
-  /** Distance from the hand to the muzzle, in gun-local units. */
+   
   function muzzleOffset(def) {
     var max = 0;
     for (var i = 0; i < def.shape.length; i++) {
@@ -1493,18 +1493,18 @@ window.CreatorDNA = Object.freeze({
     get: function (id) { return WEAPONS[id] || WEAPONS.pistol; },
     drawGunShape: drawGunShape,
     muzzleOffset: muzzleOffset,
-    /** Shots per second, for shop display. */
+     
     rps: function (def) { return 1 / def.fireDelay; },
     dps: function (def) { return (def.damage * def.pellets) / def.fireDelay; }
   };
 })(window);
-/* ==========================================================================
-   Arena — arena layouts, collision queries and the baked backdrop.
 
-   Every layout is data: obstacles, enemy spawn points and two player spawns.
-   Adding an arena = adding one entry to LAYOUTS. Cover points and the baked
-   background are derived automatically when a layout is loaded.
-   ========================================================================== */
+
+
+
+
+
+
 
 (function (global) {
   'use strict';
@@ -1521,9 +1521,9 @@ window.CreatorDNA = Object.freeze({
     ];
   }
 
-  /* ----------------------------------------------------------------------
-     Layouts
-     ---------------------------------------------------------------------- */
+  
+
+
 
   var LAYOUTS = [
     {
@@ -1643,9 +1643,9 @@ window.CreatorDNA = Object.freeze({
     }
   ];
 
-  /* ----------------------------------------------------------------------
-     Active layout
-     ---------------------------------------------------------------------- */
+  
+
+
 
   var current = LAYOUTS[0];
   var OBSTACLES = current.obstacles;
@@ -1679,7 +1679,7 @@ window.CreatorDNA = Object.freeze({
     });
   }
 
-  /** Switch arenas. Pass a layout id, or 'random'. */
+   
   function load(id) {
     var next = null;
     if (id === 'random') {
@@ -1705,11 +1705,11 @@ window.CreatorDNA = Object.freeze({
     return current;
   }
 
-  /* ----------------------------------------------------------------------
-     Collision queries
-     ---------------------------------------------------------------------- */
+  
 
-  /** Push a circle out of every obstacle it overlaps. Mutates `p`. */
+
+
+   
   function collideCircle(p, r) {
     var hit = false;
     for (var i = 0; i < OBSTACLES.length; i++) {
@@ -1737,10 +1737,10 @@ window.CreatorDNA = Object.freeze({
     return hit;
   }
 
-  /**
-   * Nearest obstacle hit along a segment.
-   * Returns null, or { t, x, y, nx, ny } where t is 0..1 along the segment.
-   */
+  
+
+
+
   function segmentHit(x1, y1, x2, y2) {
     var dx = x2 - x1, dy = y2 - y1;
     var best = null;
@@ -1789,7 +1789,7 @@ window.CreatorDNA = Object.freeze({
     return segmentHit(x1, y1, x2, y2) === null;
   }
 
-  /** A spawn point at least `minDist` from every position in `avoid`. */
+   
   function spawnAwayFrom(avoid, minDist) {
     var best = null, bestScore = -Infinity;
     for (var i = 0; i < SPAWNS.length; i++) {
@@ -1800,7 +1800,7 @@ window.CreatorDNA = Object.freeze({
         var d2 = dx * dx + dy * dy;
         if (d2 < nearest) nearest = d2;
       }
-      // slight randomisation so spawns do not become predictable
+       
       var score = nearest + Math.random() * 40000;
       if (nearest >= minDist * minDist && score > bestScore) { bestScore = score; best = s; }
       else if (!best && score > bestScore) { bestScore = score; best = s; }
@@ -1812,9 +1812,9 @@ window.CreatorDNA = Object.freeze({
     return spawnAwayFrom([{ x: x, y: y }], minDist);
   }
 
-  /* ----------------------------------------------------------------------
-     Baked backdrop
-     ---------------------------------------------------------------------- */
+  
+
+
 
   function buildBackground(layout) {
     var c = document.createElement('canvas');
@@ -1936,10 +1936,10 @@ window.CreatorDNA = Object.freeze({
 
   global.Arena = Arena;
 })(window);
-/* ==========================================================================
-   FX — pooled particles, floating damage text and screen shake.
-   Everything is pre-allocated: no garbage is created during a match.
-   ========================================================================== */
+
+
+
+
 
 (function (global) {
   'use strict';
@@ -1977,7 +1977,7 @@ window.CreatorDNA = Object.freeze({
       pIndex = (pIndex + 1) % MAX_PARTICLES;
       if (!particles[pIndex].active) return particles[pIndex];
     }
-    return particles[pIndex]; // oldest slot recycled
+    return particles[pIndex];  
   }
 
   function nextText() {
@@ -2123,9 +2123,9 @@ window.CreatorDNA = Object.freeze({
 
   global.FX = FX;
 })(window);
-/* ==========================================================================
-   Entities — stickman rendering, the player, enemy AI and the laser bolt pool.
-   ========================================================================== */
+
+
+
 
 (function (global) {
   'use strict';
@@ -2136,15 +2136,15 @@ window.CreatorDNA = Object.freeze({
 
   var TAU = Math.PI * 2;
 
-  // Figure scale. Collision radius and the muzzle offset follow this, so the
-  // stickmen can be resized for readability without desyncing the gunplay.
+   
+   
   var FIG = 1.35;
 
-  /* ======================================================================
-     Stickman rendering
-     A top-down 3/4 figure: head, shoulder bar, arms onto the gun, legs that
-     stride while moving. Rotates to face the aim direction.
-     ====================================================================== */
+  
+
+
+
+
 
   function drawStickman(ctx, e, opts) {
     var def = e.weapon;
@@ -2152,7 +2152,7 @@ window.CreatorDNA = Object.freeze({
     var limb = flash ? '#ffffff' : (opts.limbColor || '#dfe9fb');
     var accent = opts.accent || '#35e0ff';
 
-    // ground shadow
+     
     ctx.save();
     ctx.globalAlpha = 0.34;
     ctx.fillStyle = '#000';
@@ -2165,7 +2165,7 @@ window.CreatorDNA = Object.freeze({
     ctx.translate(e.x, e.y);
     ctx.scale(FIG, FIG);
 
-    // --- legs: drawn along the movement direction so strides read correctly
+     
     var moving = e.speedNow > 12;
     var legAngle = moving ? Math.atan2(e.vy, e.vx) : e.aim;
     var stride = moving ? Math.sin(e.walkPhase) * 7 : 0;
@@ -2182,10 +2182,10 @@ window.CreatorDNA = Object.freeze({
     ctx.stroke();
     ctx.restore();
 
-    // --- upper body: faces the aim direction
+     
     ctx.rotate(e.aim);
 
-    // shoulder bar
+     
     ctx.strokeStyle = limb;
     ctx.lineCap = 'round';
     ctx.lineWidth = 4.4;
@@ -2194,21 +2194,21 @@ window.CreatorDNA = Object.freeze({
     ctx.lineTo(-1, 7.5);
     ctx.stroke();
 
-    // gun (held forward-right of centre)
+     
     var handX = 12, handY = 3.5;
     ctx.save();
     ctx.translate(handX, handY);
     Weapons.drawGunShape(ctx, def, 0.62, flash ? '#ffffff' : (opts.gunColor || '#9fb2cf'), accent);
     ctx.restore();
 
-    // arms onto the grip
+     
     ctx.lineWidth = 3;
     ctx.beginPath();
     ctx.moveTo(0, -6);  ctx.lineTo(handX - 2, handY - 1.5);
     ctx.moveTo(0, 6);   ctx.lineTo(handX - 2, handY + 1.5);
     ctx.stroke();
 
-    // head
+     
     ctx.beginPath();
     ctx.arc(2, 0, 7.2, 0, TAU);
     ctx.fillStyle = flash ? '#ffffff' : (opts.headColor || '#f2f7ff');
@@ -2217,13 +2217,13 @@ window.CreatorDNA = Object.freeze({
     ctx.strokeStyle = 'rgba(0,0,0,0.35)';
     ctx.stroke();
 
-    // visor / team light
+     
     ctx.beginPath();
     ctx.arc(5.4, 0, 2.1, 0, TAU);
     ctx.fillStyle = accent;
     ctx.fill();
 
-    // muzzle flash
+     
     if (e.muzzleFlash > 0) {
       var mx = handX + Weapons.muzzleOffset(def) * 0.62;
       var k = e.muzzleFlash / 0.06;
@@ -2242,7 +2242,7 @@ window.CreatorDNA = Object.freeze({
 
     ctx.restore();
 
-    // health ring for enemies
+     
     if (opts.healthRing && e.hp < e.maxHp) {
       var pct = Math.max(0, e.hp / e.maxHp);
       ctx.save();
@@ -2259,9 +2259,9 @@ window.CreatorDNA = Object.freeze({
     }
   }
 
-  /* ======================================================================
-     Laser bolt pool
-     ====================================================================== */
+  
+
+
 
   var MAX_BOLTS = 260;
 
@@ -2272,7 +2272,7 @@ window.CreatorDNA = Object.freeze({
     this.dmg = 0; this.left = 0;
     this.color = '#fff'; this.glow = 'rgba(255,255,255,0.5)';
     this.width = 3; this.length = 20;
-    this.team = 0;          // bolts only damage combatants on another team
+    this.team = 0;           
     this.ownerId = 0;
     this.pierce = false;
     this.hits = null;
@@ -2281,7 +2281,7 @@ window.CreatorDNA = Object.freeze({
   var TEAM_ENEMY = 0;
   var ENEMY_BEAM = '#ff5a4d';
 
-  /** rgba() glow string derived from a hex colour. */
+   
   function glowOf(hex, a) {
     var n = parseInt(hex.slice(1), 16);
     return 'rgba(' + ((n >> 16) & 255) + ',' + ((n >> 8) & 255) + ',' + (n & 255) + ',' + a + ')';
@@ -2303,8 +2303,8 @@ window.CreatorDNA = Object.freeze({
     o.vy = Math.sin(angle) * def.speed;
     o.dmg = damage;
     o.left = def.range;
-    // Enemy fire is always warm red whatever the gun fired it: incoming
-    // bolts must be distinguishable from the player's at a glance.
+     
+     
     o.color = colorOverride || def.beam.color;
     o.glow = colorOverride ? glowOf(colorOverride, 0.5) : def.beam.glow;
     o.width = def.beam.width;
@@ -2316,7 +2316,7 @@ window.CreatorDNA = Object.freeze({
     return o;
   }
 
-  /** Closest point on segment AB to point P, as a 0..1 parameter. */
+   
   function closestT(ax, ay, bx, by, px, py) {
     var dx = bx - ax, dy = by - ay;
     var len2 = dx * dx + dy * dy;
@@ -2325,10 +2325,10 @@ window.CreatorDNA = Object.freeze({
     return t < 0 ? 0 : (t > 1 ? 1 : t);
   }
 
-  /**
-   * Advance every bolt. `world` supplies the player, the live enemies and the
-   * damage callbacks, so the pool stays independent of game rules.
-   */
+  
+
+
+
   function updateBolts(dt, world) {
     for (var i = 0; i < MAX_BOLTS; i++) {
       var o = bolts[i];
@@ -2342,11 +2342,11 @@ window.CreatorDNA = Object.freeze({
       o.left -= dist;
       if (o.left <= 0) { o.active = false; continue; }
 
-      // walls
+       
       var wall = Arena.segmentHit(o.x, o.y, nx, ny);
       var limitT = wall ? wall.t : 1;
 
-      // targets: anything alive on another team
+       
       var bestT = 2, bestTarget = null;
       var list = world.combatants;
       for (var e = 0; e < list.length; e++) {
@@ -2413,9 +2413,9 @@ window.CreatorDNA = Object.freeze({
     for (var i = 0; i < MAX_BOLTS; i++) bolts[i].active = false;
   }
 
-  /* ======================================================================
-     Shared combatant behaviour
-     ====================================================================== */
+  
+
+
 
   var nextUid = 1;
 
@@ -2442,7 +2442,7 @@ window.CreatorDNA = Object.freeze({
     this.invuln = 0;
   }
 
-  /** 0 = ready to fire, 1 = just fired. Drives the HUD cooldown meter. */
+   
   Combatant.prototype.cooldownRatio = function () {
     if (this.reloading) return this.weapon.reload > 0 ? this.reloadTimer / this.weapon.reload : 0;
     if (this.cooldownMax <= 0) return 0;
@@ -2472,7 +2472,7 @@ window.CreatorDNA = Object.freeze({
     return true;
   };
 
-  /** Muzzle position in world space, matching the rendered gun. */
+   
   Combatant.prototype.muzzle = function (out) {
     var def = this.weapon;
     var lx = (12 + Weapons.muzzleOffset(def) * 0.62) * FIG;
@@ -2483,15 +2483,15 @@ window.CreatorDNA = Object.freeze({
     return out;
   };
 
-  /* ======================================================================
-     Player
-     ====================================================================== */
+  
+
+
 
   var BASE_SPEED = 232;
   var SPRINT_MULT = 1.32;
-  var SWAP_TIME = 0.35;   // holstering costs a beat, so switching is a real choice
+  var SWAP_TIME = 0.35;    
 
-  /** Control set, by physical key code. */
+   
   var CONTROLS = {
     solo: {
       up: ['KeyW', 'ArrowUp'], down: ['KeyS', 'ArrowDown'],
@@ -2517,17 +2517,17 @@ window.CreatorDNA = Object.freeze({
     this.kills = 0;
     this.deaths = 0;
     this.respawnTimer = 0;
-    this.loadout = [];      // gun ids the player is carrying, in grid order
-    this.mags = {};         // rounds left in each carried gun
+    this.loadout = [];       
+    this.mags = {};          
   }
   Player.prototype = Object.create(Combatant.prototype);
   Player.prototype.constructor = Player;
 
-  /**
-   * @param weaponId  equipped gun
-   * @param spawn     {x, y}
-   * @param opts      { controls, aimMode, team, invuln }
-   */
+  
+
+
+
+
   Player.prototype.reset = function (weaponId, spawn, opts) {
     opts = opts || {};
     spawn = spawn || Arena.playerSpawn;
@@ -2557,10 +2557,10 @@ window.CreatorDNA = Object.freeze({
     if (opts.team != null) this.team = opts.team;
   };
 
-  /**
-   * Carry a set of guns for this match. Each keeps its own magazine, so
-   * switching away from a half-empty gun and back does not refill it.
-   */
+  
+
+
+
   Player.prototype.setLoadout = function (ids, startId) {
     this.loadout = ids.slice();
     this.mags = {};
@@ -2577,13 +2577,13 @@ window.CreatorDNA = Object.freeze({
     this.cooldownMax = this.weapon.fireDelay;
   };
 
-  /** Switch to a carried gun. Returns true if the weapon actually changed. */
+   
   Player.prototype.switchTo = function (id) {
     if (!this.alive) return false;
     if (this.loadout.indexOf(id) === -1) return false;
     if (this.weapon.id === id) return false;
 
-    this.mags[this.weapon.id] = this.ammo;   // stash the current magazine
+    this.mags[this.weapon.id] = this.ammo;    
     this.weapon = Weapons.get(id);
     this.ammo = this.mags[id];
     this.reloading = false;
@@ -2593,7 +2593,7 @@ window.CreatorDNA = Object.freeze({
     return true;
   };
 
-  /** Next / previous carried gun, wrapping around. */
+   
   Player.prototype.cycleWeapon = function (dir) {
     if (this.loadout.length < 2) return false;
     var i = this.loadout.indexOf(this.weapon.id);
@@ -2601,7 +2601,7 @@ window.CreatorDNA = Object.freeze({
     return this.switchTo(this.loadout[((i + dir) % n + n) % n]);
   };
 
-  /** Full stat wipe — a new match, not a mid-match respawn. */
+   
   Player.prototype.resetStats = function () {
     this.shotsFired = 0;
     this.shotsHit = 0;
@@ -2626,13 +2626,13 @@ window.CreatorDNA = Object.freeze({
     this.y += this.vy * dt;
     Arena.collideCircle(this, this.radius);
 
-    // --- aim
+     
     if (this.aimMode === 'mouse') {
       var ax = input.pointer.x - this.x;
       var ay = input.pointer.y - this.y;
       if (ax * ax + ay * ay > 4) this.aim = Math.atan2(ay, ax) + this.recoilAim;
     } else if (moveVec.x !== 0 || moveVec.y !== 0) {
-      // keyboard aim: turn smoothly toward the direction of travel
+       
       var want = Math.atan2(moveVec.y, moveVec.x) + this.recoilAim;
       var diff = ((want - this.aim + Math.PI * 3) % TAU) - Math.PI;
       this.aim += diff * Math.min(1, dt * 15);
@@ -2641,13 +2641,13 @@ window.CreatorDNA = Object.freeze({
 
     this.tickTimers(dt);
 
-    // --- health regeneration once out of the firefight for a moment
+     
     if (this.regenDelay > 0) this.regenDelay -= dt;
     else if (this.hp < this.maxHp) this.hp = Math.min(this.maxHp, this.hp + 7 * dt);
 
-    // --- firing: every gun has a cooldown between shots (weapon.fireDelay),
-    //     shown live on the HUD meter. Automatics fire while held, the rest
-    //     need a fresh press per shot.
+     
+     
+     
     var def = this.weapon;
     var held = input.codeDown(c.fire) || (this.useMouse && input.firing);
     var tapped = input.codePressed(c.fire) || (this.useMouse && input.firePressed);
@@ -2706,7 +2706,7 @@ window.CreatorDNA = Object.freeze({
       accent: this.accent
     });
 
-    // spawn protection
+     
     if (this.invuln > 0) {
       ctx.save();
       ctx.globalAlpha = 0.35 + 0.25 * Math.sin(this.invuln * 22);
@@ -2719,9 +2719,9 @@ window.CreatorDNA = Object.freeze({
     }
   };
 
-  /* ======================================================================
-     Enemy
-     ====================================================================== */
+  
+
+
 
   var nextEnemyId = 1;
 
@@ -2777,7 +2777,7 @@ window.CreatorDNA = Object.freeze({
     this.cooldownMax = this.weapon.fireDelay * this.fireDelayScale;
   };
 
-  /** Nearest living player — enemies always fight whoever is closest. */
+   
   function nearestPlayer(e, world) {
     var list = world.players, best = null, bestD = Infinity;
     for (var i = 0; i < list.length; i++) {
@@ -2799,13 +2799,13 @@ window.CreatorDNA = Object.freeze({
       case 'rifle':   base = 320; break;
       default:        base = 255;
     }
-    // When a wave is nearly over the stragglers stop playing it safe, so a
-    // match can never stall with one enemy camped behind a wall.
+     
+     
     return hunting ? base * 0.5 : base;
   };
 
   function steerAround(e, dx, dy, dt) {
-    // Probe forward; if blocked, fan out until a clear heading is found.
+     
     var probe = 46;
     var base = Math.atan2(dy, dx);
     var offsets = [0, 0.5, -0.5, 1.0, -1.0, 1.6, -1.6, 2.4, -2.4];
@@ -2824,7 +2824,7 @@ window.CreatorDNA = Object.freeze({
 
     var p = nearestPlayer(this, world);
     if (!p) {
-      // nobody left to fight — coast to a stop
+       
       this.vx *= Math.pow(0.05, dt);
       this.vy *= Math.pow(0.05, dt);
       this.x += this.vx * dt; this.y += this.vy * dt;
@@ -2839,11 +2839,11 @@ window.CreatorDNA = Object.freeze({
     if (this.coverCooldown > 0) this.coverCooldown -= dt;
     if (this.reaction > 0 && los) this.reaction -= dt;
 
-    // --- state selection
+     
     var hunting = !!world.hunt;
     if (hunting && this.state === 'cover') { this.state = 'advance'; this.stateTimer = 0; }
-    // Cover is a short tactical break, not a hiding place: an enemy can only
-    // duck out once every few seconds, so fights keep moving.
+     
+     
     var lowHp = !hunting && this.hp < this.maxHp * 0.28 && this.coverCooldown <= 0;
     if (lowHp && this.state !== 'cover' && this.stateTimer <= 0) {
       var spot = findCover(this, p);
@@ -2862,7 +2862,7 @@ window.CreatorDNA = Object.freeze({
       if (Math.random() < 0.4) this.strafeDir *= -1;
     }
 
-    // --- desired movement
+     
     var wantX = 0, wantY = 0;
     if (this.state === 'cover' && this.hasTarget) {
       wantX = this.target.x - this.x;
@@ -2873,14 +2873,14 @@ window.CreatorDNA = Object.freeze({
       var radial = (dist - want) / Math.max(60, want);
       radial = Math.max(-1, Math.min(1, radial));
       var ux = dx / dist, uy = dy / dist;
-      // move along the radius to reach the preferred range, plus a strafe
+       
       wantX = ux * radial * 1.0 + (-uy) * this.strafeDir * 0.85;
       wantY = uy * radial * 1.0 + (ux) * this.strafeDir * 0.85;
     } else {
       wantX = dx / dist; wantY = dy / dist;
     }
 
-    // separation from other enemies keeps the squad readable
+     
     var list = world.enemies;
     for (var i = 0; i < list.length; i++) {
       var o = list[i];
@@ -2912,7 +2912,7 @@ window.CreatorDNA = Object.freeze({
     this.y += this.vy * dt;
     Arena.collideCircle(this, this.radius);
 
-    // --- aiming: lead the player slightly, but never perfectly
+     
     {
       var lead = dist / this.weapon.speed;
       var tx = p.x + p.vx * lead * 0.62;
@@ -2924,7 +2924,7 @@ window.CreatorDNA = Object.freeze({
 
     this.tickTimers(dt);
 
-    // --- firing
+     
     if (los && this.reaction <= 0 && !this.reloading && this.fireTimer <= 0) {
       if (this.ammo > 0) {
         var inArc = Math.abs(((Math.atan2(dy, dx) - this.aim + Math.PI * 3) % TAU) - Math.PI);
@@ -2956,7 +2956,7 @@ window.CreatorDNA = Object.freeze({
     if (!this.alive) return;
     this.hp -= amount;
     this.hurtFlash = 0.1;
-    // being shot makes an enemy commit to repositioning
+     
     if (this.stateTimer > 0.5) this.stateTimer = 0.5;
     if (this.hp <= 0) {
       this.hp = 0;
@@ -2986,7 +2986,7 @@ window.CreatorDNA = Object.freeze({
     var best = null, bestScore = -Infinity;
     for (var i = 0; i < pts.length; i++) {
       var p = pts[i];
-      // must break line of sight from the player and be reachable-ish
+       
       if (Arena.hasLineOfSight(p.x, p.y, player.x, player.y)) continue;
       var dx = p.x - enemy.x, dy = p.y - enemy.y;
       var d = Math.sqrt(dx * dx + dy * dy);
@@ -3010,10 +3010,10 @@ window.CreatorDNA = Object.freeze({
     clearBolts: clearBolts
   };
 })(window);
-/* ==========================================================================
-   UI — screens, HUD binding, the armory shop, the arena picker and settings.
-   Pure DOM: the canvas never draws menu chrome, so text stays crisp.
-   ========================================================================== */
+
+
+
+
 
 (function (global) {
   'use strict';
@@ -3095,7 +3095,7 @@ window.CreatorDNA = Object.freeze({
   function hideScreens() { showScreen(null); }
   function setHudVisible(v) { hud.classList.toggle('hidden', !v); }
 
-  /* ---------------- menu ---------------- */
+   
 
   function arenaLabel() {
     var id = SaveManager.settings.arena;
@@ -3114,7 +3114,7 @@ window.CreatorDNA = Object.freeze({
     el.menuArena.textContent = arenaLabel();
   }
 
-  /* ---------------- arena picker ---------------- */
+   
 
   function drawArenaMap(canvas, layout) {
     var ctx = canvas.getContext('2d');
@@ -3131,7 +3131,7 @@ window.CreatorDNA = Object.freeze({
       ctx.fillRect(o.x * s, o.y * s, Math.max(1, o.w * s), Math.max(1, o.h * s));
     }
 
-    // player spawn markers
+     
     for (var p = 0; p < layout.playerSpawns.length; p++) {
       ctx.fillStyle = p === 0 ? '#35e0ff' : '#ffc043';
       ctx.beginPath();
@@ -3188,7 +3188,7 @@ window.CreatorDNA = Object.freeze({
     toast(id === 'random' ? 'Random arena each match' : arenaLabel() + ' selected');
   }
 
-  /* ---------------- shop ---------------- */
+   
 
   function statBar(label, value) {
     return '<div class="gun-stat"><span>' + label + '</span>' +
@@ -3292,18 +3292,18 @@ window.CreatorDNA = Object.freeze({
     ctx.restore();
   }
 
-  /* ---------------- HUD ---------------- */
+   
 
-  /* ---------------- carried-gun grid ---------------- */
+   
 
   var slotEls = {};
 
-  /**
-   * Build the in-match gun grid.
-   * @param loadout  gun ids the player is carrying, in slot order
-   * @param activeId currently drawn gun
-   * @param onPick   called with a gun id when a slot is clicked
-   */
+  
+
+
+
+
+
   function renderGunGrid(loadout, activeId, onPick) {
     el.gunGrid.innerHTML = '';
     slotEls = {};
@@ -3331,7 +3331,7 @@ window.CreatorDNA = Object.freeze({
     });
   }
 
-  /** Highlight the drawn gun and refresh every slot's remaining rounds. */
+   
   function updateGunGrid(activeId, mags) {
     for (var id in slotEls) {
       var s = slotEls[id];
@@ -3377,7 +3377,7 @@ window.CreatorDNA = Object.freeze({
       c.mag.textContent = state.mag;
       lastHud.weapon = state.weapon;
     }
-    // Cooldown meter: full = ready to fire, empties on each shot.
+     
     var ready = Math.round((1 - state.cooldown) * 100);
     if (ready !== lastHud.cooldown) {
       c.cool.style.width = ready + '%';
@@ -3408,9 +3408,9 @@ window.CreatorDNA = Object.freeze({
     el.banner.classList.add('hidden');
   }
 
-  /* ---------------- results ---------------- */
+   
 
-  /** rows: [{ label, value, accent }] */
+   
   function showResults(result, isRecord) {
     el.resTitle.textContent = result.title;
     el.resTitle.classList.toggle('victory', !!result.victory);
@@ -3427,7 +3427,7 @@ window.CreatorDNA = Object.freeze({
     showScreen('results');
   }
 
-  /* ---------------- toast ---------------- */
+   
 
   function toast(message, bad) {
     el.toast.textContent = message;
@@ -3436,7 +3436,7 @@ window.CreatorDNA = Object.freeze({
     toastTimer = setTimeout(function () { el.toast.classList.add('hidden'); }, 2200);
   }
 
-  /* ---------------- settings ---------------- */
+   
 
   function bindSettings() {
     var s = SaveManager.settings;
@@ -3477,7 +3477,7 @@ window.CreatorDNA = Object.freeze({
     applyAudio();
   }
 
-  /* ---------------- wiring ---------------- */
+   
 
   function bindActions() {
     document.addEventListener('click', function (e) {
@@ -3538,10 +3538,10 @@ window.CreatorDNA = Object.freeze({
 
   global.UI = UI;
 })(window);
-/* ==========================================================================
-   Game — state machine, wave director, simulation step and rendering.
-   Single player: escalating waves in the chosen arena, win by clearing wave 15.
-   ========================================================================== */
+
+
+
+
 
 (function (global) {
   'use strict';
@@ -3564,12 +3564,12 @@ window.CreatorDNA = Object.freeze({
   var canvas = null, ctx = null;
   var view = { scale: 1, offsetX: 0, offsetY: 0, dpr: 1, cssW: 0, cssH: 0 };
 
-  var state = 'menu';           // menu | playing | paused | over
+  var state = 'menu';            
   var accumulator = 0;
   var lastTime = 0;
 
   var player = null;
-  var players = [];             // the bolt pool and enemy AI work off lists
+  var players = [];              
   var enemies = [];
   var combatants = [];
   var enemyPool = [];
@@ -3577,7 +3577,7 @@ window.CreatorDNA = Object.freeze({
 
   var match = null;
 
-  /* ---------------- match bookkeeping ---------------- */
+   
 
   function newMatch() {
     return {
@@ -3596,7 +3596,7 @@ window.CreatorDNA = Object.freeze({
     };
   }
 
-  /* ---------------- wave director ---------------- */
+   
 
   var ROSTER = [
     { id: 'grunt', from: 1 },
@@ -3618,7 +3618,7 @@ window.CreatorDNA = Object.freeze({
     return Weapons.enemyProfiles[id];
   }
 
-  // Deliberately lean: a readable handful of enemies, not a crowd.
+   
   function waveSize(wave) { return Math.min(12, 2 + Math.round(wave)); }
   function maxConcurrent(wave) { return Math.min(6, 3 + Math.floor(wave / 3)); }
   function spawnInterval(wave) { return Math.max(0.6, 1.6 - wave * 0.06); }
@@ -3652,7 +3652,7 @@ window.CreatorDNA = Object.freeze({
     match.waveSpawned++;
   }
 
-  /* ---------------- world callbacks ---------------- */
+   
 
   var world = {
     players: players,
@@ -3721,7 +3721,7 @@ window.CreatorDNA = Object.freeze({
     onReloadStart: function () { AudioManager.reload(); }
   };
 
-  /* ---------------- pickups ---------------- */
+   
 
   function spawnPickup(x, y) {
     pickups.push({ x: x, y: y, life: 16, bob: Math.random() * 6.28 });
@@ -3772,7 +3772,7 @@ window.CreatorDNA = Object.freeze({
     }
   }
 
-  /* ---------------- lifecycle ---------------- */
+   
 
   function startMatch() {
     AudioManager.unlock();
@@ -3783,8 +3783,8 @@ window.CreatorDNA = Object.freeze({
     });
     player.resetStats();
 
-    // The player carries every gun they own; the Armory choice is the one they
-    // draw first. Each gun keeps its own magazine for the whole match.
+     
+     
     var loadout = Weapons.order.filter(function (id) { return SaveManager.owns(id); });
     player.setLoadout(loadout, SaveManager.equipped);
     UI.renderGunGrid(loadout, player.weapon.id, function (id) { switchGun(id); });
@@ -3804,7 +3804,7 @@ window.CreatorDNA = Object.freeze({
 
     AudioManager.startMusic();
     InputManager.clear();
-    // Aim up-arena rather than at the canvas origin until the mouse first moves.
+     
     InputManager.pointer.x = player.x;
     InputManager.pointer.y = player.y - 220;
     lastTime = 0;
@@ -3820,7 +3820,7 @@ window.CreatorDNA = Object.freeze({
       ? Math.round((player.shotsHit / player.shotsFired) * 100) : 0;
     var coins = Math.round(match.score / 10) + wavesCleared * 15 +
                 match.kills * 3 + (victory ? 250 : 0);
-    coins = Math.max(10, coins);   // every match pays a little
+    coins = Math.max(10, coins);    
 
     match.coins = coins;
     SaveManager.addCoins(coins);
@@ -3881,7 +3881,7 @@ window.CreatorDNA = Object.freeze({
     pickups.length = 0;
   }
 
-  /* ---------------- simulation ---------------- */
+   
 
   function rebuildCombatants() {
     combatants.length = 0;
@@ -3910,8 +3910,8 @@ window.CreatorDNA = Object.freeze({
 
     if (state !== 'playing') return;
 
-    // Once the wave has finished spawning and only a couple of hostiles are
-    // left, they stop holding cover and come to the player — no stalled waves.
+     
+     
     world.hunt = !match.inIntermission &&
                  match.waveSpawned >= match.waveTotal &&
                  alive <= 2;
@@ -3941,7 +3941,7 @@ window.CreatorDNA = Object.freeze({
     }
   }
 
-  /* ---------------- weapon switching ---------------- */
+   
 
   function switchGun(id) {
     if (state !== 'playing') return false;
@@ -3953,7 +3953,7 @@ window.CreatorDNA = Object.freeze({
     return true;
   }
 
-  /** Number keys pick a slot; Q/E and the mouse wheel cycle through them. */
+   
   function handleWeaponSwitch() {
     if (!player.alive || player.loadout.length < 2) return;
 
@@ -3978,7 +3978,7 @@ window.CreatorDNA = Object.freeze({
     }
   }
 
-  /* ---------------- rendering ---------------- */
+   
 
   function resize() {
     var dpr = Math.min(global.devicePixelRatio || 1, 2);
@@ -4119,12 +4119,12 @@ window.CreatorDNA = Object.freeze({
     hudState.state = player.reloading ? 'RELOADING…' : '';
     UI.updateHud(hudState);
 
-    // the drawn gun's rounds live on the player, the rest in the magazine map
+     
     player.mags[player.weapon.id] = player.ammo;
     UI.updateGunGrid(player.weapon.id, player.mags);
   }
 
-  /* ---------------- main loop ---------------- */
+   
 
   function frame(ts) {
     global.requestAnimationFrame(frame);
@@ -4157,7 +4157,7 @@ window.CreatorDNA = Object.freeze({
     InputManager.endFrame();
   }
 
-  /* ---------------- public ---------------- */
+   
 
   var Game = {
     init: function (canvasEl) {
@@ -4189,10 +4189,10 @@ window.CreatorDNA = Object.freeze({
     quit: quitToMenu,
     get state() { return state; },
 
-    /**
-     * Read-only view of the live simulation. Exposed for automated browser
-     * testing and debugging; the game itself never reads it.
-     */
+    
+
+
+
     _internals: function () {
       return {
         player: player, players: players, enemies: enemies,
@@ -4200,7 +4200,7 @@ window.CreatorDNA = Object.freeze({
       };
     },
 
-    /** Called when the equipped gun changes outside a match. */
+     
     refreshLoadout: function () {
       if (state === 'menu' && player) player.weapon = Weapons.get(SaveManager.equipped);
     },
@@ -4214,9 +4214,9 @@ window.CreatorDNA = Object.freeze({
 
   global.Game = Game;
 })(window);
-/* ==========================================================================
-   main — bootstrap. Load save, wire the UI to the game, start the loop.
-   ========================================================================== */
+
+
+
 
 (function (global) {
   'use strict';

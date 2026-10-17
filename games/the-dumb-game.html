@@ -1,6 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script>
+window.CreatorDNA = Object.freeze({
+  creator: "Coolbros1418",
+  game: "The Dumb Game",
+  gameId: "the-dumb-game",
+  originId: "CDNA-O-846PZ-2AP0B",
+  conceptId: "CDNA-C-3HQQT-95M3B",
+  version: "6.3.0",
+  conceptDate: "2026-09-04T21:55:46Z",
+  released: "2026-09-06T14:22:18Z",
+  fingerprint: "65f06d221039459ca1b592c380684f35341ae46794446548fe3fbadc958896ce",
+  signature: "l1obntt8wz+svhybT3O7BmBCZiNRbB7cvixMWRjZDsmB5Uso7/4v2cQ6SoECo0+auMw2bffSHCT2UtH69wSiDw==",
+  publicKeyId: "f4e07b5fe705eb901a670d5d3845f0b61f2b1ff6aa73145eeb18404aa2f664f0",
+  algorithm: "Ed25519 over the canonical record JSON; SHA-256 for the fingerprint",
+  verify: "Ed25519 signature over the canonical Creator DNA record; check it with the Coolbros1418 public key."
+});
+</script>
+
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no,viewport-fit=cover">
 <title>The Dumb Game</title>
@@ -21,12 +39,12 @@ const clamp=(v,a,b)=>v<a?a:v>b?b:v, rnd=(a,b)=>a+Math.random()*(b-a), ri=(a,b)=>
 const pick=a=>a[Math.floor(Math.random()*a.length)], dist2=(a,b)=>{const dx=a.x-b.x,dy=a.y-b.y;return dx*dx+dy*dy};
 const lerp=(a,b,t)=>a+(b-a)*t;
 
-/* ---------- save ---------- */
+ 
 const SV={m:{},
  get(k,d){try{const v=localStorage.getItem(k);return v==null?(this.m[k]??d):JSON.parse(v)}catch(e){return this.m[k]??d}},
  set(k,v){this.m[k]=v;try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
 
-/* ---------- audio ---------- */
+ 
 let AC=null,eng=null,engG=null;
 function ac(){if(!AC){try{AC=new (window.AudioContext||window.webkitAudioContext)()}catch(e){}}return AC}
 function snd(f,d,t,v,f2){
@@ -51,7 +69,7 @@ const sfx={talk:()=>snd(520,.05,'square',.03),ok:()=>snd(760,.12,'triangle',.05)
   pick:()=>snd(880,.1,'triangle',.05),horn:()=>snd(300,.25,'square',.05,290),
   door:()=>snd(200,.15,'sine',.05,320)};
 
-/* ---------- input ---------- */
+ 
 const key={};let actPress=false,touch=false,mapToggle=false,closePress=false,quitPress=false,respawnPress=false,questQuitPress=false,yesPress=false,noPress=false;
 addEventListener('keydown',e=>{
   if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown',' '].includes(e.key))e.preventDefault();
@@ -112,7 +130,7 @@ function axis(){
   return{x,y,m:Math.min(1,m)};
 }
 
-/* ---------- object kinds ---------- */
+ 
 function rr(x,y,w,h,r){X.beginPath();X.moveTo(x+r,y);X.arcTo(x+w,y,x+w,y+h,r);X.arcTo(x+w,y+h,x,y+h,r);X.arcTo(x,y+h,x,y,r);X.arcTo(x,y,x+w,y,r);X.closePath()}
 function box(x,y,w,h,c,r){X.fillStyle=c;rr(x,y,w,h,r||3);X.fill()}
 function txt(t,x,y,s,c,al,wt){X.fillStyle=c;X.font=(wt||700)+' '+s+'px system-ui,sans-serif';X.textAlign=al||'left';X.fillText(t,x,y)}
@@ -193,7 +211,7 @@ const K={
    X.strokeStyle='#2b2d42';X.lineWidth=6;X.beginPath();X.moveTo(o.x+o.w*.3,o.y+o.h*.72);X.lineTo(o.x+o.w*.7,o.y+o.h*.72);X.stroke();X.lineWidth=1}}
 };
 
-/* ---------- maps ---------- */
+ 
 function O(k,x,y,w,h,e){return Object.assign({k,x,y,w:w||24,h:h||24},e||{})}
 const ROADS=[
  {x:0,y:1400,w:7200,h:170,hz:1},{x:300,y:2450,w:6300,h:170,hz:1},{x:0,y:3850,w:7200,h:220,hz:1},
@@ -205,12 +223,12 @@ function B(label,x,y,w,h,col,roof){TOWN.push(O('building',x,y,w,h,{label,col,roo
 function HS(x,y,label){TOWN.push(O('house',x,y,190,145,{label,col:pick(['#e7d3b3','#dbe7c9','#e6d3e7','#d8e7ea','#f0e2c0','#e8dcd0']),roof:pick(['#a8503f','#6d8f5a','#7a5b8f','#4f7f8f','#b07f3f'])}))}
 function DR(x,y,to,tx,ty,label){TOWN.push(O('door',x,y,36,26,{to,tx,ty,label}))}
 function SC(k,x,y,w,h,n,e){for(let i=0;i<n;i++)TOWN.push(O(k,x+rnd(0,w),y+rnd(0,h),(e&&e.w)||24,(e&&e.h)||24,Object.assign({},e)))}
-// residential NW
+ 
 [[300,300,"GREG'S"],[700,320],[1080,300],[300,700],[700,900,'MIKE'],[1150,760],[1400,300],[1350,1050]].forEach(h=>HS(h[0],h[1],h[2]));
 DR(385,452,'home',403,500,'HOME');
 B('GARAGE',560,560,150,120,'#b6b1a4','#5f5a50');DR(620,682,'garage',638,730,'GARAGE');
 SC('tree',150,1150,1400,180,7,{w:46,h:54});SC('bush',200,500,1300,600,10,{w:40,h:28});
-// downtown
+ 
 B('STORE',2050,950,280,200,'#e0d6bd','#3f6d8f');DR(2170,1142,'store',2188,1190,'STORE');
 B('CHAIRS',2400,950,180,190,'#d9c9c9','#7f4a4a');DR(2470,1132,'chairs',2488,1180,'CHAIRS');
 B('BARBER?',2650,950,220,190,'#cfe0e8','#476b7a');
@@ -222,46 +240,46 @@ DR(3060,1250,'basement',3078,1300,'BASEMENT');
 B('FASHION?',1950,1180,230,150,'#e8d0e0','#8f5b8f');DR(2050,1332,'shop',2068,1380,'FASHION?');TOWN[TOWN.length-1].poi='SHOP';
 SC('trash',1900,880,1300,40,6,{w:24,h:28});SC('bench',2000,1300,1100,40,5,{w:70,h:26});
 SC('hydrant',1900,1330,1300,30,4,{w:18,h:22});
-// shopping
+ 
 B('MEGA STORE',3550,300,420,260,'#d6c9b4','#4a6b7a');
 B('SHOES',4050,300,300,240,'#e0d0d8','#7a4a6b');
 B('THINGS',4420,300,320,240,'#d0dcd0','#4a7a5a');
 B('MORE THINGS',3600,620,400,200,'#dcd0c0','#7a6a4a');
 SC('cart',3520,920,860,340,9,{w:44,h:40});SC('trash',3500,880,900,30,4,{w:24,h:28});
-// park
+ 
 TOWN.push(O('pond',5900,300,420,240));
 SC('bench',5350,250,1450,1000,9,{w:70,h:26});SC('flower',5350,250,1450,1000,10,{w:40,h:20});
-// gas station
+ 
 B('GAS',1000,1700,180,140,'#e8e8e8','#c1121f');
 TOWN.push(O('pump',1250,1750,26,44),O('pump',1310,1750,26,44),O('pump',1370,1750,26,44));
 TOWN.push(O('vending',960,1880,34,50,{secret:1}));
-// school
+ 
 B('SCHOOL',2100,1750,600,300,'#e0c9a8','#8f5b3a');
 SC('bench',2100,2120,600,120,4,{w:70,h:26});SC('bush',2750,1750,140,500,5,{w:40,h:28});
-// construction
+ 
 TOWN.push(O('tower',3600,1780,60,180));
 SC('barrier',3500,1980,850,320,10,{w:60,h:16});SC('crate',3500,1980,850,320,10,{w:34,h:34});
 SC('cone2',3480,1900,900,400,12,{w:24,h:26});SC('tire',3500,2200,800,120,6,{w:24,h:24});
 B('SHED',3980,1760,160,130,'#b0a48c','#6b6152');DR(4050,1882,'coneroom',4068,1930,'SHED');
-// industrial
+ 
 B('WAREHOUSE',5300,1780,360,220,'#b9b09c','#5d5548');DR(5460,1992,'nope',5478,2040,'DO NOT OPEN');
 B('FACTORY',5800,1800,500,260,'#a8a294','#585045');
 SC('dumpster',5250,2080,1300,220,7,{w:60,h:36});SC('tire',5250,2080,1300,220,8,{w:24,h:24});
-// big parking
+ 
 SC('cone2',2020,2680,860,400,8,{w:24,h:26});
 TOWN.push(O('manhole',2450,2860,32,16,{to:'tunnel',tx:2468,ty:2900}));
-// farm
+ 
 TOWN.push(O('barn',700,2900,260,180));
 TOWN.push(O('fence',320,2780,1260,14),O('fence',320,2780,14,900),O('fence',1566,2780,14,900),O('fence',320,3666,700,14));
 SC('chairprop',400,3200,900,400,6,{w:16,h:26});SC('bush',350,3300,1200,350,8,{w:40,h:28});
-// forest
+ 
 TOWN.push(O('manhole',6000,3050,32,16,{to:'storage',tx:6018,ty:3090}));
 TOWN.push(O('tree',5560,2860,120,140,{big:1}));DR(5600,2960,'treehouse',5618,3020,'TREE?');
-// tiny town
+ 
 [[5700,4150],[5900,4180],[6120,4150]].forEach(h=>TOWN.push(O('house',h[0],h[1],90,70,{col:'#e7d3b3',roof:'#a8503f'})));
 TOWN.push(O('sign',6300,4200,50,44,{text:'TINY TOWN'}));
 TOWN.push(O('invdog',5650,1050,30,26,{}));
-// misc signs + secrets
+ 
 TOWN.push(O('sign',1600,1340,50,44,{text:'MAIN ST'}),O('sign',3200,1340,50,44,{text:'NOTHING'}),
  O('sign',900,2500,50,44,{text:'FARM →'}),O('sign',4900,1340,50,44,{text:'PARK ↑'}),
  O('sign',5200,3900,50,44,{text:'HIGHWAY'}),O('button',4700,2400,20,16,{mystery:1}),
@@ -343,12 +361,12 @@ const MAPS={
    O('door',190,280,36,26,{to:'town',tx:5618,ty:3020,label:'DOWN'}),
    O('sign',300,150,50,44,{text:'MY HOUSE'})]}
 };
-// roads -> zones + traffic paths
+ 
 ROADS.forEach(r=>{
   MAPS.town.zones.push(['#c3bdaa',r.x-14,r.y-14,r.w+28,r.h+28]);
   MAPS.town.zones.push(['#5a5f66',r.x,r.y,r.w,r.h]);
 });
-// generators
+ 
 function buildGen(m){
   (m.gen||[]).forEach(g=>{
     const [k,x,y,w,h,n]=g;
@@ -358,13 +376,13 @@ function buildGen(m){
   });
 }
 for(const k in MAPS)buildGen(MAPS[k]);
-// keep props off the roads
+ 
 MAPS.town.obj=MAPS.town.obj.filter(o=>{
   if(['door','manhole','sign','pole','button'].includes(o.k))return true;
   return !ROADS.some(r=>o.x+o.w>r.x-6&&o.x<r.x+r.w+6&&o.y+o.h>r.y-6&&o.y<r.y+r.h+6);
 });
 
-/* ---------- npcs ---------- */
+ 
 const NPCS=[
  {id:'dave',name:'Dave',map:'town',x:820,y:520,col:'#81b29a',beh:'stand',
   talk:()=>[['Dave','"Nice weather."'],['Greg','"It\'s raining."'],['Dave','"I know."']]},
@@ -458,7 +476,7 @@ const NPCS=[
  {id:'disp2',name:'Dispatcher 2',map:'town',x:5350,y:2250,col:'#f4a261',beh:'stand',q:'selfdeliver'},
  {id:'manager',name:'Manager',map:'town',x:2200,y:1780,col:'#3d405b',beh:'stand',q:'meeting',cos:['normalglasses']},
  {id:'inspector',name:'Inspector',map:'town',x:1980,y:1000,col:'#eef2f5',beh:'stand',q:'sandinspect',coat:1},
- // job givers
+  
  {id:'dispatch',name:'Dispatcher',map:'town',x:2200,y:1650,col:'#f4a261',beh:'stand',j:'taxi'},
  {id:'boss',name:'Warehouse Boss',map:'town',x:5400,y:2100,col:'#8d99ae',beh:'stand',j:'delivery'},
  {id:'sani',name:'Sanitation Chief',map:'town',x:1500,y:2600,col:'#5d7a52',beh:'stand',j:'trash'},
@@ -468,7 +486,7 @@ const NPCS=[
  {id:'pizza',name:'Pizza Manager',map:'town',x:3000,y:1050,col:'#e63946',beh:'stand',j:'pizza'},
  {id:'mech',name:'Mechanic',map:'town',x:1150,y:1880,col:'#6b705c',beh:'stand',j:'cartest'}
 ];
-/* ambient population: archetypes + one shared behaviour set */
+ 
 const ARCH=[
  ['Tourist','#ffca3a',[['"Is this the town?"'],['"We drove four hours."'],['"Where is the attraction?"']]],
  ['Student','#7f9cc9',[['"I have a test."'],['"I did not study."'],['"It\'s fine."']]],
@@ -531,9 +549,9 @@ function reactLine(){
 })();
 
 
-/* ---------- cosmetics (one system, all items are data) ---------- */
+ 
 const COS=[
- // hats
+  
  {id:'cone',n:'TRAFFIC CONE HAT',c:'hat',p:25,d:'"It was $25."',dr:(x,h)=>{X.fillStyle='#f4732a';X.beginPath();X.moveTo(x,h-30);X.lineTo(x+11,h-8);X.lineTo(x-11,h-8);X.closePath();X.fill();X.fillStyle='#fff';X.fillRect(x-8,h-19,16,4)}},
  {id:'party',n:'TINY PARTY HAT',c:'hat',p:5,d:'"For tiny parties."',dr:(x,h)=>{X.fillStyle='#e63946';X.beginPath();X.moveTo(x+2,h-19);X.lineTo(x+7,h-8);X.lineTo(x-3,h-8);X.closePath();X.fill()}},
  {id:'cowboy',n:'GIANT COWBOY HAT',c:'hat',p:100,d:'"Yeehaw, probably."',dr:(x,h)=>{X.fillStyle='#8a5f34';X.beginPath();X.ellipse(x,h-9,26,7,0,0,7);X.fill();box(x-9,h-24,18,15,'#8a5f34',3)}},
@@ -548,14 +566,14 @@ const COS=[
  {id:'pizzahat',n:'PIZZA HAT',c:'hat',p:0,d:'"Still warm."',dr:(x,h)=>{X.fillStyle='#e6c07b';X.beginPath();X.moveTo(x,h-26);X.lineTo(x+12,h-8);X.lineTo(x-12,h-8);X.closePath();X.fill();X.fillStyle='#c1121f';X.beginPath();X.arc(x-4,h-14,2.5,0,7);X.arc(x+4,h-13,2.5,0,7);X.fill()}},
  {id:'chickenhat',n:'CHICKEN HAT',c:'hat',p:0,d:'"It knows."',dr:(x,h)=>{X.fillStyle='#f6f6f6';X.beginPath();X.arc(x,h-16,9,0,7);X.fill();X.fillStyle='#d33';X.beginPath();X.arc(x,h-24,4,0,7);X.fill();X.fillStyle='#f4a300';X.beginPath();X.moveTo(x+8,h-15);X.lineTo(x+15,h-13);X.lineTo(x+8,h-11);X.fill()}},
  {id:'dumbhat',n:'EXTREMELY DUMB HAT',c:'hat',p:1500,d:'"The dumbest one."',dr:(x,h)=>{for(let i=0;i<5;i++){X.fillStyle=['#ff595e','#ffca3a','#8ac926','#1982c4','#6a4c93'][i];X.beginPath();X.arc(x+Math.sin(tt*3+i)*3,h-12-i*6,9-i*1.5,0,7);X.fill()}}},
- // glasses
+  
  {id:'bigshades',n:'GIANT SUNGLASSES',c:'glasses',p:25,d:'"Cool. Allegedly."',dr:(x,h)=>{box(x-13,h-4,26,9,'#1d1d20',2)}},
  {id:'tinyglasses',n:'TINY GLASSES',c:'glasses',p:15,d:'"Nearly invisible."',dr:(x,h)=>{X.strokeStyle='#222';X.beginPath();X.arc(x-3,h-1,2,0,7);X.arc(x+3,h-1,2,0,7);X.stroke()}},
  {id:'onelens',n:'ONE LENS',c:'glasses',p:20,d:'"Half a decision."',dr:(x,h)=>{X.strokeStyle='#222';X.lineWidth=2;X.beginPath();X.arc(x+3,h-1,4,0,7);X.stroke();X.lineWidth=1}},
  {id:'pixel',n:'PIXEL GLASSES',c:'glasses',p:60,d:'"Deal with it."',dr:(x,h)=>{X.fillStyle='#1d1d20';for(let i=0;i<4;i++)X.fillRect(x-10+i*5,h-4,4,4);X.fillRect(x-10,h,20,3)}},
  {id:'normalglasses',n:'COMPLETELY NORMAL GLASSES',c:'glasses',p:12,d:'"Nothing unusual."',dr:(x,h)=>{X.strokeStyle='#3d405b';X.lineWidth=1.5;X.strokeRect(x-8,h-4,6,5);X.strokeRect(x+2,h-4,6,5);X.beginPath();X.moveTo(x-2,h-2);X.lineTo(x+2,h-2);X.stroke();X.lineWidth=1}},
  {id:'mustache',n:'FAKE MUSTACHE',c:'glasses',p:8,d:'"Nobody will know."',dr:(x,h)=>{X.fillStyle='#3a2a1a';X.beginPath();X.ellipse(x-4,h+5,4,2,0,0,7);X.ellipse(x+4,h+5,4,2,0,0,7);X.fill()}},
- // accessories
+  
  {id:'conepack',n:'TRAFFIC CONE BACKPACK',c:'acc',p:40,d:'"Cones on the go."',dr:(x,h,b)=>{X.fillStyle='#f4732a';X.beginPath();X.moveTo(x-14,b-2);X.lineTo(x-8,b+16);X.lineTo(x-20,b+16);X.closePath();X.fill()}},
  {id:'spoon',n:'GIANT SPOON',c:'acc',p:50,d:'"Why?"',dr:(x,h,b)=>{X.strokeStyle='#c9c9c9';X.lineWidth=4;X.beginPath();X.moveTo(x+13,b+18);X.lineTo(x+17,b-10);X.stroke();X.fillStyle='#e0e0e0';X.beginPath();X.ellipse(x+17,b-14,5,7,0,0,7);X.fill();X.lineWidth=1}},
  {id:'floatsand',n:'FLOATING SANDWICH',c:'acc',p:500,d:'"Finally."',dr:(x,h)=>{const y=h-38+Math.sin(tt*2)*4;box(x-13,y,26,15,'#e6c07b',3);X.fillStyle='#8fbf5b';X.fillRect(x-11,y+5,22,3);X.fillStyle='#d95d39';X.fillRect(x-11,y+8,22,3)}},
@@ -564,14 +582,14 @@ const COS=[
  {id:'briefcase',n:'THE BRIEFCASE',c:'acc',p:120,d:'"Contains nothing."',dr:(x,h,b)=>{box(x+11,b+4,16,12,'#5b3a29',2);X.fillStyle='#c9a227';X.fillRect(x+17,b+3,4,2)}},
  {id:'hugekey',n:'HUGE KEY',c:'acc',p:80,d:'"Opens nothing."',dr:(x,h,b)=>{X.strokeStyle='#ffca3a';X.lineWidth=3;X.beginPath();X.arc(x+16,b-8,5,0,7);X.moveTo(x+16,b-3);X.lineTo(x+16,b+14);X.moveTo(x+16,b+8);X.lineTo(x+22,b+8);X.stroke();X.lineWidth=1}},
  {id:'plant',n:'TINY PLANT',c:'acc',p:18,d:'"A responsibility."',dr:(x,h,b)=>{box(x+12,b+6,10,9,'#b5643c',2);X.fillStyle='#3f7d2e';X.beginPath();X.arc(x+14,b+4,4,0,7);X.arc(x+20,b+3,3,0,7);X.fill()}},
- // shirts (col swaps the body)
+  
  {id:'sh_sand',n:'"I LIKE SANDWICHES" SHIRT',c:'shirt',p:25,d:'"A statement."',col:'#f0c775',lb:'SND'},
  {id:'sh_prob',n:'"PROBABLY" SHIRT',c:'shirt',p:25,d:'"Non-committal."',col:'#9fb8d6',lb:'PRB'},
  {id:'sh_npc',n:'NPC SHIRT',c:'shirt',p:75,d:'"Become one of them."',col:'#b6b6b6',lb:'NPC'},
  {id:'sh_emp',n:'"EMPLOYEE" SHIRT',c:'shirt',p:30,d:'"Of somewhere."',col:'#7fb37f',lb:'EMP'},
  {id:'sh_busy',n:'"I\'M BUSY" SHIRT',c:'shirt',p:30,d:'"You are not."',col:'#d68f8f',lb:'BSY'},
  {id:'sh_white',n:'PLAIN WHITE SHIRT',c:'shirt',p:5,d:'"It is a shirt."',col:'#f2f2f2'},
- // shoes
+  
  {id:'bigshoes',n:'GIANT SHOES',c:'shoes',p:45,d:'"Structurally concerning."',dr:(x,h,b,f)=>{X.fillStyle='#1d1d20';X.beginPath();X.ellipse(x-7,f+2,11,5,0,0,7);X.ellipse(x+7,f+2,11,5,0,0,7);X.fill()}},
  {id:'tinyshoes',n:'TINY SHOES',c:'shoes',p:20,d:'"Barely there."',dr:(x,h,b,f)=>{X.fillStyle='#1d1d20';X.fillRect(x-5,f,3,2);X.fillRect(x+2,f,3,2)}},
  {id:'flippers',n:'FLIPPERS',c:'shoes',p:35,d:'"For the road."',dr:(x,h,b,f)=>{X.fillStyle='#3f9d5a';X.beginPath();X.ellipse(x-8,f+3,10,4,0,0,7);X.ellipse(x+8,f+3,10,4,0,0,7);X.fill()}},
@@ -590,7 +608,7 @@ function drawCos(e,list,bob,sit){
     if(c&&c.lb){txt(c.lb,e.x,by+11,6,'rgba(0,0,0,.55)','center',800)}}
 }
 
-/* ---------- vehicles ---------- */
+ 
 const CARS=[
  {id:'tiny',map:'town',x:1500,y:1330,ang:0,col:'#ffca3a',w:34,h:24,sp:560,ac:620,hd:4.2,name:'TINY CAR',drive:1},
  {id:'van',map:'town',x:5350,y:2150,ang:0,col:'#4a6fa5',w:86,h:40,sp:330,ac:200,hd:1.8,name:'ENORMOUS VAN',drive:1,heavy:1},
@@ -605,7 +623,7 @@ const CARS=[
  {id:'pizzacar',map:'town',x:3100,y:1200,ang:0,col:'#e63946',w:52,h:28,sp:460,ac:400,hd:3,name:'PIZZA CAR',drive:1},
  {id:'sleepcar',map:'town',x:2100,y:2900,ang:0,col:'#457b9d',w:58,h:30,sp:0,ac:0,hd:0,name:'OCCUPIED CAR',npc:1}
 ];
-// traffic generated from road data
+ 
 ROADS.forEach((r,i)=>{
   const n=r.hz?2:2;
   for(let k=0;k<n;k++){
@@ -619,7 +637,7 @@ ROADS.forEach((r,i)=>{
   }
 });
 
-/* ---------- quests ---------- */
+ 
 const QUESTS={
  chicken:{title:'FIND MY CHICKEN',
   start:[['Linda','"My chicken is missing."'],['Greg','"Where did it go?"'],['Linda','"Probably somewhere."']],
@@ -737,7 +755,7 @@ const QUESTS={
   start:[['Goat In A Tie','"BAAA."'],['Narrator','"You have been promoted."'],['Greg','"To what?"'],['Narrator','"Unclear."']],
   check:()=>true,done:[['Goat In A Tie','"BAAA."'],['Narrator','"That means good job."'],['Greg','"Thank you, sir."']],reward:{money:25,cos:'dumbhat'}}
 };
-/* ---------- jobs (same dialogue/marker systems) ---------- */
+ 
 const JOBS={
  taxi:{title:'TAXI DRIVER',icon:'CAR',cool:20,reward:{money:20,cos:'taxicap'},timeLimit:150,fail:'The passenger walked.',
   steps:[{text:'GET A CAR AND DRIVE TO THE CORNER',go:[3300,1480],r:130,car:1,say:[['Passenger','"Turn left."']]},
@@ -777,7 +795,7 @@ let money=SV.get('dg3_money',0), inv=SV.get('dg3_inv',[]), day=SV.get('dg3_day',
 function give(it){if(!inv.includes(it)){inv.push(it);SV.set('dg3_inv',inv);pop('GOT: '+it,'#ffca3a')}}
 function pay(n){money+=n;SV.set('dg3_money',money);pop('+$'+n,'#8ac926')}
 
-/* ---------- state ---------- */
+ 
 let map='town',P,cam={x:0,y:0,z:1,tx:0,ty:0,tz:1,shake:0,focus:null},
     objs=[],npcs=[],cars=[],parts=[],pops=[],dlg=null,cs=null,drive=null,
     fade=0,fadeTo=0,evT=8,hint=null,notice=null,noticeT=0,paused=false,tt=0,marker=null,shop=null,bigmap=false,navT=0,mapInfo=null,fadeStuck=0;
@@ -787,7 +805,7 @@ P={x:430,y:560,w:18,h:24,vx:0,vy:0,face:1,anim:0,carry:null,map:'town'};
 function pop(t,c){pops.push({t,c:c||'#fff',x:P.x,y:P.y-30,life:0})}
 function notify(t){notice=t;noticeT=3}
 
-/* ---------- world ---------- */
+ 
 function loadMap(id,x,y){
   map=id;const m=MAPS[id];
   objs=m.obj;
@@ -816,7 +834,7 @@ function moveBox(e,dx,dy,sol){
 function hit(e,s){return e.x-e.w/2<s.x+s.w&&e.x+e.w/2>s.x&&e.y-e.h/2<s.y+s.h&&e.y+e.h/2>s.y}
 function near(a,b,r){return dist2(a,b)<r*r}
 
-/* ---------- dialogue ---------- */
+ 
 function talk(lines,onEnd,auto){
   const l=lines.filter(x=>{if(x[2]&&!x[0]){x[2]();return false}return true});
   if(!l.length){if(onEnd)onEnd();return}
@@ -830,7 +848,7 @@ function dlgAdvance(){
   else{const cur=dlg.l[dlg.i];if(cur[2])cur[2]()}
 }
 
-/* ---------- cutscenes ---------- */
+ 
 function cut(acts,onEnd){cs={a:acts,i:-1,t:0,onEnd};nextAct()}
 function nextAct(){
   if(!cs)return;
@@ -931,7 +949,7 @@ const CUT={
 };
 NPCS.push({id:'endchick',name:'Chicken',map:'none',x:0,y:0,col:'#f6f6f6',bird:1,beh:'stand',talk:()=>[['Chicken','"..."']]});
 
-/* ---------- final chicken ---------- */
+ 
 function spawnFinalChicken(){
   const c={id:'finalchick',name:'Chicken',map:'town',x:5900,y:600,col:'#f6f6f6',bird:1,beh:'flee',hits:0,
     w:20,h:18,t:0,rx:5900,ry:600,
@@ -942,7 +960,7 @@ function spawnFinalChicken(){
   NPCS.push(c);if(map==='town')npcs.push(c);
 }
 
-/* ---------- chaos events ---------- */
+ 
 const EVENTS=[
  {id:'runcart',w:5,cd:70,f:()=>{fx('MY CART!');
    const c=tempObj('cart',P.x+rnd(-200,200),P.y-160,44,40,22);push(c,rnd(-1,1),1,700);
@@ -1065,7 +1083,7 @@ let tmps_unused;
 function tmp(o){o.t=0;o.vx=o.vx||0;o.vy=o.vy||0;tmps.push(o);return o}
 function fx(t){if(t)notify('"'+t+'"')}
 
-/* ---------- interaction ---------- */
+ 
 function interactTarget(){
   let best=null,bd=1e9;
   const cand=[];
@@ -1121,7 +1139,7 @@ function useObj(o){
   if(o.k==='cart'||K[o.k]&&K[o.k].p){push(o,(o.x-P.x)*2,(o.y-P.y)*2,180);return}
   talk([['Greg','"..."']]);
 }
-/* ---------- lightweight physics (one system, all objects) ---------- */
+ 
 function push(o,dx,dy,f){
   const m=Math.hypot(dx,dy)||1;const w=(K[o.k].p||1);
   o.vx=(o.vx||0)+dx/m*f*w;o.vy=(o.vy||0)+dy/m*f*w;
@@ -1147,7 +1165,7 @@ function physUpdate(dt){
       if(Math.hypot(o.vx,o.vy)<6){o.vx=0;o.vy=0;o.spin=0;
         if(Math.hypot(o.x-o.ox,o.y-o.oy)>90){o.ox=o.x;o.oy=o.y;objMoved(o)}}
     }
-    // greg bumps into it
+     
     if(!P.inCar&&hit(P,{x:o.x,y:o.y,w:o.w,h:o.h}))push(o,o.x+o.w/2-P.x,o.y+o.h/2-P.y,150);
   }
 }
@@ -1255,7 +1273,7 @@ function questDone(id){
   if(qd.rep)questCD[id]=tt+(qd.cool||20);
 }
 function questTick(dt){
-  // cooldown -> back to available
+   
   for(const id in questCD)if(questCD[id]&&questCD[id]<=tt&&Q.st(id)==='done'){
     Q.set(id,'none');questCD[id]=0;
     const qd0=QUESTS[id];if(qd0.flag)F[qd0.flag]=0;
@@ -1296,7 +1314,7 @@ function respawnHome(){
 }
 function carry(k){P.carry=k;notify('Carrying: '+(k==='chair'?'A CHAIR':'A BOX'))}
 
-/* ---------- shop (one list, all items are COS data) ---------- */
+ 
 function openShop(){shop={i:0,top:0};sfx.door()}
 function shopRows(){return COS.filter(c=>c.p>0||OWN.includes(c.id))}
 function shopAct(){
@@ -1308,7 +1326,7 @@ function shopAct(){
 function shopNav(d){const n=shopRows().length;shop.i=(shop.i+d+n)%n;sfx.talk();
   if(shop.i<shop.top)shop.top=shop.i;if(shop.i>shop.top+8)shop.top=shop.i-8}
 
-/* ---------- jobs (reuses dialogue + markers) ---------- */
+ 
 let jobCD={},questCD={};
 function startJob(id){const J=JOBS[id];
   job={id,i:0,n:0,t:J.timeLimit||null,go:J.dests?pick(J.dests):null};SV.set('dg3_job',job);
@@ -1359,7 +1377,7 @@ function jobCheck(dt){
   if(Math.hypot(e.x-g[0],e.y-g[1])<s.r)jobAdvance();
 }
 
-/* ---------- the "don't move" crowd ---------- */
+ 
 let idleT=0,crowdN=0,crowdAnchor={x:0,y:0},crowdStage=0,dispT=0;
 const CROWD_STAGES=[[7,1],[14,3],[22,6],[32,11],[44,17],[58,24],[75,32]];
 const CROWD_LINES=[
@@ -1376,7 +1394,7 @@ function crowdUpdate(dt,moving){
   if(moving){idleT=Math.max(0,idleT-dt*6);dispT+=dt}
   else{idleT+=dt;dispT=0;crowdAnchor.x=P.x;crowdAnchor.y=P.y}
   if(moving){
-    // disperse: they lose interest one at a time and nobody new arrives
+     
     if(dispT>.6&&crowdN>0){
       dispT=0;
       const c=npcs.find(n=>n.crowd&&!n.leaving);
@@ -1386,7 +1404,7 @@ function crowdUpdate(dt,moving){
     }
     return;
   }
-  // grow
+   
   const st=CROWD_STAGES.findIndex(s=>idleT<s[0]);
   const want=st<0?CROWD_STAGES[CROWD_STAGES.length-1][1]:(st===0?0:CROWD_STAGES[st-1][1]);
   while(crowdN<want){
@@ -1414,7 +1432,7 @@ function resetCrowd(){
   crowdN=0;crowdStage=0;idleT=0;
 }
 
-/* ---------- vehicles ---------- */
+ 
 function enterCar(c){
   drive=c;P.inCar=1;engine(true,0);
   notify(c.name);
@@ -1456,11 +1474,11 @@ function updCar(c,dt){
       for(let i=0;i<8;i++)parts.push({x:c.x,y:c.y,vx:rnd(-80,80),vy:rnd(-80,80),life:.5,t:0,col:'#ccc',s:3});}
     c.vel=-c.vel*.25;
   } else {c.x=nx;c.y=ny}
-  // squash npcs politely
+   
   for(const n of npcs)if(near(n,c,34)&&Math.abs(c.vel)>40){n.x-=Math.cos(c.ang)*40*dt*4;n.y-=Math.sin(c.ang)*40*dt*4;
     n.panic=1.4;
     if(!n.yelled){n.yelled=2.5;notify(pick(['"HEY."','"Watch it."','"That\'s my leg."','"Nice parking."','"I was walking there."']))}}
-  // launch physics objects
+   
   const cb={x:c.x,y:c.y,w:c.w+10,h:c.h+10};
   for(const o of objs){const kk=K[o.k];if(!kk||!kk.p)continue;
     if(Math.abs(o.x-c.x)>200||Math.abs(o.y-c.y)>200)continue;
@@ -1474,7 +1492,7 @@ function updCar(c,dt){
   if(c.smoke&&Math.random()<.3)parts.push({x:c.x-Math.cos(c.ang)*20,y:c.y-Math.sin(c.ang)*20,vx:rnd(-8,8),vy:rnd(-14,-4),life:.9,t:0,col:'#9aa',s:4});
 }
 
-/* ---------- npc update ---------- */
+ 
 function updNpc(n,dt){
   n.t+=dt;
   if(n.yelled>0)n.yelled-=dt;
@@ -1511,7 +1529,7 @@ function updNpc(n,dt){
   }
 }
 
-/* ---------- drawing ---------- */
+ 
 function drawPerson(e,col,opt){
   opt=opt||{};
   const bob=Math.sin((e.anim||0))*1.6, sit=opt.sit?6:0;
@@ -1599,7 +1617,7 @@ function drawPlayer(){
   if(P.carry==='box'){box(P.x-14,P.y-40,28,22,'#c08b52',3)}
 }
 
-/* ---------- update ---------- */
+ 
 function update(dt){
   tt+=dt;
   if(mapToggle){bigmap=!bigmap;mapToggle=false}
@@ -1642,7 +1660,7 @@ function update(dt){
   actPress=false;
 
   const busy=!!(dlg||cs);
-  // player
+   
   let moving=false;
   if(!busy&&!drive){
     const a=axis();
@@ -1686,13 +1704,13 @@ function update(dt){
   for(let i=parts.length-1;i>=0;i--){const p=parts[i];p.t+=dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.vx*=.98;p.vy*=.98;if(p.t>p.life)parts.splice(i,1)}
   for(let i=pops.length-1;i>=0;i--){const p=pops[i];p.life+=dt;p.y-=26*dt;if(p.life>1.2)pops.splice(i,1)}
 
-  // chaos events
+   
   if(!busy&&map==='town'){
     evT-=dt;
     if(evT<=0){evT=rnd(11,20);
       fireEvent(Math.random()<.07?RARE:EVENTS);}
   }
-  // camera
+   
   const tgt=cam.focus||(cam.fp?cam.fp:(drive||P));
   cam.tx=tgt.x;cam.ty=tgt.y;
   cam.x=lerp(cam.x,cam.tx,Math.min(1,dt*(drive?3.4:6)));
@@ -1731,7 +1749,7 @@ function drawObj(o){
   if(o.rot){X.save();const cx=o.x+o.w/2,cy=o.y+o.h/2;X.translate(cx,cy);X.rotate(o.rot);X.translate(-cx,-cy);kk.d(o);X.restore()}
   else kk.d(o);
 }
-/* ---------- render ---------- */
+ 
 function render(){
   const m=MAPS[map];
   X.setTransform(1,0,0,1,0,0);
@@ -1771,18 +1789,18 @@ function render(){
   draws.sort((a,b)=>a.y-b.y);
   draws.forEach(d=>d.f());
 
-  // falling telegraph
+   
   for(const o of tmps)if(o.fall&&o.t<.6){X.fillStyle='rgba(0,0,0,.25)';X.beginPath();X.ellipse(o.x,o.y+14,22,10,0,0,7);X.fill();
     txt('!',o.x,o.y-6,20,'#e63946','center',900)}
   for(const p of parts){X.globalAlpha=clamp(1-p.t/p.life,0,1);X.fillStyle=p.col;X.fillRect(p.x,p.y,p.s,p.s)}
   X.globalAlpha=1;
-  // rain
+   
   if(F.rain>0){X.strokeStyle='rgba(180,210,255,.55)';X.lineWidth=1.5;
     for(let i=0;i<120;i++){const rx=L+((i*137+tt*300)%(R-L)),ry=T+((i*271+tt*900)%(B-T));
       X.beginPath();X.moveTo(rx,ry);X.lineTo(rx-3,ry+12);X.stroke()}X.lineWidth=1}
 
   if(F.storm>0){F.storm-=1/60;}
-  // objective marker
+   
   if(marker&&map==='town'){
     const pu=1+Math.sin(tt*4)*.15;
     X.strokeStyle='rgba(255,202,58,.9)';X.lineWidth=3;
@@ -1790,7 +1808,7 @@ function render(){
     X.beginPath();X.arc(marker.x,marker.y,16*pu,0,7);X.stroke();X.lineWidth=1;
     X.fillStyle='rgba(255,202,58,.25)';X.beginPath();X.arc(marker.x,marker.y,16*pu,0,7);X.fill();
   }
-  // interact prompt
+   
   if(hint){
     const e=hint.e;const bw=hint.l.length*10+26;
     X.fillStyle='rgba(20,22,28,.85)';rr(e.x-bw/2,e.y-56,bw,24,6);X.fill();
@@ -1808,7 +1826,7 @@ function render(){
 }
 
 function ui(){
-  // top bar
+   
   X.fillStyle='rgba(16,18,24,.55)';X.fillRect(0,0,W,38);
   txt('$'+money,16,25,18,'#8ac926');
   txt('DAY '+day,110,25,15,'#c9c9c9');
@@ -1821,7 +1839,7 @@ function ui(){
     txt('JOB: '+s2.text,26,62,12,'#ffca3a');
     if(job.t!=null){const lo=job.t<20;
       txt('TIME: '+fmt(job.t),26,80,15,lo&&Math.sin(tt*8)>0?'#ff595e':'#fff','left',800)}
-    // QUIT JOB button
+     
     const qy=job.t!=null?94:76;job.btn=[14,qy,108,24];
     X.fillStyle=quitAsk?'rgba(230,57,70,.9)':'rgba(230,57,70,.55)';rr(14,qy,108,24,5);X.fill();
     txt('QUIT JOB'+(touch?'':'  [X]'),68,qy+16,11,'#fff','center',800);
@@ -1839,7 +1857,7 @@ function ui(){
     txt(touch?'TAP A BUTTON':'Y / N',W/2,H/2+76,12,'rgba(255,255,255,.45)','center',700);
     return;
   }
-  // quest panel + QUIT QUEST
+   
   if(aq&&QUESTS[aq.id]&&!QUESTS[aq.id].hidden){
     const qd=QUESTS[aq.id],y0=job?128:44;
     X.fillStyle='rgba(16,18,24,.6)';rr(14,y0,Math.max(230,qd.title.length*8+30),aq.t!=null?66:48,6);X.fill();
@@ -1849,7 +1867,7 @@ function ui(){
     X.fillStyle=quitAsk==='quest'?'rgba(230,57,70,.9)':'rgba(230,57,70,.5)';rr(14,qy,116,22,5);X.fill();
     txt('QUIT QUEST'+(touch?'':'  [C]'),72,qy+15,10,'#fff','center',800);
   }
-  // objective direction arrow
+   
   if(marker&&map==='town'&&!cs){
     const dx=marker.x-P.x,dy=marker.y-P.y,d=Math.hypot(dx,dy);
     const near2=d<160;
@@ -1866,7 +1884,7 @@ function ui(){
   }
   if(crowdN>3)txt(crowdN+' PEOPLE ARE WATCHING GREG',W/2,60,13,'rgba(255,255,255,.75)','center',700);
 
-  // minimap
+   
   if(map==='town'&&!cs){
     const mw=150,mh=92,mx=W-mw-14,my=46,m=MAPS.town;
     X.fillStyle='rgba(16,18,24,.5)';rr(mx,my,mw,mh,6);X.fill();
@@ -1881,20 +1899,20 @@ function ui(){
     for(const o of objs)if(o.poi){X.fillStyle=ICON[o.poi][1];X.fillRect(mx+o.x*sx-1.5,my+o.y*sy-1.5,3,3)}
     txt('M = MAP',mx+mw/2,my+mh+12,9,'rgba(255,255,255,.45)','center',700);
   }
-  // boss bar
+   
   if(F.bossT>0){
     X.fillStyle='rgba(16,18,24,.7)';rr(W/2-200,52,400,32,6);X.fill();
     X.fillStyle='#ff595e';rr(W/2-194,58,388,20,4);X.fill();
     txt('GUY',W/2,75,17,'#fff','center',900);
   }
-  // notice
+   
   if(noticeT>0){
     X.globalAlpha=clamp(noticeT,0,1);
     X.font='800 16px system-ui';const tw=X.measureText(notice).width;
     X.fillStyle='rgba(16,18,24,.8)';rr(W/2-tw/2-16,H-150,tw+32,30,7);X.fill();
     txt(notice,W/2,H-130,16,'#ffca3a','center',800);X.globalAlpha=1;
   }
-  // dialogue
+   
   if(dlg){
     const c=dlg.l[dlg.i];if(!c)return;
     const bh=c[0]?86:70;
@@ -1907,7 +1925,7 @@ function ui(){
   }
   for(const p of pops){X.globalAlpha=clamp(1.2-p.life,0,1);
     const s=(p.x-cam.x)*cam.z+W/2,t=(p.y-cam.y)*cam.z+H/2;txt(p.t,s,t,14,p.c,'center',800);X.globalAlpha=1}
-  // shop
+   
   if(shop){
     X.fillStyle='rgba(10,12,16,.97)';X.fillRect(0,0,W,H);
     txt('FASHION?',40,54,30,'#fff','left',900);
@@ -1926,7 +1944,7 @@ function ui(){
     txt(touch?'TAP AN ITEM TO BUY / WEAR  ·  TAP BELOW TO LEAVE':'W/S SELECT  ·  E BUY / WEAR  ·  Q LEAVE',W/2,H-28,13,'rgba(255,255,255,.5)','center',700);
     return;
   }
-  // big map
+   
   if(bigmap&&map==='town'){
     const m=MAPS.town,mw=W-120,mh=H-140,mx=60,my=86,sx=mw/m.w,sy=mh/m.h;
     X.fillStyle='rgba(10,12,16,.96)';X.fillRect(0,0,W,H);
@@ -1951,7 +1969,7 @@ function ui(){
     X.strokeStyle='rgba(255,255,255,.18)';rr(12,H-44,106,28,6);X.stroke();
     txt('RESPAWN'+(touch?'':'  [R]'),65,H-25,11,'rgba(255,255,255,.8)','center',800);
   }
-  // touch controls
+   
   if(touch&&!dlg){
     if(stick.on){X.fillStyle='rgba(255,255,255,.13)';X.beginPath();X.arc(stick.ox,stick.oy,52,0,7);X.fill();
       X.fillStyle='rgba(255,255,255,.3)';X.beginPath();X.arc(stick.ox+stick.x*46,stick.oy+stick.y*46,22,0,7);X.fill()}
@@ -1968,7 +1986,7 @@ function wrap(t,x,y,mw,lh){
   txt(line,x,yy,21,'#fff','left',600);
 }
 
-/* ---------- boot ---------- */
+ 
 loadMap('town',430,560);
 if(!F.intro){F.intro=1;saveF();setTimeout(()=>cut(CUT.intro),500)}
 if(Q.st('sandwich')==='active'&&!F.sandwichDone)spawnFinalChicken();

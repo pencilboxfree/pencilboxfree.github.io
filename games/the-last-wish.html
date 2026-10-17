@@ -200,8 +200,8 @@ input[type=range]{width:160px;accent-color:#d8b45e}
 <script>
 (function(){
 'use strict';
-// ---- js_core.js ----
-// Core: constants, math helpers, seeded noise, storage, settings, input, canvas sizing.
+ 
+ 
 
 const GAME_ID = 'the-last-wish';
 const GAME_TITLE = 'The Last Wish';
@@ -209,15 +209,15 @@ const GAME_VERSION = '1.4.0';
 const SAVE_PREFIX = 'pencilbox.thelastwish.';
 const SAVE_VERSION = 1;
 
-const VW = 960, VH = 540;          // virtual view height is fixed; width grows with aspect
+const VW = 960, VH = 540;           
 const TILE = 32;
-const RW = 48, RH = 36;            // region size in tiles
-const GRID_W = 5, GRID_H = 5;      // regions
+const RW = 48, RH = 36;             
+const GRID_W = 5, GRID_H = 5;       
 const WORLD_TW = RW * GRID_W, WORLD_TH = RH * GRID_H;
 const STEP = 1 / 60;
 const TAU = Math.PI * 2;
 
-// Gameplay tuning lives here and nowhere else.
+ 
 const TUNE = {
   player: {
     speed: 150, accel: 1400, iceAccel: 260, radius: 10,
@@ -230,9 +230,9 @@ const TUNE = {
   bow: { minDraw: 0.12, fullDraw: 0.55, slow: 0.5, speedMin: 470, speedMax: 680, dmgMin: 6, dmgMax: 12,
     regenTime: 2.0, assistAngle: 0.38, assistRange: 520 },
   boss: { openMult: 1.5, armorMult: 0.2, contactDmg: 1, minTele: 0.45,
-    // Wenna's blossoms: healing is bounded so her fight always ends. She can still heal back into her
-    // first-phase segment (which restores summoning), but never past the ceiling, never back-to-back,
-    // and never more than the budget in one fight.
+     
+     
+     
     bloomHealRate: 0.012, bloomHealCeil: 0.8, bloomCooldown: 12, bloomHealBudget: 1.0,
     waveMaxSpeed: 125, waveTele: 0.95, waveMinBetween: 1.05, gapMinArc: 110, gapMaxAngle: 2.0, hpByTier: [0, 280, 360, 440, 520, 600], kingHp: 920 },
   difficulty: {
@@ -246,7 +246,7 @@ const TUNE = {
   endings: { majority: 14, listenThreshold: 7, askPerPoint: 4, kingMajority: 12 }
 };
 
-// ---------- math ----------
+ 
 const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
 const lerp = (a, b, t) => a + (b - a) * t;
 const dist2 = (ax, ay, bx, by) => { const dx = ax - bx, dy = ay - by; return dx * dx + dy * dy; };
@@ -274,13 +274,13 @@ function vnoise(x, y, s) {
   const a = hash2(xi, yi, s), b = hash2(xi + 1, yi, s), c = hash2(xi, yi + 1, s), d = hash2(xi + 1, yi + 1, s);
   return lerp(lerp(a, b, u), lerp(c, d, u), v);
 }
-// Global gameplay RNG (non-deterministic is fine for combat feel).
+ 
 const rnd = Math.random;
 const rr = (a, b) => a + rnd() * (b - a);
 const ri = (a, b) => Math.floor(rr(a, b + 1));
 const pick = arr => arr[Math.floor(rnd() * arr.length)];
 
-// ---------- storage with in-memory fallback ----------
+ 
 const Store = (() => {
   const mem = {};
   let ok = false;
@@ -325,7 +325,7 @@ function saveSettings() {
 }
 const DIFF = () => TUNE.difficulty[Settings.difficulty] || TUNE.difficulty.normal;
 
-// ---------- canvas & view ----------
+ 
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
 const View = { w: VW, h: VH, scale: 1, dpr: 1, cssW: 0, cssH: 0 };
@@ -334,7 +334,7 @@ function resize() {
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
   View.cssW = cw; View.cssH = ch; View.dpr = dpr;
   View.scale = ch / VH;
-  if (cw / View.scale < VW * 0.72) View.scale = cw / (VW * 0.72); // very narrow portrait: keep enough width
+  if (cw / View.scale < VW * 0.72) View.scale = cw / (VW * 0.72);  
   View.w = cw / View.scale;
   View.h = ch / View.scale;
   canvas.width = Math.round(cw * dpr);
@@ -348,7 +348,7 @@ function beginFrame() {
 }
 function screenToView(px, py) { return { x: px / View.scale, y: py / View.scale }; }
 
-// ---------- input ----------
+ 
 const KEYMAP = {
   ArrowUp: 'up', KeyW: 'up', ArrowDown: 'down', KeyS: 'down', ArrowLeft: 'left', KeyA: 'left', ArrowRight: 'right', KeyD: 'right',
   KeyJ: 'sword', KeyZ: 'sword', KeyK: 'bow', KeyX: 'bow',
@@ -361,7 +361,7 @@ const Input = {
   stick: { x: 0, y: 0, on: false },
   mouse: { x: 0, y: 0, used: false, lastMove: 0 },
   touchMode: false,
-  uiHandler: null,          // set by UI: returns true if it consumed the key
+  uiHandler: null,           
   press(act) { if (!this.held[act]) this.pressed[act] = true; this.held[act] = true; },
   release(act) { if (this.held[act]) this.released[act] = true; this.held[act] = false; },
   endStep() { for (const k in this.pressed) delete this.pressed[k]; for (const k in this.released) delete this.released[k]; },
@@ -403,7 +403,7 @@ window.addEventListener('mouseup', e => {
   if (e.button === 2) Input.release('bow');
 });
 
-// Touch: joystick + buttons feed the same action flags (one input path).
+ 
 function setupTouch() {
   const root = document.getElementById('touch');
   const zone = document.getElementById('stickZone'), base = document.getElementById('stickBase'), knob = document.getElementById('stickKnob');
@@ -449,7 +449,7 @@ function setupTouch() {
   });
 }
 
-// ---------- pools ----------
+ 
 function makePool(size, factory) {
   const items = [];
   for (let i = 0; i < size; i++) { const o = factory(); o.on = false; items.push(o); }
@@ -461,7 +461,7 @@ function makePool(size, factory) {
   };
 }
 
-// ---------- colour helpers ----------
+ 
 function shade(hex, amt) {
   const n = parseInt(hex.slice(1), 16);
   let r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
@@ -474,8 +474,8 @@ function rgba(hex, a) {
   return 'rgba(' + ((n >> 16) & 255) + ',' + ((n >> 8) & 255) + ',' + (n & 255) + ',' + a + ')';
 }
 
-// ---- js_audio.js ----
-// Audio: bussed Web Audio synthesis. Original procedural music with a lookahead scheduler, plus SFX.
+ 
+ 
 
 const Sound = (() => {
   let ac = null, master = null, musicBus = null, sfxBus = null, echo = null, noiseBuf = null;
@@ -486,7 +486,7 @@ const Sound = (() => {
     minor: [0, 2, 3, 5, 7, 8, 10], dorian: [0, 2, 3, 5, 7, 9, 10], major: [0, 2, 4, 5, 7, 9, 11],
     lydian: [0, 2, 4, 6, 7, 9, 11], phryg: [0, 1, 3, 5, 7, 8, 10], penta: [0, 3, 5, 7, 10, 12, 15]
   };
-  // Each track is composed procedurally from its own seed; nothing is borrowed.
+   
   const TRACKS = {
     title:   { bpm: 68,  root: 50, scale: 'minor',  prog: [0, 5, 3, 4], seed: 11, lead: 'triangle', dens: 0.45, drums: 'none', bassOn: true },
     home:    { bpm: 84,  root: 55, scale: 'dorian', prog: [0, 3, 0, 4], seed: 23, lead: 'triangle', dens: 0.5,  drums: 'soft', bassOn: true },
@@ -659,13 +659,13 @@ const Sound = (() => {
   return { init, music, sfx, applyVolumes, beatPhase, tracks: TRACKS, current: () => curId };
 })();
 
-// ---- js_data_guardians.js ----
-// Guardian data: personality, dialogue, clues, arenas, phases and move lists.
-// Line prefixes: "~" narration, "> " the warrior speaking; anything else is the guardian.
-// Tokens: {days} {spared} {abandoned} {seals}.
+ 
+ 
+ 
+ 
 
 const GUARDIANS = [
-  // ---------------- Tier 1 (south, near home) ----------------
+   
   {
     id: 'water', name: 'Nerissa', title: 'the Still Pool', element: 'Water', tier: 1, region: [0, 4],
     form: 'serpent', col: { main: '#4fa3d9', dark: '#245a85', light: '#bfe6ff', glow: '#7fd0ff' },
@@ -785,7 +785,7 @@ const GUARDIANS = [
     afterAbandoned: 'Grumwold has sunk halfway into the hillside. His eyes stay closed.'
   },
 
-  // ---------------- Tier 2 ----------------
+   
   {
     id: 'sand', name: 'Qadira', title: 'of the Dunes', element: 'Sand', tier: 2, region: [0, 3],
     form: 'sphinx', col: { main: '#d9b46a', dark: '#8a6a32', light: '#f7e3b0', glow: '#ffd27a' },
@@ -961,7 +961,7 @@ const GUARDIANS = [
     afterAbandoned: 'Vernal stands bare and frosted, stuck in a winter that will not turn.'
   },
 
-  // ---------------- Tier 3 ----------------
+   
   {
     id: 'lightning', name: 'Voltaris', title: 'the Swift', element: 'Lightning', tier: 3, region: [0, 2],
     form: 'bird', col: { main: '#f2e45a', dark: '#7a6a12', light: '#fffbd0', glow: '#fff27a' },
@@ -1120,7 +1120,7 @@ const GUARDIANS = [
     afterAbandoned: "Somna's mist lies thin and scattered. She doesn't stir."
   },
 
-  // ---------------- Tier 4 ----------------
+   
   {
     id: 'shadow', name: 'Umbra', title: 'the Quiet', element: 'Shadow', tier: 4, region: [0, 1],
     form: 'wraith', col: { main: '#5a4e7a', dark: '#241e36', light: '#cfc4ff', glow: '#9a8aff' },
@@ -1326,7 +1326,7 @@ const GUARDIANS = [
     afterAbandoned: 'Orbis hangs motionless. Its stones lie scattered on the ground around it.'
   },
 
-  // ---------------- Tier 5 (north, near the Heart) ----------------
+   
   {
     id: 'ice', name: 'Hesk', title: 'of the Frozen Court', element: 'Ice', tier: 5, region: [0, 0],
     form: 'knight', col: { main: '#a8d8f0', dark: '#3e6a86', light: '#f0faff', glow: '#cff0ff' },
@@ -1544,9 +1544,9 @@ const GUARDIAN_BY_ID = {};
 for (const g of GUARDIANS) GUARDIAN_BY_ID[g.id] = g;
 GUARDIAN_BY_ID.king = KING;
 
-// ---- js_data_world.js ----
-// World data: biomes, the 5x5 region grid, NPC placements, inscriptions, items and side-scroll passages.
-// All coordinates are local tile coordinates inside a 48x36 region.
+ 
+ 
+ 
 
 const BIOMES = {
   blight:     { g: ['#8f7f4c', '#857547'], path: '#a8926a', wall: 'deadtree', obst: 'deadtree', dens: 0.07, decor: 'drygrass', amb: 'dust', music: 'home' },
@@ -1576,10 +1576,10 @@ const BIOMES = {
   clock:      { g: ['#7a6e5c', '#726656'], path: '#948670', wall: 'brick', obst: 'gear', dens: 0.04, decor: 'pebbles', amb: 'motes', music: 'north' }
 };
 
-// Region grid [row][col]. Each: name, banner subtitle, biome, guardian, features.
-// Feature types: houses, lake, river, dry, ruins, floor, crops, pillars, lava, deep, well, rooms, lanterns, fountain, statue, cave, forge.
+ 
+ 
 const REGIONS = [
-  // row 0 (north)
+   
   [
     { id: 'frozen', name: 'The Frozen Court', sub: 'A winter palace, long empty', biome: 'snow', guardian: 'ice', enemies: 3,
       features: [{ t: 'floor', x: 14, y: 4, w: 20, h: 12 }, { t: 'ruins', x: 13, y: 3, w: 22, h: 14 }, { t: 'pillars', list: [[16, 6], [31, 6], [16, 13], [31, 13]] }] },
@@ -1592,7 +1592,7 @@ const REGIONS = [
     { id: 'clock', name: 'Clocktower Ruins', sub: 'Every village keeps the same time', biome: 'clock', guardian: 'time', enemies: 3, shrine: [24, 9],
       features: [{ t: 'floor', x: 18, y: 4, w: 12, h: 10 }, { t: 'ruins', x: 17, y: 3, w: 14, h: 12 }, { t: 'sign', id: 'i_clock', x: 24, y: 16 }] }
   ],
-  // row 1
+   
   [
     { id: 'undercroft', name: 'The Undercroft', sub: 'Chambers beneath the hills', biome: 'undercroft', guardian: 'shadow', enemies: 3,
       features: [{ t: 'rooms' }] },
@@ -1604,7 +1604,7 @@ const REGIONS = [
     { id: 'rift', name: 'The Gravity Rift', sub: 'Everything falls toward something', biome: 'rift', guardian: 'gravity', enemies: 3,
       features: [{ t: 'deep', x: 6, y: 22, w: 8, h: 6 }, { t: 'deep', x: 34, y: 22, w: 8, h: 6 }] }
   ],
-  // row 2
+   
   [
     { id: 'plateau', name: 'Thunder Plateau', sub: 'Where the storms gather', biome: 'plateau', guardian: 'lightning', enemies: 0,
       features: [{ t: 'item', id: 'hp_plateau', x: 5, y: 30 }] },
@@ -1616,7 +1616,7 @@ const REGIONS = [
     { id: 'mistwood', name: 'Mistwood', sub: 'Where dreams drift', biome: 'mistwood', guardian: 'mist', enemies: 0,
       features: [{ t: 'item', id: 'hp_mist', x: 42, y: 30 }] }
   ],
-  // row 3
+   
   [
     { id: 'dunes', name: 'The Dune Sea', sub: 'Sand weighs footsteps', biome: 'desert', guardian: 'sand', enemies: 0,
       features: [{ t: 'sign', id: 'i_dunes', x: 36, y: 26 }, { t: 'item', id: 'hp_dunes', x: 5, y: 5 }, { t: 'ruins', x: 31, y: 22, w: 10, h: 8 }] },
@@ -1628,7 +1628,7 @@ const REGIONS = [
       features: [{ t: 'deep', x: 4, y: 4, w: 10, h: 5 }, { t: 'deep', x: 36, y: 26, w: 8, h: 6 }] },
     { id: 'garden', name: 'Garden of Seasons', sub: 'Spring, summer, autumn, winter', biome: 'garden', guardian: 'seasons', enemies: 0, features: [] }
   ],
-  // row 4 (south, home row)
+   
   [
     { id: 'hollowmere', name: 'Hollowmere', sub: 'A fishing village, emptied', biome: 'lake', guardian: 'water', enemies: 0, shrine: [24, 17], camp: [30, 27],
       features: [{ t: 'lake', x: 24, y: 8, rx: 13, ry: 5 }, { t: 'houses', ruined: true, list: [[7, 22, 5, 4], [36, 23, 5, 4], [9, 29, 4, 3]] }] },
@@ -1647,7 +1647,7 @@ const REGIONS = [
   ]
 ];
 
-// Side-scrolling entrances before some arenas.
+ 
 const PASSAGES = {
   cave:       { name: 'Under the Hill', len: 2600, sky: ['#2a2420', '#3a3028'], ground: '#5a4a36', top: '#7a6a4a', hazard: 'rocks', dark: 0.35 },
   cliffs:     { name: 'The Cliff Path', len: 3000, sky: ['#9fd0e8', '#e6f4f0'], ground: '#6e7a5a', top: '#8fa872', hazard: 'gusts', dark: 0 },
@@ -1655,31 +1655,31 @@ const PASSAGES = {
   icewall:    { name: 'The Frozen Rampart', len: 3000, sky: ['#9ab8d8', '#e0ecf6'], ground: '#9ab8cc', top: '#e8f4ff', hazard: 'icicles', dark: 0, ice: true }
 };
 
-// NPCs: lines are shown when they have nothing quest-specific to say. Story NPCs have handlers in js_story.js.
+ 
 const NPCS = [
-  // Thornvale (home)
+   
   { id: 'oswin', region: 'thornvale', x: 24, y: 11, name: 'Elder Oswin', col: '#6a5a8a', hair: '#ddd' },
   { id: 'gran', region: 'thornvale', x: 15, y: 26, name: 'Gran', col: '#8a5a5a', hair: '#eee' },
   { id: 'tam', region: 'thornvale', x: 27, y: 19, name: 'Tam', col: '#4a7a5a', hair: '#5a3a22' },
   { id: 'hob', region: 'thornvale', x: 33, y: 12, name: 'Hob', col: '#7a6a3a', hair: '#3a2a1a' },
   { id: 'lissa', region: 'thornvale', x: 36, y: 19, name: 'Lissa', col: '#3a6a8a', hair: '#a0602a' },
-  // Fairmeet
+   
   { id: 'wren', region: 'fairmeet', x: 20, y: 13, name: 'Wren', col: '#8a4a6a', hair: '#2a1a12' },
   { id: 'pim', region: 'fairmeet', x: 30, y: 20, name: 'Old Nan Pim', col: '#6a6a8a', hair: '#ddd' },
   { id: 'ansel', region: 'fairmeet', x: 16, y: 21, name: 'Ansel the Pedlar', col: '#8a7a3a', hair: '#6a4a2a' },
   { id: 'pell', region: 'greenwood', x: 7, y: 28, name: 'Pell', col: '#5a7a3a', hair: '#2a1a12', sitting: true },
   { id: 'pell2', region: 'fairmeet', x: 22, y: 14, name: 'Pell', col: '#5a7a3a', hair: '#2a1a12', sitting: true, after: 'pell' },
-  // Survivors
+   
   { id: 'mara', region: 'hollowmere', x: 14, y: 26, name: 'Mara', col: '#4a6a7a', hair: '#ccc', survivor: true },
   { id: 'tobin', region: 'ashfield', x: 12, y: 23, name: 'Old Tobin', col: '#7a6a4a', hair: '#ddd', survivor: true },
   { id: 'sela', region: 'greyhaven', x: 16, y: 20, name: 'Sela', col: '#5a5a7a', hair: '#4a3a2a', survivor: true },
-  // Brokenford bridge quest
+   
   { id: 'odo', region: 'brokenford', x: 26, y: 18, name: 'Odo the Carpenter', col: '#8a5a3a', hair: '#8a6a4a' },
   { id: 'joss', region: 'brokenford', x: 27, y: 27, name: 'Joss the Fisher', col: '#3a5a7a', hair: '#2a2a2a' },
   { id: 'bess', region: 'ashfield', x: 33, y: 24, name: 'Bess', col: '#8a6a4a', hair: '#c08a3a' },
-  // Starfall
+   
   { id: 'haldis', region: 'starfall', x: 9, y: 10, name: 'Old Haldis', col: '#8a8aa0', hair: '#cfd8e6', giant: true, hidden: true },
-  // Quietbrook doors (talked to through doors) and villagers who appear later
+   
   { id: 'qa', region: 'quietbrook', x: 15, y: 12, name: 'The Miller House', door: true },
   { id: 'qb', region: 'quietbrook', x: 33, y: 12, name: 'The Ferrow House', door: true },
   { id: 'qc', region: 'quietbrook', x: 15, y: 27, name: 'Old Wick\'s House', door: true },
@@ -1688,7 +1688,7 @@ const NPCS = [
   { id: 'q_wick', region: 'quietbrook', x: 24, y: 19, name: 'Old Wick', col: '#6a6a6a', hair: '#eee', after: 'quiet' }
 ];
 
-// Inscriptions. Each fully read inscription counts as a heeded warning.
+ 
 const SIGNS = {
   i_ember: { title: 'Carved Hearthstone', pages: [
     '~Carved deep into the old hearthstone: HERE THE VALLEY\'S HEARTH WAS FED BY ALL.',
@@ -1724,7 +1724,7 @@ const ITEMS = {
   keepsake: { kind: 'keepsake', name: 'Carved Wooden Bird' }
 };
 
-// Warnings the player can heed. Listening to enough of them shapes the ending.
+ 
 const WARNINGS = {
   w_mara: 'Mara\'s story', w_tobin: 'Tobin\'s story', w_sela: 'Sela\'s story', w_haldis: 'Haldis\'s story',
   w_pim: 'Nan Pim\'s keepsake', w_quiet: 'Quietbrook\'s well',
@@ -1732,8 +1732,8 @@ const WARNINGS = {
   i_clock: 'The brass plaque', i_ferry: 'The ferry post', i_statue: 'The king\'s statue'
 };
 
-// Dynamic ordinary-enemy spawning. Villages are safe. Danger rises toward the Heart, in ruins,
-// and where a guardian was abandoned; it eases where a guardian was spared.
+ 
+ 
 const SPAWNS = {
   hollowmere: { types: ['wisp', 'thornling'] }, greenwood: { types: ['thornling', 'thornling', 'wisp'] },
   ashfield: { types: ['pebblet', 'thornling'] }, brokenford: { types: ['pebblet', 'thornling'], ruins: true },
@@ -1748,10 +1748,10 @@ const SPAWNS = {
   clock: { types: ['sentinel', 'spark', 'shadeling'], ruins: true }, castle: { types: ['sentinel', 'shadeling', 'frostling', 'emberling'], ruins: true }
 };
 
-// Location connections. Regions not listed together share a solid mountain wall (no passage).
-// 'open' = always passable; a guardian id = sealed by that guardian's barrier until they are
-// spared or abandoned; 'gate' = the lantern gate (all twenty lanterns). Each seal sits on its
-// guardian's side, so the guardian itself is always reachable another way.
+ 
+ 
+ 
+ 
 const CONNECTIONS = [
   ['hollowmere', 'greenwood', 'nature'], ['greenwood', 'thornvale', 'open'], ['thornvale', 'ashfield', 'open'], ['ashfield', 'brokenford', 'earth'],
   ['hollowmere', 'dunes', 'water'], ['thornvale', 'fairmeet', 'open'], ['brokenford', 'garden', 'open'],
@@ -1765,8 +1765,8 @@ const CONNECTIONS = [
 ];
 const START_REGION = 'thornvale';
 
-// ---- js_data_story.js ----
-// Story text: intro, NPC dialogue, survivor stories, quests, the King's question, the Heart and the endings.
+ 
+ 
 
 const INTRO = [
   '~Thornvale. A small village at the edge of the valley.',
@@ -1973,7 +1973,7 @@ const HEART_INTRO = [
   '~You kneel, and look in.'
 ];
 
-// Each ending: pages are shown in order; scene switches on "#scene" markers.
+ 
 const ENDINGS = {
   mercy: { title: 'Mercy Ending', sub: 'The Heart Remembers', music: 'mercy', pages: [
     '#scene heart',
@@ -2018,8 +2018,8 @@ const ENDINGS = {
   ] }
 };
 
-// ---- js_world.js ----
-// World: deterministic region generation, tile queries, collision, and world entities.
+ 
+ 
 
 const T = {
   SEAL: 20, GROUND: 0, PATH: 1, WALL: 2, OBST: 3, WATER: 4, BRIDGE: 5, FLOOR: 6, HOUSE: 7, RUIN: 8, PILLAR: 9,
@@ -2032,15 +2032,15 @@ const OPP = { N: 'S', S: 'N', W: 'E', E: 'W' };
 
 const World = {
   tiles: new Uint8Array(WORLD_TW * WORLD_TH),
-  regions: [],          // flat list, index = r * GRID_W + c
+  regions: [],           
   regionById: {},
-  structs: [],          // drawn structures {type, x, y, w, h, ...} in tile coords (world)
-  ents: [],             // world entities
+  structs: [],           
+  ents: [],              
   entsByRegion: [],
   footprints: [],
   dirtyChunks: new Set(),
-  seals: [],            // {owner, ri, dir, x, y, w, h} guardian barriers (world tiles)
-  sealOwnerAt: new Map() // tile index -> guardian id, for drawing
+  seals: [],             
+  sealOwnerAt: new Map()  
 };
 
 function tileAt(tx, ty) {
@@ -2059,7 +2059,7 @@ function regionIndexAt(px, py) {
   return r * GRID_W + c;
 }
 
-// Circle vs tiles, axis-separated so the player slides along walls.
+ 
 function circleHitsTiles(x, y, r) {
   const x0 = Math.floor((x - r) / TILE), x1 = Math.floor((x + r) / TILE);
   const y0 = Math.floor((y - r) / TILE), y1 = Math.floor((y + r) / TILE);
@@ -2073,12 +2073,12 @@ function circleHitsTiles(x, y, r) {
 function moveCircle(e, dx, dy, r, hitFn) {
   const hit = hitFn || circleHitsTiles;
   let moved = false;
-  // Every position applied here is the exact position that was tested, so a mover can never end up
-  // overlapping a wall or pillar (an overlap would reject almost every later move and trap it).
+   
+   
   if (dx) {
     if (!hit(e.x + dx, e.y, r)) { e.x += dx; moved = true; }
     else {
-      // small corner nudge so the player slides round tile corners and pillars instead of snagging
+       
       for (const n of [3, -3, 6, -6]) { const nx = e.x + dx * 0.5, ny = e.y + n * 0.5; if (!hit(nx, ny, r)) { e.x = nx; e.y = ny; moved = true; break; } }
     }
   }
@@ -2091,8 +2091,8 @@ function moveCircle(e, dx, dy, r, hitFn) {
   return moved;
 }
 
-// ---------- generation ----------
-// Connection between a region and its neighbour in a direction: null (solid wall) or the edge type.
+ 
+ 
 function connectionType(idA, idB) {
   for (const [a, b, t] of CONNECTIONS) if ((a === idA && b === idB) || (a === idB && b === idA)) return t;
   return null;
@@ -2103,7 +2103,7 @@ function regionConnected(c, r, dir) {
   if (nc < 0 || nr < 0 || nc >= GRID_W || nr >= GRID_H) return false;
   return connectionType(REGIONS[r][c].id, REGIONS[nr][nc].id) !== null;
 }
-// Which guardian (if any) seals this region's opening in a direction, on this region's side.
+ 
 function sealOwner(c, r, dir) {
   const [dx, dy] = DIRS[dir];
   const nr = r + dy, nc = c + dx;
@@ -2114,7 +2114,7 @@ function sealOwner(c, r, dir) {
 }
 
 function astar(grid, w, h, sx, sy, gx, gy, costFn) {
-  // grid-local A*; returns array of [x,y] or null
+   
   const N = w * h, g = new Float32Array(N).fill(Infinity), came = new Int32Array(N).fill(-1), closed = new Uint8Array(N);
   const open = [];
   const hfn = (x, y) => Math.abs(x - gx) + Math.abs(y - gy);
@@ -2179,13 +2179,13 @@ function genRegion(c, r, R) {
   };
   const reg = { c, r, ri: r * GRID_W + c, def: R, biome: B, id: R.id, name: R.name, ox, oy, enemies: [], open: {} };
 
-  // 1. borders
+   
   for (let y = 0; y < RH; y++) for (let x = 0; x < RW; x++) {
     const d = Math.min(x, y, RW - 1 - x, RH - 1 - y);
     const thick = 2 + (vnoise(x * 0.3, y * 0.3, seed) > 0.62 ? 1 : 0);
     if (d < thick) set(x, y, T.WALL);
   }
-  // 2. openings
+   
   const openings = [];
   for (const dir of ['N', 'S', 'W', 'E']) {
     if (!regionConnected(c, r, dir)) continue;
@@ -2200,7 +2200,7 @@ function genRegion(c, r, R) {
     openings.push(pts);
   }
 
-  // 3. biome blob walls (caverns, canyon)
+   
   if (R.biome === 'caverns' || R.biome === 'canyon' || R.biome === 'rift') {
     const th = R.biome === 'canyon' ? 0.66 : 0.68;
     for (let y = 3; y < RH - 3; y++) for (let x = 3; x < RW - 3; x++) {
@@ -2210,11 +2210,11 @@ function genRegion(c, r, R) {
 
   const hub = R.camp ? R.camp.slice() : [20, 22];
   const shrine = R.guardian ? (R.shrine ? R.shrine.slice() : [24, 9]) : null;
-  const targets = [];   // points that must connect to the hub
+  const targets = [];    
   const addEnt = (e) => { e.ri = reg.ri; World.ents.push(e); return e; };
   const wpx = (x) => (ox + x) * TILE + TILE / 2, wpy = (y) => (oy + y) * TILE + TILE / 2;
 
-  // 4. features
+   
   for (const f of (R.features || [])) {
     if (f.t === 'rooms') {
       for (let y = 2; y < RH - 2; y++) for (let x = 2; x < RW - 2; x++) if (!reserved[y * RW + x]) set(x, y, T.WALL);
@@ -2323,13 +2323,13 @@ function genRegion(c, r, R) {
     }
   }
 
-  // 4b. borders are absolute: only listed connections are open
+   
   for (let y = 0; y < RH; y++) for (let x = 0; x < RW; x++) {
     const d = Math.min(x, y, RW - 1 - x, RH - 1 - y);
     if (d < 2 && reserved[y * RW + x] !== 3 && get(x, y) !== T.GATE) set(x, y, T.WALL);
   }
 
-  // 5. POIs
+   
   if (shrine && R.guardian !== 'king') {
     for (let y = shrine[1] - 3; y <= shrine[1] + 3; y++) for (let x = shrine[0] - 3; x <= shrine[0] + 3; x++)
       if (dist2(x, y, shrine[0], shrine[1]) <= 11 && get(x, y) !== T.PILLAR) set(x, y, T.SHRINE);
@@ -2352,7 +2352,7 @@ function genRegion(c, r, R) {
   }
   for (const o of openings) targets.push([clamp(o.cx, 1, RW - 2), clamp(o.cy, 1, RH - 2), 2]);
 
-  // 6. paths to hub (A*); rivers can only be crossed at bridges
+   
   const costFn = (x, y) => {
     if (noCross[y * RW + x]) return Infinity;
     const t = get(x, y);
@@ -2381,7 +2381,7 @@ function genRegion(c, r, R) {
       }
     }
   }
-  // footprint trail (Starfall): clear a narrow route and record prints
+   
   if (reg.footprints) {
     const f = reg.footprints;
     const p = astar(L, RW, RH, f.from[0], f.from[1], f.to[0], f.to[1], (x, y) => { const t = get(x, y); return SOLID[t] && t !== T.OBST ? Infinity : 1 + vnoise(x * 0.4, y * 0.4, seed + 11) * 2; });
@@ -2397,7 +2397,7 @@ function genRegion(c, r, R) {
     addEnt({ kind: 'prints', x: wpx(f.from[0]), y: wpy(f.from[1]), rad: 90 });
   }
 
-  // 6b. guardian seals on this region's side of sealed openings (physical, solid barriers)
+   
   for (const o of openings) {
     const owner = sealOwner(c, r, o.dir);
     if (!owner) continue;
@@ -2409,13 +2409,13 @@ function genRegion(c, r, R) {
     for (let y = sy0; y <= sy1; y++) for (let x = sx0; x <= sx1; x++) { set(x, y, T.SEAL); World.sealOwnerAt.set((oy + y) * WORLD_TW + ox + x, owner); }
     const seal = { owner, ri: reg.ri, dir: o.dir, x: ox + sx0, y: oy + sy0, w: sx1 - sx0 + 1, h: sy1 - sy0 + 1 };
     World.seals.push(seal);
-    // a readable marker on this side, standing just inside the barrier
+     
     const ix = (sx0 + sx1) / 2, iy = (sy0 + sy1) / 2;
     const mx = o.dir === 'W' ? 3 : o.dir === 'E' ? RW - 4 : ix, my = o.dir === 'N' ? 3 : o.dir === 'S' ? RH - 4 : iy;
     addEnt({ kind: 'seal', owner, x: (ox + mx) * TILE + 16, y: (oy + my) * TILE + 16, rad: 70, seal });
   }
 
-  // 7. scatter obstacles
+   
   for (let y = 2; y < RH - 2; y++) for (let x = 2; x < RW - 2; x++) {
     const i = y * RW + x;
     if (reserved[i] || get(x, y) !== T.GROUND) continue;
@@ -2426,7 +2426,7 @@ function genRegion(c, r, R) {
     if (rng() < B.dens * (0.4 + n * 1.4)) set(x, y, T.OBST);
   }
 
-  // 8. enemy spawns (only near the Heart)
+   
   for (let k = 0, tries = 0; k < 0 && tries < 400; tries++) {
     const x = 4 + Math.floor(rng() * (RW - 8)), y = 4 + Math.floor(rng() * (RH - 8));
     const t = get(x, y);
@@ -2439,14 +2439,14 @@ function genRegion(c, r, R) {
     k++;
   }
 
-  // copy into world
+   
   for (let y = 0; y < RH; y++) for (let x = 0; x < RW; x++) World.tiles[(oy + y) * WORLD_TW + ox + x] = L[y * RW + x];
   reg.entry = { x: wpx(hub[0]), y: wpy(hub[1]) + 40 };
   if (shrine) reg.shrinePx = { x: wpx(shrine[0]), y: wpy(shrine[1]) };
   return reg;
 }
 
-// Connectivity proof used by tests: BFS from each region's camp.
+ 
 function reachableFrom(px, py) {
   const seen = new Uint8Array(WORLD_TW * WORLD_TH);
   const q = [Math.floor(py / TILE) * WORLD_TW + Math.floor(px / TILE)];
@@ -2477,7 +2477,7 @@ function repairBridge() {
   for (let y = b.y; y < b.y + b.h; y++) for (let x = b.x; x < b.x + b.w; x++) setTile(x, y, T.BRIDGE);
 }
 
-// Seals on the neighbouring side need a marker too, so blocked routes read clearly from both directions.
+ 
 function addOuterSealMarkers() {
   for (const sl of World.seals) {
     const [dx, dy] = DIRS[sl.dir];
@@ -2500,8 +2500,8 @@ function unlockSeals(gid) {
 }
 function sealIsOpen(gid) { return gid === 'open' || (G.S && G.S.guardians[gid] && G.S.guardians[gid].state !== 'none'); }
 
-// ---- js_render.js ----
-// Rendering: chunk-cached world tiles, structures, procedural characters, ambient effects, darkness.
+ 
+ 
 
 const CHUNK = 16, CHUNK_PX = CHUNK * TILE, CHUNK_CACHE_MAX = 36;
 const chunkCache = new Map();
@@ -2539,7 +2539,7 @@ function renderChunk(g, cx, cy) {
   for (const s of World.structs) {
     const m = s.big || 1;
     if (s.x + s.w + m < tx0 - 1 || s.x - m > tx0 + CHUNK + 1 || s.y + s.h + m < ty0 - 2 || s.y - m > ty0 + CHUNK + 1) continue;
-    if (s.type === 'lanterns' || s.type === 'bridgeRails') continue;  // drawn live
+    if (s.type === 'lanterns' || s.type === 'bridgeRails') continue;   
     g.save(); g.translate((s.x - tx0) * TILE, (s.y - ty0) * TILE);
     drawStruct(g, s);
     g.restore();
@@ -2558,7 +2558,7 @@ function mixHex(a, b, t) {
   return v;
 }
 function groundFill(g, B, tx, ty, px, py) {
-  // smooth large patches instead of a per-tile checkerboard
+   
   const n = vnoise(tx * 0.12, ty * 0.12, 17) * 0.75 + vnoise(tx * 0.45, ty * 0.45, 29) * 0.25;
   g.fillStyle = mixHex(B.g[0], shade(B.g[1], -0.06), clamp((n - 0.25) * 1.6, 0, 0.999));
   g.fillRect(px, py, TILE, TILE);
@@ -2659,7 +2659,7 @@ function drawTile(g, t, tx, ty, px, py, B) {
       break;
     }
     case T.SEAL: {
-      // guardian barrier: a solid wall of that guardian's element
+       
       const owner = World.sealOwnerAt.get(ty * WORLD_TW + tx);
       const gd = GUARDIAN_BY_ID[owner];
       groundFill(g, B, tx, ty, px, py);
@@ -2921,12 +2921,12 @@ function drawStruct(g, s) {
   }
 }
 
-// ---------- characters ----------
+ 
 function drawShadow(g, x, y, rx, ry) {
   g.fillStyle = 'rgba(0,0,0,0.28)'; g.beginPath(); g.ellipse(x, y, rx, ry || rx * 0.38, 0, 0, TAU); g.fill();
 }
 
-// Generic villager / warrior figure. o: {col, hair, dir (angle), walk, sit, scale, cape, skin, giant}
+ 
 function drawPerson(g, x, y, o) {
   const s = o.scale || 1;
   g.save(); g.translate(x, y); g.scale(s, s);
@@ -2958,7 +2958,7 @@ function drawPerson(g, x, y, o) {
   g.restore();
 }
 
-// Guardian forms. st: {t, hurt, open, alpha, tint, sit, dim, scale, face}
+ 
 function drawGuardian(g, def, x, y, st) {
   const c = def.col, t = st.t || 0, s = (st.scale || 1);
   const R = def.id === 'king' ? 22 : 34;
@@ -3182,7 +3182,7 @@ function drawCampfire(g, x, y, t) {
   f(0, 1, '#e8602a'); f(1, 0.7, '#ffb347'); f(2, 0.4, '#fff2b0');
 }
 
-// ---------- ambient particles (screen space) ----------
+ 
 const Ambient = { list: [], kind: null };
 function ambientReset(kind) {
   Ambient.kind = kind; Ambient.list.length = 0;
@@ -3207,7 +3207,7 @@ function ambientDraw(g, dt, t) {
   }
 }
 
-// Darkness overlay with light holes. lights: [{x,y,r}] in view coords.
+ 
 const darkCv = document.createElement('canvas'), darkG = darkCv.getContext('2d');
 function drawDarkness(g, alpha, lights) {
   if (alpha <= 0) return;
@@ -3226,8 +3226,8 @@ function drawDarkness(g, alpha, lights) {
   g.drawImage(darkCv, 0, 0, View.w, View.h);
 }
 
-// ---- js_player.js ----
-// Player: movement, sword combo, bow, dodge roll, healing, damage. Shared by the world and arenas.
+ 
+ 
 
 const P = {
   x: 0, y: 0, vx: 0, vy: 0, dir: Math.PI / 2, aim: Math.PI / 2,
@@ -3249,7 +3249,7 @@ function playerInvulnerable() {
   return false;
 }
 
-// env: { hit(x,y,r), targets(): [{x,y,r,id,onHit(dmg,ang,kind)}], ice, slow, camX, camY, sideAim }
+ 
 function playerUpdate(dt, env) {
   const TP = TUNE.player, TS = TUNE.sword, TB = TUNE.bow;
   P.iframes = Math.max(0, P.iframes - dt);
@@ -3266,10 +3266,10 @@ function playerUpdate(dt, env) {
   const mouseAim = Input.mouse.used && !Input.touchMode && performance.now() - Input.mouse.lastMove < 4000;
   const mouseAng = () => angTo(P.x - env.camX, P.y - 20 - env.camY, Input.mouse.x, Input.mouse.y);
 
-  // arrow regen
+   
   if (P.arrows < P.maxArrows && !P.drawing) { P.regen += dt; if (P.regen >= TB.regenTime) { P.regen = 0; P.arrows++; } }
 
-  // heal
+   
   if (Input.pressed.heal && P.healT <= 0) {
     if (P.potions > 0 && P.hp < P.maxHp) {
       P.potions--; P.hp = Math.min(P.maxHp, P.hp + TP.potionHeal); P.healT = 0.45;
@@ -3277,7 +3277,7 @@ function playerUpdate(dt, env) {
     } else if (P.potions <= 0) toast('No tonic left. Rest at a campfire to refill.');
   }
 
-  // roll
+   
   if (Input.pressed.roll && P.rollCd <= 0 && P.rollT <= 0 && P.swingT <= 0.05) {
     P.rollT = TP.rollTime; P.rollCd = TP.rollTime + TP.rollCooldown;
     P.rollDir = moving ? Math.atan2(mv.y, mv.x) : P.dir;
@@ -3286,7 +3286,7 @@ function playerUpdate(dt, env) {
     burst(P.x, P.y, 5, '#cbbfa8', 50);
   }
 
-  // sword
+   
   if (Input.pressed.sword && P.rollT <= 0 && P.swingCd <= 0 && P.swingT <= 0) {
     P.swingIdx = P.comboT > 0 ? (P.swingIdx + 1) % 3 : 0;
     P.swingT = TS.time + (P.swingIdx === 2 ? 0.06 : 0);
@@ -3308,7 +3308,7 @@ function playerUpdate(dt, env) {
     Sound.sfx('swing');
   }
 
-  // bow draw / release
+   
   if (Input.held.bow && P.rollT <= 0 && P.swingT <= 0) {
     if (!P.drawing) { P.drawing = true; P.drawT = 0; if (P.arrows > 0) Sound.sfx('draw'); }
     P.drawT += dt;
@@ -3326,7 +3326,7 @@ function playerUpdate(dt, env) {
     P.drawing = false; P.drawT = 0;
   }
 
-  // aim
+   
   if (P.drawing) {
     let a = mouseAim ? mouseAng() : (moving ? Math.atan2(mv.y, mv.x) : P.aim);
     if (!mouseAim && !moving && P.drawT < dt * 1.5) a = P.dir;
@@ -3343,7 +3343,7 @@ function playerUpdate(dt, env) {
     P.aim = a; P.dir = a;
   } else if (!P.swingT) P.aim = P.dir;
 
-  // movement
+   
   let tvx = 0, tvy = 0;
   if (P.rollT > 0) {
     P.rollT -= dt;
@@ -3365,7 +3365,7 @@ function playerUpdate(dt, env) {
   moveCircle(P, fx, fy, TP.radius, env.hit);
   if (moving || P.rollT > 0) P.walk += dt * 11; else P.walk = 0;
 
-  // sword active window
+   
   if (P.swingT > 0) {
     const total = TS.time + (P.swingIdx === 2 ? 0.06 : 0);
     const e = total - P.swingT;
@@ -3447,15 +3447,15 @@ function drawWeapons(g, x, y) {
       g.beginPath(); g.moveTo(bx, by); g.lineTo(bx + Math.cos(a) * 160, by + Math.sin(a) * 160); g.stroke(); g.setLineDash([]);
     }
   } else {
-    // sheathed sword on the back / at the hip
+     
     const side = Math.cos(P.dir) < 0 ? 1 : -1;
     g.strokeStyle = '#9aa0a8'; g.lineWidth = 2.5;
     g.beginPath(); g.moveTo(x + side * 6, y - 8); g.lineTo(x + side * 9, y - 26); g.stroke();
   }
 }
 
-// ---- js_combat.js ----
-// Combat systems: pooled arrows, bullets, particles; telegraphs, zones, beams, shockwaves; ordinary enemies; weak points.
+ 
+ 
 
 const Arrows = makePool(40, () => ({ x: 0, y: 0, vx: 0, vy: 0, dmg: 0, life: 0, full: false }));
 const Bullets = makePool(320, () => ({ x: 0, y: 0, vx: 0, vy: 0, r: 6, dmg: 1, life: 0, col: '#fff', kind: 'orb', homing: 0, spd: 0, bounce: 0, hp: 0, stop: 0, stopAt: 0, orbit: null, t: 0 }));
@@ -3467,7 +3467,7 @@ const Beams = [];
 const Waves = [];
 const Enemies = [];
 const WeakPts = [];
-// Space the combat runs in: world (tiles) or arena (bounds + pillars).
+ 
 const Space = { solid: (x, y) => false, onWeakDone: null, push: null };
 
 function clearCombat() {
@@ -3498,12 +3498,12 @@ function spawnBullet(x, y, a, spd, o) {
   b.orbit = (o && o.orbit) || null; b.t = 0;
   return b;
 }
-// Sword cuts destroyable bullets (homing orbs) near the blade.
+ 
 function cutBullets(x, y, r) {
   for (const b of Bullets.items) if (b.on && b.hp > 0 && dist2(b.x, b.y, x, y) < (r + b.r) * (r + b.r)) { b.on = false; burst(b.x, b.y, 6, b.col, 80); Sound.sfx('pop'); }
 }
 
-// Hard caps: effects always expire on their own; the caps only guarantee nothing can pile up.
+ 
 const FX_CAP = { teles: 160, zones: 32, beams: 12, waves: 16 };
 function capPush(arr, item, cap) { if (arr.length >= cap) arr.shift(); arr.push(item); return item; }
 function addTele(o) { const t = Object.assign({ t: 0, dur: 0.8, col: '#ffd27a', dmg: 2 }, o); t.dur *= DIFF().teleMult; return capPush(Teles, t, FX_CAP.teles); }
@@ -3516,7 +3516,7 @@ function playerInZone(kind) { for (const z of Zones) if (z.kind === kind && dist
 function updateCombat(dt) {
   const px = P.x, py = P.y - 12;
   const slowField = (x, y) => { for (const z of Zones) if (z.kind === 'time' && dist2(x, y, z.x, z.y) < z.r * z.r) return 0.45; return 1; };
-  // arrows
+   
   for (const a of Arrows.items) {
     if (!a.on) continue;
     a.life -= dt; a.x += a.vx * dt; a.y += a.vy * dt;
@@ -3532,7 +3532,7 @@ function updateCombat(dt) {
     if (!hit) for (const b of Bullets.items) if (b.on && b.hp > 0 && dist2(a.x, a.y, b.x, b.y) < (b.r + 5) * (b.r + 5)) { b.hp -= a.dmg; if (b.hp <= 0) { b.on = false; burst(b.x, b.y, 6, b.col, 80); Sound.sfx('pop'); } hit = true; break; }
     if (hit) a.on = false;
   }
-  // bullets
+   
   for (const b of Bullets.items) {
     if (!b.on) continue;
     const sf = slowField(b.x, b.y);
@@ -3563,7 +3563,7 @@ function updateCombat(dt) {
       if (hurtPlayer(b.dmg, b.x, b.y)) { b.on = false; burst(b.x, b.y, 6, b.col, 80); }
     }
   }
-  // telegraphs
+   
   for (let i = Teles.length - 1; i >= 0; i--) {
     const t = Teles[i];
     t.t += dt;
@@ -3580,7 +3580,7 @@ function updateCombat(dt) {
       if (t.kind === 'circle' && t.sfx !== false) Sound.sfx(t.sfx || 'boom');
     }
   }
-  // zones
+   
   for (let i = Zones.length - 1; i >= 0; i--) {
     const z = Zones[i]; z.t += dt; z.life -= dt;
     if (z.life <= 0) { Zones.splice(i, 1); continue; }
@@ -3591,7 +3591,7 @@ function updateCombat(dt) {
     if (z.kind === 'quicksand') { const a = angTo(P.x, P.y, z.x, z.y); P.pushX += Math.cos(a) * 160 * dt; P.pushY += Math.sin(a) * 160 * dt; if (dist2(P.x, P.y, z.x, z.y) < 225) hurtPlayer(1, z.x, z.y); }
     if (z.kind === 'freeze' && z.t > 1.2) { z.tick = (z.tick || 0) + dt; if (z.tick > 1.0) { z.tick = 0; hurtPlayer(1, z.x, z.y); } }
   }
-  // beams
+   
   for (let i = Beams.length - 1; i >= 0; i--) {
     const b = Beams[i]; b.t += dt;
     if (b.t >= b.dur) { Beams.splice(i, 1); continue; }
@@ -3601,7 +3601,7 @@ function updateCombat(dt) {
       if (pointNearLine(P.x, P.y - 10, b.x, b.y, b.a, b.len, b.w / 2 + 6)) hurtPlayer(b.dmg, P.x - Math.cos(b.a) * 20, P.y - Math.sin(b.a) * 20);
     }
   }
-  // shockwaves
+   
   for (let i = Waves.length - 1; i >= 0; i--) {
     const w = Waves[i]; w.r += w.spd * dt;
     if (w.r > w.max) { Waves.splice(i, 1); continue; }
@@ -3614,19 +3614,19 @@ function updateCombat(dt) {
       }
     }
   }
-  // particles
+   
   for (const p of Parts.items) { if (!p.on) continue; p.life -= dt; if (p.life <= 0) { p.on = false; continue; } p.x += p.vx * dt; p.y += p.vy * dt; p.vy += p.grav * dt; p.vx *= 0.96; p.vy *= 0.96; }
   for (const f of Floaters.items) { if (!f.on) continue; f.life -= dt; f.y -= 30 * dt; if (f.life <= 0) f.on = false; }
-  // weak points
+   
   for (const w of WeakPts) w.t += dt;
-  // enemies
+   
   for (let i = Enemies.length - 1; i >= 0; i--) {
     const e = Enemies[i];
     if (e.dead) { releaseEnemy(i); continue; }
     if (G.mode === 'world' && dist2(e.x, e.y, P.x, P.y) > TUNE.enemy.activeRange * TUNE.enemy.activeRange) continue;
     updateEnemy(e, dt);
   }
-  // keep enemies from stacking on one spot (a pile can't be fought one at a time)
+   
   for (let i = 0; i < Enemies.length; i++) for (let j = i + 1; j < Enemies.length; j++) {
     const a = Enemies[i], c = Enemies[j]; if (a.dead || c.dead || a.under || c.under) continue;
     const dx = c.x - a.x, dy = c.y - a.y, d = Math.hypot(dx, dy) || 0.01, min = a.r + c.r;
@@ -3645,9 +3645,9 @@ function pointNearLine(px, py, x, y, a, len, w) {
   return perp < w;
 }
 
-// ---------- ordinary enemies & minions ----------
-// Objects are recycled through a free list; only enemies near the player run AI.
-// "look" draws a small, weaker likeness of a guardian.
+ 
+ 
+ 
 const ENEMY_DEF = {
   thornling: { hp: 28, r: 12, speed: 72 },
   wisp:      { hp: 22, r: 10, speed: 60 },
@@ -3697,7 +3697,7 @@ function enemyCollide(x, y, r) { return Space.solidCircle ? Space.solidCircle(x,
 function enemyTele() { return 0.6 * DIFF().teleMult; }
 function updateEnemy(e, dt) {
   e.t += dt; e.hurt = Math.max(0, e.hurt - dt);
-  if (e.spawnT > 0) { e.spawnT -= dt; return; }   // fading in: harmless and still
+  if (e.spawnT > 0) { e.spawnT -= dt; return; }    
   e.cd -= dt;
   const d = dist(e.x, e.y, P.x, P.y), a = angTo(e.x, e.y, P.x, P.y);
   const col = e.look ? GUARDIAN_BY_ID[e.look].col.glow : '#fff';
@@ -3727,7 +3727,7 @@ function updateEnemy(e, dt) {
       }
       break;
     case 'pebblet': case 'gustling': {
-      // telegraphed straight-line charge, then a vulnerable recovery
+       
       const dashSpd = e.type === 'gustling' ? 380 : 300, dashT = e.type === 'gustling' ? 0.5 : 0.65;
       if (e.state === 'tele') { e.st -= dt; if (e.st <= 0) { e.state = 'dash'; e.st = dashT; } }
       else if (e.state === 'dash') { mx = e.dx * dashSpd; my = e.dy * dashSpd; e.st -= dt; contact = 1; if (e.st <= 0) { e.state = 'recover'; e.st = 1.1; } }
@@ -3801,12 +3801,12 @@ function enemyTargets(out) {
   }
 }
 
-// ---------- weak points (crystals, cores, prisms, lanterns, blooms) ----------
+ 
 function spawnWeakPoints(kind, n, cx, cy, rad, col) {
   WeakPts.length = 0;
   for (let i = 0; i < n; i++) {
     const a = i / n * TAU + rnd() * 0.4;
-    // weak points must be reachable: never inside a pillar or wall (arena) — the boss is invulnerable until they break
+     
     const sp = Space.freeSpot ? Space.freeSpot(cx + Math.cos(a) * rad, cy + Math.sin(a) * rad * 0.7, 20) : { x: cx + Math.cos(a) * rad, y: cy + Math.sin(a) * rad * 0.7 };
     const w = { kind, x: sp.x, y: sp.y, r: 15, hp: kind === 'bloom' ? 14 : 18, t: rnd() * 3, col, lastSwing: -1 };
     w.onHit = (dmg) => {
@@ -3822,7 +3822,7 @@ function spawnWeakPoints(kind, n, cx, cy, rad, col) {
 }
 function weakTargets(out) { for (const w of WeakPts) { w.y2 = w.y - 10; out.push({ x: w.x, y: w.y - 10, r: w.r, get lastSwing() { return w.lastSwing; }, set lastSwing(v) { w.lastSwing = v; }, onHit: w.onHit }); } }
 
-// ---------- drawing ----------
+ 
 function drawCombatLower(g, t) {
   for (const z of Zones) {
     const k = clamp(z.t / 0.6, 0, 1) * clamp(z.life, 0, 1);
@@ -3847,7 +3847,7 @@ function drawCombatLower(g, t) {
       g.strokeStyle = rgba(tl.col, 0.7); g.lineWidth = 1.5; g.strokeRect(0, -tl.w / 2, tl.len, tl.w);
       g.fillStyle = rgba(tl.col, 0.3); g.fillRect(0, -tl.w / 2, tl.len * k, tl.w);
     } else if (tl.kind === 'ringPreview') {
-      // the coming ring and its safe opening, pointing at where the player stood
+       
       g.strokeStyle = rgba(tl.col, 0.35 + k * 0.5); g.lineWidth = 10;
       g.beginPath(); g.arc(tl.x, tl.y, tl.r + k * 20, tl.gapA + tl.gapW / 2, tl.gapA - tl.gapW / 2 + TAU); g.stroke();
       g.fillStyle = 'rgba(200,255,220,' + (0.10 + 0.12 * Math.sin(tl.t * 12) + 0.08) + ')';
@@ -3944,9 +3944,9 @@ function drawCombatUpper(g, t) {
   g.globalAlpha = 1;
 }
 
-// ---- js_bosses.js ----
-// Guardian arenas and boss AI. One boss runs combat AI at a time.
-// Every attack is telegraphed, and most end with an opening (the boss glows gold and takes extra damage).
+ 
+ 
+ 
 
 const AW = 1120, AH = 720, AWALL = 44, ATOP = 70;
 const Arena = { def: null, bg: null, pillars: [], hazard: null, ice: false, dark: 0, light: 0, wind: { a: 0, t: 0, on: false }, camX: 0, camY: 0, t: 0, retry: false };
@@ -3959,8 +3959,8 @@ function arenaSolidCircle(x, y, r) {
   return false;
 }
 function arenaSolidPoint(x, y) { return arenaSolidCircle(x, y, 1); }
-// Nearest spot near (x, y) where a circle of radius r fits: never inside a wall or pillar.
-// Used for every spawn and landing point so nothing can start or end up stuck in geometry.
+ 
+ 
 function arenaFreeSpot(x, y, r) {
   x = clamp(x, AWALL + r + 2, AW - AWALL - r - 2); y = clamp(y, ATOP + r + 2, AH - 26 - r - 2);
   if (!arenaSolidCircle(x, y, r)) return { x, y };
@@ -4004,12 +4004,12 @@ function prerenderArena(def) {
   if (style === 'garden' || style === 'grass') { for (let i = 0; i < 120; i++) { g.fillStyle = ['#f2a3c8', '#ffd27a', '#ffffff', '#c8a0f0'][Math.floor(r() * 4)]; g.beginPath(); g.arc(AWALL + r() * (AW - 2 * AWALL), ATOP + r() * (AH - ATOP - 30), 2, 0, TAU); g.fill(); } }
   if (style === 'ice') { g.fillStyle = 'rgba(255,255,255,0.25)'; for (let i = 0; i < 40; i++) g.fillRect(AWALL + r() * (AW - 2 * AWALL), ATOP + r() * (AH - ATOP - 30), 30 + r() * 40, 2); }
   if (style === 'forge') { g.fillStyle = 'rgba(255,120,40,0.18)'; g.fillRect(AWALL, ATOP, AW - 2 * AWALL, 20); }
-  // runic circle at centre
+   
   g.strokeStyle = rgba(def.col.glow, 0.25); g.lineWidth = 3;
   g.beginPath(); g.arc(AW / 2, AH / 2 + 20, 180, 0, TAU); g.stroke();
   g.beginPath(); g.arc(AW / 2, AH / 2 + 20, 150, 0, TAU); g.stroke();
   for (let i = 0; i < 12; i++) { const a = i / 12 * TAU; g.fillStyle = rgba(def.col.glow, 0.3); g.fillRect(AW / 2 + Math.cos(a) * 165 - 3, AH / 2 + 20 + Math.sin(a) * 165 - 3, 6, 6); }
-  // back wall decoration
+   
   g.fillStyle = shade(A.edge, -0.2);
   for (let x = AWALL; x < AW - AWALL; x += 70) g.fillRect(x, ATOP - 30, 40, 30);
   g.fillStyle = 'rgba(0,0,0,0.25)'; g.fillRect(AWALL, ATOP, AW - 2 * AWALL, 10);
@@ -4026,7 +4026,7 @@ function startArena(def, retry) {
   Space.solidCircle = arenaSolidCircle;
   Space.onWeakDone = onWeakDone;
   Space.freeSpot = arenaFreeSpot;
-  const ps = arenaFreeSpot(AW / 2, AH - 90, TUNE.player.radius + 4);   // six-pillar arenas have a pillar right here
+  const ps = arenaFreeSpot(AW / 2, AH - 90, TUNE.player.radius + 4);    
   P.x = ps.x; P.y = ps.y; P.dir = -Math.PI / 2;
   playerReset(false);
   P.iframes = 1;
@@ -4044,9 +4044,9 @@ function startArena(def, retry) {
   Sound.music(def.id === 'king' ? 'king' : (def.tier >= 4 ? 'boss2' : 'boss'));
 }
 
-// Summoning rule: mini-enemies only while the boss is in its first phase. A boss flagged
-// healRestoresSummon (Wenna) regains summoning while healing has returned her health bar to the
-// first-phase segment; her tactics stay in their current phase. Other bosses never regain it.
+ 
+ 
+ 
 function bossHpSegment() {
   const ph = B.def.phases, k = B.hp / B.maxHp;
   let seg = 0;
@@ -4143,13 +4143,13 @@ function onWeakDone(kind) {
 }
 
 function curPhase() { return B.def.phases[B.phase] || B.def.phases[0]; }
-// Every attack ends here, so a boss is always left visible, grounded and hittable.
+ 
 function endBossAct(recover) {
   B.act = null; B.dashing = false; B.air = 0; B.alpha = 1; B.reflect = false;
   B.state = 'recover'; B.timer = recover; B.openT = recover >= 0.6 ? recover : 0;
 }
-// Invariant repair for the arena, run every step. Normal play never trips these; each one fixes a
-// state that would otherwise leave the fight unwinnable or the player unable to move.
+ 
+ 
 function arenaWatchdog() {
   const fixed = [];
   if (arenaSolidCircle(P.x, P.y, TUNE.player.radius)) { const f = arenaFreeSpot(P.x, P.y, TUNE.player.radius + 2); P.x = f.x; P.y = f.y; fixed.push('player'); }
@@ -4159,7 +4159,7 @@ function arenaWatchdog() {
   if (B.hp > B.maxHp) B.hp = B.maxHp;
   if (B.state !== 'act') { if (B.air > 0 || B.alpha < 1 || B.dashing) { B.air = 0; B.alpha = 1; B.dashing = false; } }
   if (B.air <= 0 && (!isFinite(B.x) || !isFinite(B.y) || arenaSolidCircle(B.x, B.y, 24))) { const f = arenaFreeSpot(isFinite(B.x) ? B.x : AW / 2, isFinite(B.y) ? B.y : 230, 26); B.x = f.x; B.y = f.y; fixed.push('boss-pos'); }
-  // wards and healing only exist while their weak points do
+   
   if (B.shielded && !WeakPts.some(w => w.kind !== 'bloom')) { B.shielded = false; fixed.push('ward'); }
   if (B.healing && !WeakPts.some(w => w.kind === 'bloom')) { B.healing = false; fixed.push('heal'); }
   if (!B.def.phases[B.phase]) { B.phase = 0; fixed.push('phase'); }
@@ -4192,9 +4192,9 @@ function updateBoss(dt) {
     }
     case 'act': {
       const A = B.act;
-      if (!A) { endBossAct(0.6); break; }          // an act was dropped elsewhere: resume normally
+      if (!A) { endBossAct(0.6); break; }           
       A.time += dt;
-      // an attack can never run forever: generous ceiling far above any real attack length
+       
       if (A.time > (A.end < 999 ? A.end + 3 : 20)) { console.warn('[TLW] boss attack overran; ending it'); A.finished = true; }
       for (const s of A.steps) if (!s.done && A.time >= s.at) { s.done = true; s.fn(); }
       if (A.tick) A.tick(dt, A.time);
@@ -4206,11 +4206,11 @@ function updateBoss(dt) {
     }
     case 'recover': B.timer -= dt; if (B.timer <= 0) { B.state = 'move'; B.timer = Math.max(0.55, 1.35 - B.def.tier * 0.12); } break;
   }
-  // body contact
+   
   if (!B.done && B.air <= 0 && B.alpha > 0.5 && B.state !== 'phase') {
     if (dist2(P.x, P.y - 12, B.x, B.y - 24) < (B.r + 10) * (B.r + 10)) hurtPlayer(B.dashing ? 2 : TUNE.boss.contactDmg, B.x, B.y);
   }
-  // clones drift and shoot slowly
+   
   for (const c of B.clones) {
     c.t += dt; c.cd -= dt;
     c.x += Math.cos(c.t * 0.9 + c.seed) * 30 * dt; c.y += Math.sin(c.t * 0.7 + c.seed) * 20 * dt;
@@ -4218,7 +4218,7 @@ function updateBoss(dt) {
     c.life -= dt;
   }
   B.clones = B.clones.filter(c => c.life > 0);
-  // wind hazard
+   
   if (Arena.wind.on && !B.done) {
     Arena.wind.t -= dt;
     if (Arena.wind.t <= 0) { Arena.wind.t = 3.2; Arena.wind.a = rnd() * TAU; }
@@ -4272,7 +4272,7 @@ function startNextAttack() {
   B.state = 'act';
 }
 
-// ---------- attack library ----------
+ 
 const TM = () => DIFF().teleMult;
 const EMIT = () => ({ x: B.x, y: B.y - 40 });
 const C = () => B.def.col;
@@ -4361,8 +4361,8 @@ const ATK = {
     });
     return A;
   },
-  // Circular shockwave with a safe opening. The opening is aimed at the player when each ring is
-  // announced, previewed during a clear telegraph, never rotates, and rings move slowly.
+   
+   
   wave(m) {
     const TB = TUNE.boss, n = m.n || 1;
     const spd = Math.min(m.spd || 140, TB.waveMaxSpeed), thick = Math.min(m.thick || 18, 20);
@@ -4388,7 +4388,7 @@ const ATK = {
     const A = act(steps, 999, 0.75, (dt, t) => {
       if (t < lastFire + 0.05) return;
       if (phase === 'rings') {
-        // follow-ups only start once every ring has passed the player, so attacks never stack
+         
         const pending = mine.some(w => Waves.indexOf(w) >= 0 && w.r < dist(w.x, w.y, P.x, P.y) + 50);
         if (pending) return;
         phase = m.follow ? 'follow' : 'end'; wait = 0;
@@ -4564,7 +4564,7 @@ const ATK = {
   }
 };
 
-// Follow-ups used after shockwaves: each is telegraphed on its own.
+ 
 const ATK_FOLLOW = {
   volley() {
     const e = EMIT(), a = angTo(e.x, e.y, P.x, P.y - 12), tele = 0.55;
@@ -4578,7 +4578,7 @@ const ATK_FOLLOW = {
   }
 };
 
-// Delayed callbacks that respect pause (ticked by the arena loop).
+ 
 const StepTimers = [];
 function setTimeoutStep(sec, fn) { StepTimers.push({ t: sec, fn }); }
 function tickStepTimers(dt) {
@@ -4596,7 +4596,7 @@ function updateArena(dt) {
   if (!B.done || B.state === 'defeated') updateBoss(dt);
   updateCombat(dt);
   arenaWatchdog();
-  // camera
+   
   const tx = clamp(P.x - View.w / 2, Math.min(0, (AW - View.w) / 2), Math.max((AW - View.w) / 2, AW - View.w));
   const ty = clamp(P.y - View.h / 2 - 20, Math.min(0, (AH - View.h) / 2), Math.max((AH - View.h) / 2, AH - View.h));
   Arena.camX = AW <= View.w ? (AW - View.w) / 2 : lerp(Arena.camX, tx, Math.min(1, dt * 8));
@@ -4610,7 +4610,7 @@ function drawArena(g, t) {
   g.drawImage(Arena.bg, 0, 0);
   if (Arena.ice) { g.fillStyle = 'rgba(220,240,255,0.08)'; g.fillRect(AWALL, ATOP, AW - 2 * AWALL, AH - ATOP - 26); }
   drawCombatLower(g, t);
-  // y-sorted actors
+   
   const actors = [];
   for (const p of Arena.pillars) actors.push({ y: p.y, d: () => { drawShadow(g, p.x, p.y + 4, 24, 8); g.fillStyle = shade(Arena.def.arena.edge, -0.1); g.fillRect(p.x - 18, p.y - 70, 36, 74); g.fillStyle = shade(Arena.def.arena.edge, 0.15); g.fillRect(p.x - 22, p.y - 78, 44, 10); g.fillStyle = 'rgba(0,0,0,0.15)'; g.fillRect(p.x + 6, p.y - 68, 6, 70); } });
   for (const e of Enemies) actors.push({ y: e.y, d: () => drawEnemy(g, e, t) });
@@ -4645,16 +4645,16 @@ function drawArena(g, t) {
   }
 }
 
-// ---- js_passage.js ----
-// Side-scrolling chases: the guardian pursues from behind while smaller look-alikes come from ahead.
-// The player must keep moving, jump, and fight or avoid enemies to reach the arena door.
+ 
+ 
+ 
 
 const PS = { def: null, guardian: null, x: 0, y: 0, vx: 0, vy: 0, ground: false, coyote: 0, jumpBuf: 0, face: 1, walk: 0,
   segs: [], plats: [], hazards: [], len: 0, camX: 0, safeX: 60, safeY: 0, t: 0, gust: { t: 0, on: false, dir: -1 }, done: false,
   chaser: null, minions: [], shots: [], spawnT: 0, swingT: 0, swingId: 0, regen: 0, stats: null };
 const PASS_G = 1500, PASS_JUMP = 560, PASS_SPEED = 190, PASS_FLOOR = 400;
 
-// Chase tuning lives here.
+ 
 const CHASE = {
   startGap: 420, introDelay: 1.6,
   speed: 165, catchUpSpeed: 245, catchUpDist: 330, gustMult: 0.6,
@@ -4663,7 +4663,7 @@ const CHASE = {
   spawnMin: 1.8, spawnMax: 2.8, maxMinions: 3, spawnAhead: 320, doorClear: 170, minionHp: 18,
   swingTime: 0.22, swingReach: 54, swingDmg: 10
 };
-// What each chasing guardian throws, and what its look-alikes do.
+ 
 const CHASE_KIT = {
   earth:  { shot: 'boulder', minion: 'hopper', speed: 80 },
   wind:   { shot: 'feather', minion: 'flyer', speed: 85 },
@@ -4684,7 +4684,7 @@ function startPassage(pid, guardian) {
     const roll = r();
     if (roll < 0.45) {
       const ny = clamp(y + (r() < 0.5 ? -1 : 1) * (r() < 0.5 ? 0 : 50), PASS_FLOOR - 110, PASS_FLOOR + 30);
-      // gaps that also climb are kept short so the jump window stays generous
+       
       const gap = ny < y ? 64 + r() * 18 : 80 + r() * (def.ice || def.hazard === 'gusts' ? 30 : 40);
       x += gap; y = ny;
     } else if (roll < 0.66) {
@@ -4752,7 +4752,7 @@ function spawnMinion() {
   const kit = CHASE_KIT[PS.guardian.id] || CHASE_KIT.earth;
   const alive = PS.minions.filter(m => m.on).length;
   if (alive >= CHASE.maxMinions) return false;
-  // ahead of the player: just past the right edge of the screen, never close to the player or the door
+   
   const x = Math.max(PS.camX + View.w + 30, PS.x + CHASE.spawnAhead);
   if (x > PS.door.x - CHASE.doorClear) return false;
   const s = segAt(x, 40);
@@ -4771,7 +4771,7 @@ function chaserAttack() {
   PS.stats.minTele = Math.min(PS.stats.minTele, tele);
   c.tele = tele; c.shotKind = kit.shot;
   if (kit.shot === 'lob') {
-    // landing spots are marked on the ground ahead of the player before anything is thrown
+     
     c.targets = [PS.x + 40 + rnd() * 50, PS.x + 170 + rnd() * 60].map(x => { const s = segAt(x) || segAt(PS.x); return { x, y: s ? s.y : PS.y }; });
   } else if (kit.shot === 'feather') c.aimY = clamp(PS.y - 22, 120, PASS_FLOOR + 30);
   else c.aimY = null;
@@ -4812,7 +4812,7 @@ function updatePassage(dt) {
     if (PS.gust.t <= 0) { PS.gust.on = !PS.gust.on; PS.gust.t = PS.gust.on ? 1.4 : 3.2; PS.gust.warn = 0; }
     if (PS.gust.on) { PS.vx -= (PS.ground ? 240 : 50) * dt; gusting = true; }
   }
-  // jump
+   
   const jumpPressed = Input.pressed.roll || Input.pressed.up;
   if (jumpPressed) PS.jumpBuf = 0.12;
   PS.jumpBuf = Math.max(0, PS.jumpBuf - dt);
@@ -4831,7 +4831,7 @@ function updatePassage(dt) {
   if (PS.ground && PS.segs.some(s => PS.x >= s.x0 + 12 && PS.x <= s.x1 - 12 && Math.abs(s.y - PS.y) < 2)) { PS.safeX = PS.x; PS.safeY = PS.y; }
   if (mx && PS.ground) PS.walk += dt * 11; else if (PS.ground) PS.walk = 0;
 
-  // sword and bow (side view)
+   
   PS.swingT = Math.max(0, PS.swingT - dt);
   if (Input.pressed.sword && PS.swingT <= 0) { PS.swingT = CHASE.swingTime; PS.swingId++; Sound.sfx('swing'); }
   if (PS.swingT > CHASE.swingTime * 0.3) {
@@ -4845,12 +4845,12 @@ function updatePassage(dt) {
   P.noArrowT = Math.max(0, P.noArrowT - dt);
   if (P.arrows < P.maxArrows) { PS.regen += dt; if (PS.regen >= TUNE.bow.regenTime) { PS.regen = 0; P.arrows++; } }
 
-  // fell into a gap
+   
   if (PS.y > VH + 80) {
     Sound.sfx('fall');
     PS.stats.falls = (PS.stats.falls || 0) + 1;
     P.iframes = 0;
-    if (PS.t - (PS.lastHurtT || -9) > 1.5) hurtPlayer(1);   // no double penalty when a hit knocked you in
+    if (PS.t - (PS.lastHurtT || -9) > 1.5) hurtPlayer(1);    
     if (!P.dead) { PS.x = PS.safeX; PS.y = PS.safeY; PS.vx = PS.vy = 0; P.iframes = 1.2; const c = PS.chaser; if (c.x > PS.x - 260) c.x = PS.x - 260; }
     return;
   }
@@ -4859,7 +4859,7 @@ function updatePassage(dt) {
   updateMinions(dt);
   updateShots(dt);
 
-  // environmental hazards (lighter now that the chase supplies pressure)
+   
   for (const h of PS.hazards) {
     if (h.kind === 'icicle') {
       if (h.state === 'hang' && Math.abs(h.x - PS.x) < 120 && PS.x < h.x + 30) { h.state = 'shake'; h.t = 0; Sound.sfx('tele'); }
@@ -4893,13 +4893,13 @@ function updateChaser(dt, gusting) {
   c.x += sp * dt;
   const s = segAt(c.x);
   c.y = lerp(c.y, s ? s.y : c.y, Math.min(1, dt * 8));
-  // attack: telegraph, then release
+   
   if (c.tele > 0) { c.tele -= dt; if (c.tele <= 0) chaserRelease(); }
   else {
     c.attackT -= dt;
     if (c.attackT <= 0 && gap < 700) { c.attackT = (CHASE.attackMin + rnd() * (CHASE.attackMax - CHASE.attackMin)) * (Settings.difficulty === 'story' ? 1.3 : 1); chaserAttack(); }
   }
-  // caught up: hurt, shove forward, back off
+   
   if (PS.x - c.x < 34 && Math.abs((PS.y - 20) - (c.y - 34)) < 70) {
     PS.stats.contacts++;
     if (hurtPlayer(1, c.x, c.y)) { PS.vx = CHASE.hitKnock; PS.vy = -280; PS.ground = false; }
@@ -4928,7 +4928,7 @@ function updateMinions(dt) {
       m.vy += PASS_G * dt;
       let nxm = m.x + m.vx * dt;
       const s = segAt(nxm, 6);
-      if (m.ground && (!s || Math.abs(s.y - m.y) > 4)) { nxm = m.x; m.vx = 0; m.speed = -m.speed; }  // never walk off a ledge
+      if (m.ground && (!s || Math.abs(s.y - m.y) > 4)) { nxm = m.x; m.vx = 0; m.speed = -m.speed; }   
       m.x = nxm;
       const nym = m.y + m.vy * dt;
       const gy = m.vy >= 0 ? groundBelow(m.x, m.y, nym) : null;
@@ -4998,7 +4998,7 @@ function drawPassage(g, t) {
     }
   }
   const gd = PS.guardian, c = PS.chaser;
-  // telegraphs for the chaser's next throw
+   
   if (c && c.tele > 0) {
     const k = 1 - c.tele / (CHASE.attackTele * DIFF().teleMult);
     if (c.shotKind === 'lob') for (const tg of c.targets) {
@@ -5043,7 +5043,7 @@ function drawPassage(g, t) {
   drawCombatUpper(g, t);
   g.restore();
   g.restore();
-  // off-screen chaser indicator on the left edge
+   
   if (c && c.active && c.x < PS.camX + 10) {
     const pulse = 0.55 + 0.35 * Math.sin(t * 8), y = c.y - 40 + offY;
     g.fillStyle = rgba(gd.col.glow, pulse); g.beginPath(); g.moveTo(8, y); g.lineTo(28, y - 14); g.lineTo(28, y + 14); g.fill();
@@ -5062,17 +5062,17 @@ function drawPassage(g, t) {
   }
 }
 
-// ---- js_story.js ----
-// Story & progress: game state, saves, encounters, NPC handlers, quests, the King, and ending selection.
+ 
+ 
 
 const G = {
   mode: 'title', paused: false, slot: 0, t: 0, shake: 0, drops: [], targetsFn: () => [], godMode: false,
   S: null, regionIdx: -1, camX: 0, camY: 0, busy: false, fightDef: null, fightStartPotions: 0, lastAuto: null, dlgOpen: false,
-  encounterId: 0,        // bumped on every encounter start; delayed callbacks from older encounters are ignored
-  noSave: false,         // when true, nothing is written to storage (throwaway test sessions)
-  encounterExit: null    // optional override for leaving an encounter: fn(kind, info)
+  encounterId: 0,         
+  noSave: false,          
+  encounterExit: null     
 };
-// Run fn later only if the same encounter is still active.
+ 
 function laterInEncounter(ms, fn) { const id = G.encounterId; setTimeout(() => { if (G.encounterId === id) fn(); }, ms); }
 
 function newSaveData() {
@@ -5087,8 +5087,8 @@ function newSaveData() {
     flags: {}, ending: null, endings: []
   };
 }
-// Loads any older or damaged save into a valid shape. Unknown values fall back to safe defaults;
-// nothing the player legitimately earned is removed.
+ 
+ 
 const GUARDIAN_STATES = { none: 1, spared: 1, abandoned: 1 };
 function num(v, lo, hi, d) { v = +v; return isFinite(v) ? clamp(v, lo, hi) : d; }
 function obj(v) { return v && typeof v === 'object' && !Array.isArray(v) ? v : {}; }
@@ -5099,7 +5099,7 @@ function migrateSave(s) {
   for (const gd of GUARDIANS) {
     let g = out.guardians[gd.id];
     if (!g || typeof g !== 'object') g = out.guardians[gd.id] = { met: false, asked: false, state: 'none' };
-    if (!GUARDIAN_STATES[g.state]) g.state = 'none';      // an unknown state would keep seals and the gate shut forever
+    if (!GUARDIAN_STATES[g.state]) g.state = 'none';       
     g.met = !!g.met || g.state !== 'none'; g.asked = !!g.asked;
   }
   const p = out.player = obj(out.player), d = base.player;
@@ -5125,7 +5125,7 @@ function slotKey(i) { return 'slot' + i; }
 function readSlot(i) { const s = Store.get(slotKey(i)); if (!s || s.game !== GAME_ID) return null; try { return migrateSave(s); } catch (e) { return null; } }
 function writeSave() {
   const S = G.S; if (!S || G.noSave) return;
-  // during a fight, chase or ending P holds arena coordinates; the world position is the one before the fight
+   
   const pos = G.mode === 'world' || !G.returnPos ? P : G.returnPos;
   S.player.x = pos.x; S.player.y = pos.y; S.player.hp = P.hp; S.player.maxHp = P.maxHp; S.player.potions = P.potions;
   S.player.maxPotions = P.maxPotions; S.player.maxArrows = P.maxArrows; S.player.dmgMul = P.dmgMul;
@@ -5138,7 +5138,7 @@ function applySaveToPlayer() {
   P.maxArrows = p.maxArrows; P.arrows = p.maxArrows; P.dmgMul = p.dmgMul || 1;
 }
 
-// ---------- progress queries ----------
+ 
 function gState(id) { return G.S.guardians[id] ? G.S.guardians[id].state : 'none'; }
 function countState(st) { let n = 0; for (const id in G.S.guardians) if (G.S.guardians[id].state === st) n++; return n; }
 function sealCount() { return countState('spared') + countState('abandoned'); }
@@ -5177,7 +5177,7 @@ function fillTokens(s) {
 function addClue(id, clue) { if (!G.S.clues.find(c => c.id === id)) { G.S.clues.push({ id, title: clue.title, text: clue.text }); toast('Journal: "' + clue.title + '"'); } }
 function heedWarning(id) { if (!G.S.warnings[id]) { G.S.warnings[id] = 1; toast('You will remember this. (' + (WARNINGS[id] || 'Warning') + ')'); } }
 
-// ---------- interaction ----------
+ 
 function interact(e) {
   switch (e.kind) {
     case 'npc': talkNPC(e); break;
@@ -5348,7 +5348,7 @@ function restAtCamp(e) {
   toast('You rest by the fire. Strength restored. Progress saved.');
 }
 
-// ---------- guardian encounters ----------
+ 
 function guardianEncounter(e) {
   const id = e.id;
   if (id === 'king') { kingEncounter(e); return; }
@@ -5385,7 +5385,7 @@ function beginFight(def) {
   UI.fadeTo(() => {
     if (usePassage) {
       try { G.mode = 'passage'; startPassage(def.passage, def); banner(PASSAGES[def.passage].name, def.name + "'s approach"); }
-      catch (err) { console.error('[TLW] chase failed to start', err); enterArena(def, false); }   // the guardian fight itself still happens
+      catch (err) { console.error('[TLW] chase failed to start', err); enterArena(def, false); }    
     }
     else enterArena(def, false);
   });
@@ -5401,7 +5401,7 @@ function enterArena(def, retry) {
   G.encounterId++;
   try { startArena(def, retry); }
   catch (err) {
-    // the arena failed to build: go back to the world in front of the guardian, nothing gained or lost
+     
     console.error('[TLW] arena failed to start', err);
     clearCombat(); G.mode = 'world';
     if (G.returnPos) { P.x = G.returnPos.x; P.y = G.returnPos.y; }
@@ -5427,7 +5427,7 @@ function onBossDefeated(def) {
 }
 function resolveGuardian(def, st) {
   const rec = G.S.guardians[def.id];
-  if (rec.state !== 'none') return;          // a repeated click or a re-run flow must not reward twice
+  if (rec.state !== 'none') return;           
   rec.state = st;
   if (st === 'spared') { P.maxHp = Math.min(TUNE.player.maxHpCap, P.maxHp + TUNE.rewards.spareHp); Sound.sfx('chime'); }
   else { P.dmgMul += TUNE.rewards.abandonDmg; Sound.sfx('sad'); }
@@ -5462,7 +5462,7 @@ function returnToWorld() {
 
 function onPlayerDown() {
   laterInEncounter(1100, () => {
-    if (G.mode === 'arena' && B.done) { P.dead = false; P.hp = Math.max(P.hp, 1); return; }   // the boss was beaten; its defeat flow continues
+    if (G.mode === 'arena' && B.done) { P.dead = false; P.hp = Math.max(P.hp, 1); return; }    
     if (G.mode === 'world') {
       UI.dialogue({ name: '', lines: ['~Your vision blurs, and the world goes quiet... You wake by the last campfire, aching but whole.'], onDone: respawnAtCamp });
       return;
@@ -5475,7 +5475,7 @@ function onPlayerDown() {
     ], { noEscape: true });
   });
 }
-// Restart the current fight or chase from its beginning (no victory granted, nothing skipped).
+ 
 function restartEncounter(reason) {
   const def = G.fightDef; if (!def) return;
   if (G.encounterExit && reason === 'error') { G.encounterExit('fallen'); return; }
@@ -5486,7 +5486,7 @@ function restartEncounter(reason) {
     if (reason === 'error') toast('Something went wrong, so the encounter was restarted.', 5000);
   });
 }
-// Keep doors, seals, the gate and the bridge consistent with the save. Cheap; safe to run any time.
+ 
 function repairWorldState() {
   const S = G.S; if (!S) return 0;
   let n = 0;
@@ -5497,7 +5497,7 @@ function repairWorldState() {
   if (n) console.warn('[TLW] world state repaired (' + n + ')');
   return n;
 }
-// Move the player out of solid tiles to the nearest walkable spot (or the camp if none is close).
+ 
 function unstickPlayerWorld() {
   if (!circleHitsTiles(P.x, P.y, TUNE.player.radius) && isFinite(P.x) && isFinite(P.y)) return false;
   const tx = Math.floor(P.x / TILE), ty = Math.floor(P.y / TILE);
@@ -5516,12 +5516,12 @@ function returnToCampSafely() {
     toast('You make your way back to the last campfire.');
   });
 }
-// Things that should always finish by themselves; if one stalls, resume it from the right point.
+ 
 const Watch = { deadT: 0, defeatT: 0, doorT: 0, worldT: 0 };
 function progressWatchdog(dt) {
-  // fallen but the "You have fallen" choice never appeared
+   
   if (P.dead) { Watch.deadT += dt; if (Watch.deadT > 4) { Watch.deadT = 0; console.warn('[TLW] re-offering the fallen menu'); onPlayerDown(); } } else Watch.deadT = 0;
-  // guardian beaten but its dialogue / choice flow is not running
+   
   if (G.mode === 'arena' && B.done && B.reported) {
     Watch.defeatT += dt;
     if (Watch.defeatT > 3) {
@@ -5530,7 +5530,7 @@ function progressWatchdog(dt) {
       else if (gState(B.def.id) === 'none') onBossDefeated(B.def); else returnToWorld();
     }
   } else Watch.defeatT = 0;
-  // the chase door was reached but the arena never opened
+   
   if (G.mode === 'passage' && PS.done) { Watch.doorT += dt; if (Watch.doorT > 2) { Watch.doorT = 0; console.warn('[TLW] opening the arena after the chase'); enterArena(G.fightDef, false); } } else Watch.doorT = 0;
   if (G.mode === 'world') {
     Watch.worldT += dt;
@@ -5546,7 +5546,7 @@ function respawnAtCamp() {
   enterWorldMode();
 }
 
-// ---------- the King ----------
+ 
 function kingEncounter(e) {
   const K = G.S.king, def = KING;
   if (K.defeated) { say(def.name, [G.S.ending ? 'Go home. They need you more than the Heart ever did.' : 'The door is open. Go and see.'], { onDone: () => { if (!G.S.ending) heartSequence(); } }); return; }
@@ -5584,20 +5584,20 @@ function heartSequence() {
   });
 }
 
-// ---------- region bookkeeping ----------
-// ---------- dynamic ordinary enemies ----------
+ 
+ 
 const Spawner = { cd: 0, grace: 0, ri: -1 };
 function regionSpawnRule(reg) {
   const sp = SPAWNS[reg.id]; if (!sp) return null;
   const tier = 5 - reg.r, TE = TUNE.enemy;
   let max = TE.maxByTier[tier] + (sp.ruins ? 1 : 0), cd = TE.cdByTier[tier];
   const gid = reg.def.guardian, st = gid && gid !== 'king' ? gState(gid) : 'none';
-  if (st === 'abandoned') { max += 1; cd *= 0.75; }      // a cursed, neglected place
-  else if (st === 'spared') max = Math.max(1, max - 1);  // the land is recovering
+  if (st === 'abandoned') { max += 1; cd *= 0.75; }       
+  else if (st === 'spared') max = Math.max(1, max - 1);   
   return { types: sp.types, max, cd, tier };
 }
 function refreshRegionEnemies(force) {
-  // keep enemies of the current region; drop distant leftovers back into the pool
+   
   for (let i = Enemies.length - 1; i >= 0; i--) {
     const e = Enemies[i];
     const far = dist2(e.x, e.y, P.x, P.y) > 700 * 700;
@@ -5614,7 +5614,7 @@ function findSpawnPoint(reg) {
     const d = dist(x, y, P.x, P.y);
     if (d < TE.spawnMin || d > TE.spawnMax) continue;
     const onScreen = x > G.camX - 40 && x < G.camX + View.w + 40 && y > G.camY - 40 && y < G.camY + View.h + 40;
-    if (onScreen && k < 18) continue;   // prefer appearing out of view
+    if (onScreen && k < 18) continue;    
     if (camp && dist2(x, y, camp.x, camp.y) < (TE.campClear * TILE) ** 2) continue;
     if (sh && dist2(x, y, sh.x, sh.y) < (TE.shrineClear * TILE) ** 2) continue;
     if (circleHitsTiles(x, y, 14)) continue;
@@ -5625,7 +5625,7 @@ function findSpawnPoint(reg) {
 }
 function updateSpawner(dt) {
   const reg = World.regions[G.regionIdx]; if (!reg) return;
-  // release anything that drifted far away (pooled, no garbage)
+   
   for (let i = Enemies.length - 1; i >= 0; i--) if (dist2(Enemies[i].x, Enemies[i].y, P.x, P.y) > TUNE.enemy.despawnRange ** 2) releaseEnemy(i);
   const rule = regionSpawnRule(reg); if (!rule) return;
   if (Spawner.grace > 0) { Spawner.grace -= dt; return; }
@@ -5658,8 +5658,8 @@ function onEnterRegion(ri) {
   writeSave();
 }
 
-// ---- js_ui.js ----
-// UI: DOM overlays (title, dialogue, panels, ending) plus the canvas HUD.
+ 
+ 
 
 const $ = id => document.getElementById(id);
 function toast(text, ms) {
@@ -5683,14 +5683,14 @@ function fmtTime(sec) { const h = Math.floor(sec / 3600), m = Math.floor(sec / 6
 const UI = {
   dlg: null, choice: null, panel: null, menuSel: 0, fading: false, endState: null,
 
-  // ---------- fade ----------
+   
   fadeTo(cb) {
     if (UI.fading) { cb(); return; }
     UI.fading = true; $('fade').classList.add('on');
     setTimeout(() => { try { cb(); } finally { Input.clearAll(); setTimeout(() => { $('fade').classList.remove('on'); UI.fading = false; }, 60); } }, 460);
   },
 
-  // ---------- dialogue ----------
+   
   dialogue(o) {
     UI.choice = null;
     const lines = (o.lines || []).map(fillTokens).filter(l => l && l.trim() !== '');
@@ -5739,7 +5739,7 @@ const UI = {
   leave() {
     const d = UI.dlg; if (!d) return;
     if (d.leaveable) { UI.closeDialogue(false); return; }
-    // non-leaveable: fast-forward to the end
+     
     d.typing = false; d.i = d.lines.length - 1; UI.showLine(); d.typing = false; $('dlgText').textContent = d.full;
   },
   choose(title, choices, opts) {
@@ -5775,7 +5775,7 @@ const UI = {
     c.choices[i].fn();
   },
 
-  // ---------- title ----------
+   
   showTitle() {
     G.mode = 'title';
     $('title').classList.remove('hidden');
@@ -5805,8 +5805,8 @@ const UI = {
     let sealsN = 0; for (const id in s.guardians) if (s.guardians[id].state !== 'none') sealsN++;
     return { a: (reg ? reg.name : 'Thornvale') + (s.ending ? ' · Journey complete' : ''), b: sealsN + '/20 lanterns · ' + fmtTime(s.playTime) + ' · ' + new Date(s.updated).toLocaleDateString() };
   },
-  // Save slots. Confirmation is drawn in-game: native confirm() is blocked or auto-cancelled in
-  // sandboxed/embedded pages, which made Delete silently do nothing.
+   
+   
   openSlots(mode) {
     UI.slotMode = mode; UI.slotConfirm = null;
     const body = () => {
@@ -5869,7 +5869,7 @@ const UI = {
     UI.fadeTo(() => { loadGame(); });
   },
 
-  // ---------- panels ----------
+   
   openPanel(title, tabs, bodyFn, bind, foot) {
     UI.panel = { title, tabs, tab: tabs ? tabs[0][0] : null, bodyFn, bind, foot };
     $('panel').classList.remove('hidden');
@@ -5899,7 +5899,7 @@ const UI = {
   openPause() {
     G.paused = true;
     const fight = G.mode === 'arena' || G.mode === 'passage';
-    // recovery that fits the moment: restart the current fight, or walk back to the last campfire
+     
     const rescue = fight ? ['Restart this fight', () => { UI.panel = null; $('panel').classList.add('hidden'); G.paused = false; restartEncounter('player'); }]
                          : ['Return to last campfire', () => { UI.panel = null; $('panel').classList.add('hidden'); G.paused = false; returnToCampSafely(); }];
     const items = [['Resume', () => UI.closePanel()], ['Journal', () => UI.openJournal()], ['Map', () => UI.openMap()], ['Settings', () => UI.openSettings()], ['How to Play', () => UI.openHelp()], rescue, ['Save and Quit to Title', () => { writeSave(); UI.panel = null; $('panel').classList.add('hidden'); G.paused = false; UI.fadeTo(() => UI.showTitle()); }]];
@@ -5965,7 +5965,7 @@ const UI = {
       const x = reg.c * cw, y = reg.r * ch, seen = G.S.visited[reg.id];
       g.fillStyle = seen ? reg.biome.g[0] : '#1a1724'; g.fillRect(x + 2, y + 2, cw - 4, ch - 4);
       if (seen) {
-        // miniature of the tiles
+         
         for (let ty = 0; ty < RH; ty += 3) for (let tx = 0; tx < RW; tx += 3) {
           const t = tileAt(reg.ox + tx, reg.oy + ty);
           if (SOLID[t] && t !== T.OBST) { g.fillStyle = 'rgba(0,0,0,0.3)'; g.fillRect(x + 2 + tx * (cw - 4) / RW, y + 2 + ty * (ch - 4) / RH, 6, 5); }
@@ -5982,7 +5982,7 @@ const UI = {
         } else if (gid === 'king') { g.fillStyle = '#ffd27a'; g.font = 'bold 15px Courier New'; g.fillText('♛', x + cw / 2, y + 26); }
         if (!reg.def.noCamp) { g.fillStyle = '#ffb347'; g.font = '11px Courier New'; g.fillText('⌂', x + 12, y + 14); }
       } else { g.fillStyle = '#3a3448'; g.font = '16px Courier New'; g.textAlign = 'center'; g.fillText('?', x + cw / 2, y + ch / 2 + 6); }
-      // connections: gold = open, red = sealed by a guardian, amber = lantern gate; no mark = mountain wall
+       
       const link = (dc, dr, rx, ry, rw, rh) => {
         const nb = World.regions[(reg.r + dr) * GRID_W + reg.c + dc]; if (!nb || reg.c + dc >= GRID_W) return;
         if (!G.S.visited[reg.id] && !G.S.visited[nb.id]) return;
@@ -6037,7 +6037,7 @@ const UI = {
     UI.panel.onClose = () => { G.paused = wasPaused; if (wasPaused && G.mode !== 'title') UI.openPause(); };
   },
 
-  // ---------- ending ----------
+   
   showEnding(kind) {
     const E = ENDINGS[kind];
     const pages = [];
@@ -6095,7 +6095,7 @@ const UI = {
     drawEndScene(g, w, h, st.scene, st.t);
   },
 
-  // ---------- keyboard routing ----------
+   
   onKey(e) {
     const code = e.code;
     if (UI.fading) return true;
@@ -6151,7 +6151,7 @@ $('panelClose').addEventListener('click', () => UI.closePanel());
 $('dialogue').addEventListener('click', (ev) => { if (ev.target.closest('.choice')) return; if (UI.dlg) UI.advance(); });
 $('ending').addEventListener('click', () => { if (UI.endState) UI.nextEndPage(); });
 
-// ---------- ending scenes ----------
+ 
 function drawEndScene(g, w, h, scene, t) {
   const sky = (a, b) => { const gr = g.createLinearGradient(0, 0, 0, h); gr.addColorStop(0, a); gr.addColorStop(1, b); g.fillStyle = gr; g.fillRect(0, 0, w, h); };
   const stars = (n, a) => { const r = mulberry32(5); for (let i = 0; i < n; i++) { g.fillStyle = 'rgba(255,255,255,' + (a * (0.3 + 0.7 * Math.abs(Math.sin(t * 0.8 + i)))) + ')'; g.fillRect(r() * w, r() * h * 0.6, 1.5, 1.5); } };
@@ -6167,7 +6167,7 @@ function drawEndScene(g, w, h, scene, t) {
     g.fillStyle = gr; g.beginPath(); g.arc(cx, cy, 140, 0, TAU); g.fill();
     g.fillStyle = 'rgba(' + col + ',0.85)'; g.beginPath(); g.ellipse(cx, cy, 70, 18, 0, 0, TAU); g.fill();
     if (scene !== 'heart_pre') {
-      // the road, shown in the pool's light: every guardian, standing or sitting as you left them
+       
       GUARDIANS.forEach((gd, i) => {
         const a = Math.PI + (i + 0.5) / GUARDIANS.length * Math.PI;
         const x = cx + Math.cos(a) * w * 0.38, y = cy - 40 + Math.sin(a) * h * 0.32;
@@ -6183,7 +6183,7 @@ function drawEndScene(g, w, h, scene, t) {
     drawPerson(g, cx, cy + 70, { col: '#3e7f86', hair: '#5a3a22', dir: -Math.PI / 2, cape: '#a8442a', scale: 1.6, sit: true });
     return;
   }
-  // home scenes
+   
   const dusk = scene === 'home_dusk', half = scene === 'home_half';
   if (dusk) sky('#2a1e3a', '#a0603a'); else if (half) sky('#4a6a8a', '#e0b88a'); else sky('#6ab0e0', '#f0e0b0');
   if (dusk) stars(40, 0.4);
@@ -6194,7 +6194,7 @@ function drawEndScene(g, w, h, scene, t) {
   g.lineTo(w, h); g.lineTo(0, h); g.fill();
   const groundCol = dusk ? '#6a5a3a' : half ? '#8a9a5a' : '#6a9a4a';
   g.fillStyle = groundCol; g.fillRect(0, h * 0.68, w, h);
-  // river: dry, thin, or flowing
+   
   const flow = dusk ? 0 : half ? 0.5 : 1;
   const ry = h * 0.82;
   g.fillStyle = '#7a5e3a'; g.fillRect(0, ry - 14, w, 28);
@@ -6203,14 +6203,14 @@ function drawEndScene(g, w, h, scene, t) {
     g.fillStyle = '#4a8ac0'; g.fillRect(0, ry - 12 * k, w, 24 * k);
     g.strokeStyle = 'rgba(255,255,255,0.4)'; for (let x = (t * 40) % 60 - 60; x < w; x += 60) { g.beginPath(); g.moveTo(x, ry); g.lineTo(x + 20, ry); g.stroke(); }
   }
-  // houses
+   
   for (let i = 0; i < 5; i++) {
     const x = w * 0.08 + i * w * 0.19, y = h * 0.68;
     g.fillStyle = dusk ? '#4a3e36' : '#b89a72'; g.fillRect(x, y - 50, 70, 50);
     g.fillStyle = dusk ? '#2a2026' : '#8a4a3a'; g.beginPath(); g.moveTo(x - 8, y - 48); g.lineTo(x + 35, y - 80); g.lineTo(x + 78, y - 48); g.fill();
     g.fillStyle = dusk ? (i === 2 ? '#e8b060' : '#1a1418') : '#e8d088'; g.fillRect(x + 12, y - 36, 12, 10);
   }
-  // people: many working together, a few, or one
+   
   const n = dusk ? 1 : half ? 6 : 14;
   for (let i = 0; i < n; i++) {
     const x = dusk ? w * 0.42 : w * 0.12 + i * (w * 0.76 / Math.max(1, n - 1)), y = h * 0.76 + (i % 2) * 8;
@@ -6219,13 +6219,13 @@ function drawEndScene(g, w, h, scene, t) {
     g.strokeStyle = '#6a4a2a'; g.lineWidth = 2.5; g.beginPath(); g.moveTo(x + 8, y - 26); g.lineTo(x + 14 + (dig ? 6 : 0), y + 2); g.stroke();
   }
   if (!dusk) {
-    // guardians who came to help, at the edge of the scene
+     
     const helpers = GUARDIANS.filter(gd => gState(gd.id) === 'spared').slice(0, half ? 3 : 6);
     helpers.forEach((gd, i) => { g.save(); g.translate(w * 0.05 + i * 60, h * 0.62); g.scale(0.45, 0.45); drawGuardian(g, gd, 0, 0, { t: t + i }); g.restore(); });
   }
 }
 
-// ---------- HUD (canvas) ----------
+ 
 function drawHeart(g, x, y, fill, s) {
   g.save(); g.translate(x, y); g.scale(s, s);
   const path = () => { g.beginPath(); g.moveTo(0, 4); g.bezierCurveTo(-9, -3, -6, -11, 0, -6); g.bezierCurveTo(6, -11, 9, -3, 0, 4); g.closePath(); };
@@ -6250,18 +6250,18 @@ function drawHUD(g, t) {
   }
   const rowY = 22 + Math.ceil(hearts / 10) * 20 + 6;
   g.font = 'bold 13px Courier New'; g.textAlign = 'left';
-  // tonics
+   
   for (let i = 0; i < P.maxPotions; i++) {
     const x = 16 + i * 16, y = rowY;
     g.fillStyle = i < P.potions ? '#8fe08a' : 'rgba(255,255,255,0.15)';
     g.fillRect(x, y + 3, 10, 11); g.fillRect(x + 3, y, 4, 4);
     g.strokeStyle = 'rgba(0,0,0,0.6)'; g.strokeRect(x + 0.5, y + 3.5, 10, 11);
   }
-  // arrows
+   
   const ax = 22 + P.maxPotions * 16;
   g.fillStyle = 'rgba(0,0,0,0.5)'; g.fillRect(ax - 4, rowY - 1, 70, 17);
   g.fillStyle = P.arrows > 0 ? '#efe6d2' : '#c97a6a'; g.fillText('➶ ' + P.arrows + '/' + P.maxArrows, ax, rowY + 12);
-  // lanterns
+   
   if (G.S) {
     const n = sealCount();
     const lx = View.w - 96;
@@ -6301,8 +6301,8 @@ function drawBossBar(g, t) {
   }
 }
 
-// ---- js_main.js ----
-// Main: world mode, interaction, rendering, the fixed-step loop, and start-up.
+ 
+ 
 
 const WORLD_ENV = { hit: circleHitsTiles, targets: worldTargets, ice: false, slow: 1, camX: 0, camY: 0 };
 function worldTargets() { const out = []; enemyTargets(out); return out; }
@@ -6351,7 +6351,7 @@ function loadGame() {
   rebuildWorld();
   applySaveToPlayer();
   playerReset(false);
-  // saves from before location rules may sit somewhere no longer reachable: bring the player home safely
+   
   const home = World.regionById[START_REGION].camp;
   const ok = reachableFrom(home.x, home.y);
   const ti = (x, y) => Math.floor(y / TILE) * WORLD_TW + Math.floor(x / TILE);
@@ -6365,7 +6365,7 @@ function loadGame() {
   toast('Welcome back.');
 }
 
-// ---------- world update ----------
+ 
 function nearbyEnts() {
   const ri = regionIndexAt(P.x, P.y), reg = World.regions[ri], out = [];
   for (let dr = -1; dr <= 1; dr++) for (let dc = -1; dc <= 1; dc++) {
@@ -6383,7 +6383,7 @@ function updateWorld(dt) {
   const ri = regionIndexAt(P.x, P.y);
   if (ri !== G.regionIdx) onEnterRegion(ri);
   updateSpawner(dt);
-  // interaction
+   
   let best = null, bd = 1e9;
   for (const e of nearbyEnts()) {
     if (!canInteract(e)) {
@@ -6406,7 +6406,7 @@ function updateWorld(dt) {
   }
   G.promptEnt = best; G.prompt = best ? interactLabel(best) : null;
   if (best && Input.pressed.interact && !G.dlgOpen) interact(best);
-  // drops
+   
   for (let i = G.drops.length - 1; i >= 0; i--) {
     const d = G.drops[i]; d.t += dt;
     if (d.t > 20) { G.drops.splice(i, 1); continue; }
@@ -6416,13 +6416,13 @@ function updateWorld(dt) {
       G.drops.splice(i, 1);
     }
   }
-  // camera
+   
   const tx = P.x - View.w / 2, ty = P.y - 16 - View.h / 2;
   G.camX = lerp(G.camX, tx, Math.min(1, dt * 7)); G.camY = lerp(G.camY, ty, Math.min(1, dt * 7));
   G.camX = clamp(G.camX, 0, WORLD_TW * TILE - View.w); G.camY = clamp(G.camY, 0, WORLD_TH * TILE - View.h);
 }
 
-// ---------- world render ----------
+ 
 function npcHasNews(def) {
   const S = G.S, Q = S.quests, F = S.flags;
   switch (def.id) {
@@ -6451,7 +6451,7 @@ function drawWorld(g, t) {
   g.save(); g.translate(-camX, -camY);
   const vx0 = camX - 80, vy0 = camY - 120, vx1 = camX + View.w + 80, vy1 = camY + View.h + 160;
   const vis = (x, y) => x > vx0 && x < vx1 && y > vy0 && y < vy1;
-  // footprints
+   
   for (const f of World.footprints) if (vis(f.x, f.y)) {
     g.save(); g.translate(f.x, f.y); g.rotate(f.a + Math.PI / 2);
     g.fillStyle = 'rgba(90,110,140,0.35)'; g.beginPath(); g.ellipse(0, 0, 7, 11, 0, 0, TAU); g.fill();
@@ -6506,7 +6506,7 @@ function drawWorld(g, t) {
   actors.push({ y: P.y, d: () => drawPlayer(g, P.x, P.y, t) });
   actors.sort((a, b) => a.y - b.y);
   for (const a of actors) a.d();
-  // guardian seals shimmer live so blocked routes are obvious
+   
   for (const sl of World.seals) {
     if (sl.open) continue;
     const sx = sl.x * TILE, sy = sl.y * TILE, w = sl.w * TILE, h = sl.h * TILE;
@@ -6516,7 +6516,7 @@ function drawWorld(g, t) {
     g.strokeStyle = rgba(c.light, 0.6); g.lineWidth = 2;
     for (let k = 0; k < 3; k++) { const o = ((t * 30 + k * 40) % (Math.max(w, h))); if (w > h) { g.beginPath(); g.moveTo(sx + o, sy); g.lineTo(sx + o, sy + h); g.stroke(); } else { g.beginPath(); g.moveTo(sx, sy + o); g.lineTo(sx + w, sy + o); g.stroke(); } }
   }
-  // live structures
+   
   for (const s of World.structs) {
     const sx = s.x * TILE, sy = s.y * TILE;
     if (!vis(sx, sy) && !vis(sx + s.w * TILE, sy)) continue;
@@ -6559,7 +6559,7 @@ function bubble(g, x, y, t, txt) {
   g.fillStyle = '#f3d98c'; g.font = 'bold 13px Courier New'; g.textAlign = 'center'; g.fillText(txt, x, y + 4 + b);
 }
 
-// ---------- title background ----------
+ 
 const TitleCam = { t: 0 };
 function drawTitleBackdrop(g, dt) {
   TitleCam.t += dt;
@@ -6573,7 +6573,7 @@ function drawTitleBackdrop(g, dt) {
   ambientDraw(g, dt, TitleCam.t);
 }
 
-// ---------- loop ----------
+ 
 function step(dt) {
   UI.tickDialogue(dt);
   G.shake = Math.max(0, G.shake - dt * 30);
@@ -6590,14 +6590,14 @@ function step(dt) {
   G.t += dt;
   if (G.S) G.S.playTime += dt;
 }
-// UI flags must agree with what is on screen, or the game can wait forever for a dialogue that isn't there.
+ 
 function repairUiState() {
   if (G.dlgOpen && !UI.dlg && !UI.choice) { G.dlgOpen = false; $('dialogue').classList.add('hidden'); }
   if ((UI.dlg || UI.choice) && $('dialogue').classList.contains('hidden')) $('dialogue').classList.remove('hidden');
   if (G.paused && !UI.panel) G.paused = false;
 }
-// A runtime error must never freeze the game. First abort what was running; if errors keep coming,
-// restart the encounter (or walk back to camp in the world). Progress is never deleted.
+ 
+ 
 const ErrLog = [];
 function recoverFromError(err) {
   console.error('[TLW] recovered from error:', err);
@@ -6624,7 +6624,7 @@ function renderFrame(dt) {
   drawHUD(ctx, t);
   for (const f of RenderHooks) f(ctx, dt);
 }
-const RenderHooks = [];   // extra overlay drawers, registered by optional build modules
+const RenderHooks = [];    
 
 let lastT = performance.now(), accT = 0;
 function frame(now) {
@@ -6646,7 +6646,7 @@ document.addEventListener('visibilitychange', () => {
 window.addEventListener('pointerdown', () => Sound.init(), { once: false });
 window.addEventListener('keydown', () => Sound.init());
 
-// ---------- start-up ----------
+ 
 function boot() {
   setupTouch();
   generateWorld();

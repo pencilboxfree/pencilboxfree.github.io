@@ -81,7 +81,7 @@
   .diffmeter span{width:46px; height:8px; border-radius:4px; background:rgba(255,255,255,.22)}
   .diffmeter span.on{background:var(--gold)}
 
-  /* Setup screen */
+   
   .overlay.setup{overflow-y:auto; justify-content:flex-start; padding:22px 16px}
   .setup-inner{width:100%; max-width:520px; margin:auto}
   .setlabel{font-family:"Oswald",sans-serif; text-transform:uppercase; letter-spacing:1.5px; font-size:12px; color:var(--gold); margin-bottom:8px; text-align:left}
@@ -127,7 +127,7 @@
       <canvas id="game" width="900" height="520"></canvas>
       <div class="toast" id="toast"></div>
 
-      <!-- SETUP -->
+       
       <div class="overlay setup show" id="setupOverlay">
         <div class="setup-inner">
           <h2>Set up the match</h2>
@@ -144,7 +144,7 @@
         </div>
       </div>
 
-      <!-- LEVEL INTRO -->
+       
       <div class="overlay" id="levelOverlay">
         <h2 id="lvTitle">Level 1</h2>
         <div class="blurb" id="lvBlurb"></div>
@@ -152,7 +152,7 @@
         <button class="newgame" id="levelBtn">Begin level</button>
       </div>
 
-      <!-- WINNER -->
+       
       <div class="overlay" id="overlay">
         <h2 id="winTitle">Player 1 Wins!</h2>
         <div class="final" id="winFinal"></div>
@@ -198,7 +198,7 @@
   ];
   const RINGS=[{max:0.09,pts:15},{max:0.20,pts:10},{max:0.40,pts:8},{max:0.60,pts:6},{max:0.80,pts:4},{max:1.00,pts:2}];
 
-  // Classic MS Paint 28-color palette
+   
   const PALETTE=[
     "#000000","#808080","#800000","#808000","#008000","#008080","#000080","#800080","#808040","#004040","#0080FF","#004080","#8000FF","#804000",
     "#FFFFFF","#C0C0C0","#FF0000","#FFFF00","#00FF00","#00FFFF","#0000FF","#FF00FF","#FFFF80","#00FF80","#80FFFF","#8080FF","#FF0080","#FF8040"
@@ -212,7 +212,7 @@
   const col=p=>state.colors[p-1];
   const nameOf=p=>(state.names&&state.names[p-1])||("Player "+p);
   function tCY(){ const c=L(); return c.move? c.cy+c.move*Math.sin(performance.now()*c.moveSpeed): c.cy; }
-  // --- Multi-target helpers (levels 4+). A level's own cfg doubles as a single target. ---
+   
   const levelTargets=()=>{ const c=L(); return (c.targets||[c]).slice().sort((a,b)=>a.x-b.x); };
   function targetCY(t){ return t.move? t.cy+t.move*Math.sin(performance.now()*t.moveSpeed+(t.phase||0)) : t.cy; }
   function targetX(t){ return t.hmove? t.x+t.hmove*Math.sin(performance.now()*t.hspeed+(t.phase||0)*0.7) : t.x; }
@@ -220,19 +220,19 @@
   function initLevelTargets(){
     const c=L(); if(!c.targets) return;
     for(const t of c.targets){
-      t.phase=Math.random()*Math.PI*2;                          // de-synced bobbing
-      if(c.randomSpeed) t.moveSpeed=0.0016+Math.random()*0.0024;// random but readable speeds
+      t.phase=Math.random()*Math.PI*2;                           
+      if(c.randomSpeed) t.moveSpeed=0.0016+Math.random()*0.0024; 
     }
     if(c.relocate) relocateTarget();
   }
   function relocateTarget(){
     const t=L().targets[0];
-    t.x=600+Math.random()*230;                     // always within the anchor's reach
+    t.x=600+Math.random()*230;                      
     t.cy=170+Math.random()*140;
-    state.stuck=state.stuck.filter(s=>!s.target);  // pins from the old spot vanish with it
+    state.stuck=state.stuck.filter(s=>!s.target);   
   }
 
-  // ---------- SETUP UI ----------
+   
   function buildSetupUI(){
     const cb=document.getElementById("countBtns"); cb.innerHTML="";
     for(let n=1;n<=4;n++){
@@ -278,7 +278,7 @@
     document.querySelectorAll("#palette button").forEach(b=>b.classList.toggle("sel", b.dataset.hex.toUpperCase()===cur.toUpperCase()));
   }
 
-  // ---------- GAME LIFECYCLE ----------
+   
   function newGame(){
     state={ numPlayers:setup.count, colors:setup.colors.slice(0,setup.count),
             names:setup.names.slice(0,setup.count),
@@ -334,7 +334,7 @@
     state.phase="aim"; updateUI();
   }
 
-  // ---------- AIMING / FIRING ----------
+   
   function launchVelocity(pull){
     let vx=(ANCHOR.x-pull.x)*POWER_SCALE, vy=(ANCHOR.y-pull.y)*POWER_SCALE;
     const mag=Math.hypot(vx,vy);
@@ -350,7 +350,7 @@
   canvas.addEventListener("pointercancel",()=>{ state.aiming=false; state.pull=null; });
   function fire(v){ state.phase="fly"; state.arrow={x:ANCHOR.x,y:ANCHOR.y,vx:v.vx,vy:v.vy,px:ANCHOR.x,py:ANCHOR.y}; }
 
-  // ---------- PHYSICS ----------
+   
   function step(){
     const a=state.arrow; a.px=a.x; a.py=a.y;
     a.x+=a.vx; a.y+=a.vy; a.vy+=GRAVITY; a.vx+=state.wind;
@@ -419,7 +419,7 @@
   }
   function rating(s){ return s>=250?"Master Archer":s>=180?"Sharpshooter":s>=110?"Marksman":s>=45?"Novice":"Keep practicing"; }
 
-  // ---------- UI ----------
+   
   function updateUI(){
     document.querySelectorAll("#players .player").forEach(card=>{
       const p=+card.dataset.p;
@@ -451,7 +451,7 @@
   document.getElementById("levelBtn").addEventListener("click",beginLevel);
   document.getElementById("startBtn").addEventListener("click",startMatch);
 
-  // ---------- RENDER ----------
+   
   function drawBackground(){
     const sky=ctx.createLinearGradient(0,0,0,GROUND); sky.addColorStop(0,"#8fd0ec"); sky.addColorStop(1,"#d8f0f7");
     ctx.fillStyle=sky; ctx.fillRect(0,0,W,GROUND);
@@ -483,7 +483,7 @@
       : [{r:R,c:"#f3efe4"},{r:R*0.80,c:"#1c1c1c"},{r:R*0.60,c:"#2f8fd0"},{r:R*0.40,c:"#d8382f"},{r:R*0.20,c:"#f6c945"}];
     for(const b of bands){ ctx.fillStyle=b.c; ctx.beginPath(); ctx.arc(x,cy,b.r,0,Math.PI*2); ctx.fill(); }
     ctx.strokeStyle="rgba(0,0,0,.18)"; ctx.lineWidth=1; for(const b of bands){ ctx.beginPath(); ctx.arc(x,cy,b.r,0,Math.PI*2); ctx.stroke(); }
-    // inner bonus center — 15 pts (the "X ring")
+     
     const br=R*0.09;
     ctx.fillStyle="#ffe27a"; ctx.beginPath(); ctx.arc(x,cy,br,0,Math.PI*2); ctx.fill();
     ctx.strokeStyle="rgba(120,80,0,.75)"; ctx.lineWidth=1.5; ctx.beginPath(); ctx.arc(x,cy,br,0,Math.PI*2); ctx.stroke();
@@ -552,7 +552,7 @@
   }
   function loop(){ if(state.phase==="fly"&&state.arrow) step(); render(); requestAnimationFrame(loop); }
 
-  // ---------- INIT ----------
+   
   buildSetupUI();
   newGame();
   requestAnimationFrame(loop);
