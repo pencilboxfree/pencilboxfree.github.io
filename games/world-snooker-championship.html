@@ -353,20 +353,20 @@ window.CreatorDNA = Object.freeze({
 'use strict';
 (() => {
 
-
-
-
+/* =========================================================================
+   CONFIG — all tunable values (millimetres, seconds, mm/s)
+   ========================================================================= */
 const CFG = {
-  L: 3569, W: 1778, R: 26.25,            
+  L: 3569, W: 1778, R: 26.25,           // playing area and ball radius (official dimensions)
   BAULK_X: 737, D_R: 292, BLACK_FROM_TOP: 324,
   CUSHION_W: 50, RAIL_W: 125,
-  CORNER_CUT: 70, MIDDLE_HALF: 56,       
-  POCKET_DROP: 6,                        
-  PHYS_DT: 0.0005, MAX_FRAME_DT: 0.05,   
+  CORNER_CUT: 70, MIDDLE_HALF: 56,      // pocket mouth geometry at the cushion nose
+  POCKET_DROP: 6,                       // ball centre this far past the nose line falls in
+  PHYS_DT: 0.0005, MAX_FRAME_DT: 0.05,  // fixed physics step => deterministic
   MAX_SPEED: 5200, MIN_POWER: 0.02, DEFAULT_POWER: 0.45,
   E_BALL: 0.95, E_CUSHION: 0.78, CUSHION_KEEP: 0.97,
   SLIDE_DECEL: 1100, ROLL_DECEL: 220, ROLL_DRAG: 0.11, STOP_SPEED: 4,
-  SPIN_FACTOR: 1.25,                     
+  SPIN_FACTOR: 1.25,                    // rolling velocity added per unit of tip offset
   RACK_GAP: 0.4, APEX_GAP: 2.5,
   FINE_AIM_PER_PX: 0.0004, KEY_AIM: 0.0009, KEY_AIM_FAST: 0.0087,
   SINK_TIME: 0.22,
@@ -396,9 +396,9 @@ const SPOTS = {
 };
 const BROWN = SPOTS.brown;
 
-
-
-
+/* =========================================================================
+   TABLE GEOMETRY — cushion segments (physics) + polygons (drawing)
+   ========================================================================= */
 const TABLE = (() => {
   const a = CFG.CORNER_CUT, m = CFG.MIDDLE_HALF, cw = CFG.CUSHION_W;
   const cs = cw * 1.15, ms = cw * 0.15;
@@ -428,38 +428,38 @@ const TABLE = (() => {
   return { segs, rails, pockets, cloth };
 })();
 
-
-
-
+/* =========================================================================
+   STATE
+   ========================================================================= */
 const newStats = () => ({ points: 0, pots: 0, fouls: 0, highBreak: 0, b50: 0, b100: 0 });
 const G = {
-  mode: 'ai',                 
+  mode: 'ai',                // ai (human vs AI) | 2p | practice
   players: [
     { name: 'Player 1', score: 0, frames: 0, highBreak: 0, ai: null },
     { name: 'Player 2', score: 0, frames: 0, highBreak: 0, ai: null },
   ],
   match: { bestOf: 3, toWin: 2 },
-  stats: [newStats(), newStats()],    
-  fstats: [newStats(), newStats()],   
+  stats: [newStats(), newStats()],   // match totals, committed at each frame end
+  fstats: [newStats(), newStats()],  // current frame
   current: 0, breaker: 0, frameNo: 1, turnId: 0, introT: 0,
   balls: [],
-  state: 'place',             
+  state: 'place',            // setup | intro | place | aim | moving | decision | frameover | matchover
   power: CFG.DEFAULT_POWER, spinY: 0, aim: 0,
-  powerPref: [CFG.DEFAULT_POWER, CFG.DEFAULT_POWER],    
-  powerOwner: ['', ''],       
+  powerPref: [CFG.DEFAULT_POWER, CFG.DEFAULT_POWER],   // each human player's last-used strength (slot 0 / slot 1), separate from the active G.power
+  powerOwner: ['', ''],      // who the saved strength belongs to; a different player in that slot starts from the default
   ballInHand: true, canRePlace: false,
   placePos: { x: CFG.BAULK_X - 120, y: CY + 90 },
   afterRed: false, freeBall: false, respottedBlack: false,
   breakPts: 0, breakBalls: [],
   message: '', msgType: 'info',
   shot: null, pending: null, sinking: [], acc: 0,
-  rules: null, paused: false,       
+  rules: null, paused: false,      // rules: null = official snooker; object = Custom Rules mode
   mouse: null, lastResult: null, career: null, careerMatch: null, introLen: 3, venue: '', introBuilt: false,
 };
 
-
-
-
+/* =========================================================================
+   BALLS
+   ========================================================================= */
 function makeBall(id, kind, fill, value, spot) {
   return { id, kind, fill, value, spot, x: 0, y: 0, vx: 0, vy: 0, wx: 0, wy: 0, onTable: true };
 }
@@ -492,9 +492,9 @@ const onTable = () => G.balls.filter(b => b.onTable);
 const redsLeft = () => G.balls.filter(b => b.onTable && b.kind === 'red').length;
 const isMoving = b => b.vx !== 0 || b.vy !== 0 || b.wx !== 0 || b.wy !== 0;
 
-
-
-
+/* =========================================================================
+   PHYSICS — fixed-step, sliding/rolling model, elastic ball contacts
+   ========================================================================= */
 function closestOnSeg(px, py, s) {
   const [ax, ay, bx, by] = s;
   const ex = bx - ax, ey = by - ay;
@@ -503,7 +503,7 @@ function closestOnSeg(px, py, s) {
   return [ax + ex * t, ay + ey * t];
 }
 
- 
+/** The live game and the AI planner both run this exact function. */
 function physicsStep(dt) { stepWorld(G.balls, dt, G.shot, potBall, true); }
 
 function stepWorld(balls, dt, shot, onPot, sound) {
@@ -511,7 +511,7 @@ function stepWorld(balls, dt, shot, onPot, sound) {
     if (!b.onTable) continue;
     b.x += b.vx * dt; b.y += b.vy * dt;
   }
-   
+  // ball-ball
   for (let i = 0; i < balls.length; i++) {
     const a = balls[i];
     if (!a.onTable) continue;
@@ -538,7 +538,7 @@ function stepWorld(balls, dt, shot, onPot, sound) {
       if (sound) SFX.ball(rel);
     }
   }
-   
+  // cushions and jaws
   for (const b of balls) {
     if (!b.onTable) continue;
     if (b.x > R + 1 && b.x < L - R - 1 && b.y > R + 1 && b.y < W - R - 1) continue;
@@ -560,13 +560,13 @@ function stepWorld(balls, dt, shot, onPot, sound) {
       }
     }
   }
-   
+  // pockets
   const D = CFG.POCKET_DROP;
   for (const b of balls) {
     if (!b.onTable) continue;
     if (b.x < -D || b.x > L + D || b.y < -D || b.y > W + D) onPot(b);
   }
-   
+  // cloth friction: sliding converges to natural roll, then rolling resistance
   for (const b of balls) {
     if (!b.onTable || !isMoving(b)) continue;
     const ux = b.vx - b.wx, uy = b.vy - b.wy;
@@ -591,7 +591,7 @@ function stepWorld(balls, dt, shot, onPot, sound) {
 }
 
 function potBall(b) {
-  if (!b.onTable) return;                  
+  if (!b.onTable) return;                 // guard: a ball can only be potted once
   b.onTable = false;
   let best = TABLE.pockets[0], bd = Infinity;
   for (const p of TABLE.pockets) {
@@ -609,7 +609,7 @@ function potBall(b) {
 
 const allStopped = () => G.balls.every(b => !b.onTable || !isMoving(b));
 
- 
+/** Cue strike shared by human and AI: aim angle, power 0..1, tip offset -1 (screw) .. 1 (follow). */
 function strikeCue(cue, angle, power, spin, speedMul = 1) {
   const v = CFG.MAX_SPEED * speedMul * Math.max(CFG.MIN_POWER, Math.min(1, power));
   const cx = Math.cos(angle), cy = Math.sin(angle);
@@ -618,9 +618,9 @@ function strikeCue(cue, angle, power, spin, speedMul = 1) {
   cue.wx = cx * w; cue.wy = cy * w;
 }
 
-
-
-
+/* =========================================================================
+   RULES (WPBSA) — ball on, shot evaluation, re-spotting, snookers
+   ========================================================================= */
 function ballOn() {
   if (isEvenOdd()) return ballOnEvenOdd();
   if (G.afterRed) return { type: 'anyColour', value: 0, label: 'Any colour' };
@@ -640,13 +640,13 @@ function isOn(ball, on) {
 }
 function ballsOnList(on) { return G.balls.filter(b => b.onTable && isOn(b, on)); }
 
- 
+/** Pure evaluation of a finished stroke. */
 function evaluateShot(shot) {
   if (!G.rules) return evaluateStandardShot(shot);
   if (G.rules.balls === 'evenodd') return evaluateEvenOdd(shot);
   return rescoreStandard(evaluateStandardShot(shot), shot);
 }
- 
+/** Pure evaluation of a finished stroke under the official rules. */
 function evaluateStandardShot(shot) {
   const on = shot.on;
   const res = { foul: false, penalty: 0, points: 0, reasons: [], respot: [], legalPots: [],
@@ -658,7 +658,7 @@ function evaluateStandardShot(shot) {
   } else if (isOn(fh, on)) {
     if (on.type === 'anyColour') { res.nominated = fh; penVals.push(fh.value); }
   } else if (shot.freeBall && fh.kind === 'colour') {
-    res.freeBallBall = fh;                
+    res.freeBallBall = fh;               // nominated free ball acts as the ball on
   } else {
     res.foul = true; penVals.push(fh.value);
     res.reasons.push(`hit ${name(fh)} first (ball on: ${on.label.toLowerCase()})`);
@@ -680,7 +680,7 @@ function evaluateStandardShot(shot) {
       else if (on.type === 'seq') { if (!seqScored) { res.points += on.value; seqScored = true; } }
     }
   }
-   
+  // free-ball rule: may not snooker the opponent behind the nominated free ball
   if (!res.foul && res.points === 0 && res.freeBallBall && res.freeBallBall.onTable && cueBall().onTable) {
     const nextOn = redsLeft() > 0 ? { type: 'red', value: 1 } : (() => {
       const cols = G.balls.filter(b => b.onTable && b.kind === 'colour').sort((a, b) => a.value - b.value);
@@ -701,7 +701,7 @@ function evaluateStandardShot(shot) {
     const staysDown = !res.foul && on.type === 'seq' && b.value === on.value;
     if (!staysDown) res.respot.push(b);
   }
-  res.respot.sort((a, b) => b.value - a.value);   
+  res.respot.sort((a, b) => b.value - a.value);  // higher value has precedence
   return res;
 }
 
@@ -716,7 +716,7 @@ function respot(ball) {
   ball.vx = ball.vy = ball.wx = ball.wy = 0;
   const place = (x, y) => { ball.x = x; ball.y = y; ball.onTable = true; };
   if (spotIsFree(ball.spot.x, ball.spot.y, ball)) return place(ball.spot.x, ball.spot.y);
-  for (const c of [...COLOURS].reverse()) {            
+  for (const c of [...COLOURS].reverse()) {           // highest available spot
     const s = SPOTS[c.name];
     if (spotIsFree(s.x, s.y, ball)) return place(s.x, s.y);
   }
@@ -730,7 +730,7 @@ function respot(ball) {
   place(ball.spot.x, ball.spot.y);
 }
 
- 
+/** Snookered = no ball on can be hit at both extreme edges without obstruction. */
 function isSnookered(cue, targets, blockers) {
   if (!targets.length) return false;
   for (const t of targets) {
@@ -759,11 +759,11 @@ function remainingPoints() {
   return reds * 8 + cols + (G.afterRed ? 7 : 0);
 }
 
-
-
-
-
-
+/* =========================================================================
+   CUSTOM RULES — only active in Custom Rules mode (G.rules !== null).
+   Standard snooker and Career always run with G.rules === null and use
+   the unchanged standard functions above.
+   ========================================================================= */
 const CUSTOM_KEY = 'wsc.customRules.v1';
 const CUSTOM_DEFAULT = {
   players: 'ai', level: 'medium', balls: 'standard', scoring: 'standard',
@@ -797,8 +797,8 @@ function normalizeCustom(c) {
 function loadCustomSettings() { return normalizeCustom(Store.get(CUSTOM_KEY)); }
 function saveCustomSettings(c) { Store.set(CUSTOM_KEY, normalizeCustom(c)); }
 const isEvenOdd = () => !!(G.rules && G.rules.balls === 'evenodd');
-const parityOf = b => (b.value % 2 === 1 ? 'odd' : 'even');           
- 
+const parityOf = b => (b.value % 2 === 1 ? 'odd' : 'even');          // by standard value, never custom points
+/** Points a ball is worth under the active rules. */
 function ballValue(b) {
   if (G.rules && G.rules.scoring === 'custom') return G.rules.values[b.kind === 'red' ? 'red' : b.id];
   return b.value;
@@ -810,7 +810,7 @@ function foulPenalty(vals) {
 function ballOnEvenOdd() {
   const objs = G.balls.filter(b => b.onTable && b.kind !== 'cue');
   if (!objs.length) return { type: 'none', value: 0, label: '—' };
-  let want = G.afterRed ? 'even' : 'odd';                 
+  let want = G.afterRed ? 'even' : 'odd';                // afterRed = "last legal pot was odd"
   if (!objs.some(b => parityOf(b) === want)) want = want === 'odd' ? 'even' : 'odd';
   return { type: want, value: 0, label: want === 'odd' ? 'Odd' : 'Even' };
 }
@@ -833,12 +833,12 @@ function evaluateEvenOdd(shot) {
   res.respot.sort((a, b) => b.value - a.value);
   return res;
 }
- 
+/** Standard ball rules with custom scoring and/or custom fouls: legality from the standard engine, then re-scored. */
 function rescoreStandard(res, shot) {
   const on = shot.on;
   const seqBall = on.type === 'seq' ? ballById(colourOf(on.value).name) : null;
   if (!res.foul) {
-    if (on.type === 'red') res.points = res.legalPots.length * G.rules.values.red;          
+    if (on.type === 'red') res.points = res.legalPots.length * G.rules.values.red;         // a free ball counts as a red
     else if (on.type === 'anyColour') res.points = res.nominated ? ballValue(res.nominated) : 0;
     else if (on.type === 'seq') res.points = res.legalPots.length ? ballValue(seqBall) : 0;
   } else {
@@ -878,9 +878,9 @@ function rulesListHtml(r) {
   return `<ul>${items.join('')}</ul>${r.balls === 'evenodd' ? `<h3>Even/Odd rules</h3><ul>${EVEN_ODD_RULES.map(t => `<li>${esc(t)}</li>`).join('')}</ul>` : ''}`;
 }
 
-
-
-
+/* =========================================================================
+   GAME FLOW
+   ========================================================================= */
 function duel() { return G.mode !== 'practice'; }
 function opponentOf(p) { return duel() ? 1 - p : 1; }
 
@@ -907,7 +907,7 @@ function shoot() {
   const cue = cueBall();
   if (!cue.onTable || !allStopped()) return;
   rememberPower();
-  const cs = cueStats();                               
+  const cs = cueStats();                              // equipped cue for humans, neutral house cue for the AI
   strikeCue(cue, G.aim, G.power, G.spinY * cs.spin, cs.power);
   G.shot = { on: ballOn(), freeBall: G.freeBall, firstHit: null, potted: [], cuePotted: false };
   G.ballInHand = false; G.canRePlace = false;
@@ -989,7 +989,7 @@ function resolveShot() {
 
 function isTied() { return G.players[0].score === G.players[1].score; }
 
- 
+/** Restore the current human player's own last-used strength (AI turns set their own power). */
 function restorePower() {
   if (!isAI(G.current) && G.powerPref[G.current] !== undefined) G.power = G.powerPref[G.current];
 }
@@ -1012,7 +1012,7 @@ function startRespottedBlack() {
   G.respottedBlack = true;
   G.afterRed = false; G.freeBall = false;
   endBreak();
-  G.current = duel() ? (Math.random() < 0.5 ? 0 : 1) : 0;    
+  G.current = duel() ? (Math.random() < 0.5 ? 0 : 1) : 0;   // the toss
   G.ballInHand = true;
   setMessage(`Scores level — re-spotted black! ${pName(G.current)} wins the toss and plays from the D.`, 'info');
   beginTurn();
@@ -1102,9 +1102,9 @@ function decide(putBack) {
   beginTurn();
 }
 
-
-
-
+/* =========================================================================
+   MATCH SETUP + INTRODUCTION
+   ========================================================================= */
 const SETUP = { mode: 'ai', level: 'medium', bestOf: 3, names: ['Player 1', 'Snooker Bot'], opponent: '', venue: 'random' };
 const LEVEL_NAMES = { easy: 'Easy', medium: 'Medium', hard: 'Hard' };
 
@@ -1154,7 +1154,7 @@ function renderSetup() {
     <div class="row"><button class="btn primary" data-act="start">Start Match</button><button class="btn" data-act="collection">Collection</button></div>`);
   $('card').className = 'card wide';
 }
- 
+/** Custom Rules setup — kept separate from the standard setup form. */
 function renderCustomSetup() {
   const C = SETUP.custom;
   const seg = (opts) => `<div class="seg">${opts.map(([v, label]) => `<button class="btn ${SETUP.mode === v ? 'on' : ''}" data-set="mode:${v}">${label}</button>`).join('')}</div>`;
@@ -1183,7 +1183,7 @@ function renderCustomSetup() {
     <div class="row"><button class="btn primary" data-act="start">Start Custom Match</button><button class="btn" data-act="cdefaults">Reset to defaults</button></div>`);
   $('card').className = 'card wide';
 }
- 
+/** Read the custom form into SETUP.custom (validated) without starting. */
 function readCustomForm() {
   const C = SETUP.custom;
   for (const k of Object.keys(C.values)) { const el = $('cv-' + k); if (el) C.values[k] = el.value; }
@@ -1198,7 +1198,7 @@ function venueSelectHtml(id, selected) {
     ${VENUES.map(v => `<option value="${v.id}" ${selected === v.id ? 'selected' : ''}>${esc(v.city)}, ${esc(v.country)} — ${esc(v.venue)}${v.featured ? ' ★' : ''}</option>`).join('')}
   </select>`;
 }
- 
+/** Fair random venue: every one of the international venues is equally likely. */
 function randomVenueFair() { return VENUES[Math.floor(Math.random() * VENUES.length)].id; }
 const resolveVenue = v => (!v || v === 'random') ? randomVenueFair() : venueById(v).id;
 function profileHtml(c) {
@@ -1211,12 +1211,12 @@ function readSetupNames() {
   const aiOpp = SETUP.mode === 'ai' || (SETUP.mode === 'custom' && SETUP.custom.players === 'ai');
   if (b) SETUP.names[1] = b.value.trim().slice(0, 18) || (aiOpp ? 'Snooker Bot' : 'Player 2');
 }
- 
+/** Start a match. Normal matches use (and update) SETUP; career matches pass a full config instead. */
 function startMatch(opts) {
   const cfg = opts && opts.career ? opts : (opts ? Object.assign(SETUP, opts) : SETUP);
   if (!opts || !opts.career) G.careerMatch = null;
   const custom = !cfg.career && cfg.mode === 'custom' ? normalizeCustom(cfg.custom) : null;
-  G.rules = custom;                                   
+  G.rules = custom;                                  // null for standard matches and Career
   G.paused = false;
   if (custom) { SETUP.custom = custom; saveCustomSettings(custom); }
   const mode = custom ? custom.players : cfg.mode;
@@ -1229,7 +1229,7 @@ function startMatch(opts) {
     { name: cfg.names[0], score: 0, frames: 0, highBreak: 0, ai: null },
     { name: p2, score: 0, frames: 0, highBreak: 0, ai: mode === 'ai' ? (custom ? custom.level : opp ? opp.id : cfg.level) : null },
   ];
-  for (let i = 0; i < 2; i++) {                       
+  for (let i = 0; i < 2; i++) {                      // keep a player's strength across matches; reset it for a new player
     const owner = G.players[i].ai ? `ai:${G.players[i].ai}` : G.players[i].name;
     if (G.powerOwner[i] !== owner) { G.powerPref[i] = CFG.DEFAULT_POWER; G.powerOwner[i] = owner; }
   }
@@ -1240,13 +1240,13 @@ function startMatch(opts) {
   aiSeed(opts && opts.seed !== undefined ? opts.seed : (Date.now() % 2147483646) + 1);
   $('p0').querySelector('.name').contentEditable = !G.careerMatch;
   $('p1').querySelector('.name').contentEditable = mode === '2p';
-  setVenue(resolveVenue(cfg.venue));                  
+  setVenue(resolveVenue(cfg.venue));                 // chosen venue, or a fair random pick
   recordVenue(G.venue);
   startFrame(true);
   G.state = 'intro'; G.introT = 0; G.introLen = G.careerMatch ? 6 : G.rules ? 8 : 4.5; G.introBuilt = false;
   renderIntro(Math.ceil(G.introLen));
 }
- 
+/** Broadcast-style introduction: built once per match, then only the countdown updates. */
 function renderIntro(n) {
   const count = n > 3 ? 'Get ready' : n > 0 ? n : 'Break!';
   const el = $('introCount');
@@ -1299,25 +1299,25 @@ function updateIntro(dt) {
   }
 }
 
-
-
-
-
-const Store = {                                        
+/* =========================================================================
+   CAREER — a FICTIONAL event inspired by the real International Championship.
+   Everything in CAREER is game design except CAREER.VERIFIED (sourced facts).
+   ========================================================================= */
+const Store = {                                       // localStorage with in-memory fallback
   mem: {},
-  get(k) { try { const v = localStorage.getItem(k); if (v !== null) return JSON.parse(v); } catch (e) {   } return this.mem[k] ?? null; },
-  set(k, v) { this.mem[k] = JSON.parse(JSON.stringify(v)); try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {   } },
-  del(k) { delete this.mem[k]; try { localStorage.removeItem(k); } catch (e) {   } },
+  get(k) { try { const v = localStorage.getItem(k); if (v !== null) return JSON.parse(v); } catch (e) { /* blocked */ } return this.mem[k] ?? null; },
+  set(k, v) { this.mem[k] = JSON.parse(JSON.stringify(v)); try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* blocked */ } },
+  del(k) { delete this.mem[k]; try { localStorage.removeItem(k); } catch (e) { /* blocked */ } },
 };
 const CAREER = {
   KEY: 'wsc.career.v1', VERSION: 1,
   EVENT: 'Pencilbox International Championship',
-  FORMATS: {                                           
+  FORMATS: {                                          // frames per round: Q1, Q2, QF, SF, Final
     quick:    { label: 'Quick',    frames: [1, 1, 3, 3, 5] },
     standard: { label: 'Standard', frames: [3, 3, 5, 5, 7] },
     long:     { label: 'Long',     frames: [5, 5, 7, 9, 11] },
   },
-  ROUNDS: [                                            
+  ROUNDS: [                                           // exitPrize = in-game prize if eliminated in that round
     { id: 'q1', name: 'Qualifying Round 1', short: 'Q1', exitPrize: 0 },
     { id: 'q2', name: 'Qualifying Round 2', short: 'Q2', exitPrize: 1000 },
     { id: 'qf', name: 'Quarter-final',      short: 'QF', exitPrize: 4000 },
@@ -1325,7 +1325,7 @@ const CAREER = {
     { id: 'f',  name: 'Final',              short: 'F',  exitPrize: 15000 },
   ],
   WINNER_PRIZE: 40000, WIN_BONUS: 500, CENTURY_BONUS: 1000,
-  VERIFIED: {                                          
+  VERIFIED: {                                         // checked against the 2025 and 2026 event pages (Wikipedia), Oct 2026
     source: 'Wikipedia: 2025 International Championship; 2026 International Championship (checked October 2026)',
     facts: [
       'A ranking event on the World Snooker Tour, held in China (Nanjing for the 2025 and 2026 editions).',
@@ -1343,16 +1343,16 @@ function newCareerData(name) {
     stats: { played: 0, won: 0, lost: 0, framesWon: 0, framesLost: 0, points: 0, pots: 0, fouls: 0, highBreak: 0, b50: 0, b100: 0 },
     records: { highBreak: null, biggestWin: null, bestFinish: null, longestStreak: 0, streak: 0 },
     h2h: {}, history: [], tournament: null,
-     
+    // reserved for future popularity / equipment unlocks (no shop yet)
     progression: { popularity: 0, fans: 0, unlocks: { cues: ['house'], equipped: 'house' }, pending: [] },
   };
 }
- 
+/* ---- save-data safety: salvage what is valid, repair the rest, never erase without a backup ---- */
 const SAVE_NOTES = new Set();
 const isObj = v => v !== null && typeof v === 'object' && !Array.isArray(v);
 const num = (v, d = 0, lo = 0, hi = 1e12) => (typeof v === 'number' && Number.isFinite(v) ? Math.min(hi, Math.max(lo, v)) : d);
 const str = (v, d = '') => (typeof v === 'string' ? v.slice(0, 60) : d);
- 
+/** Key-order-independent JSON, used to detect whether loading had to change anything. */
 function canon(v) {
   if (Array.isArray(v)) return '[' + v.map(canon).join(',') + ']';
   if (isObj(v)) return '{' + Object.keys(v).sort().map(k => JSON.stringify(k) + ':' + canon(v[k])).join(',') + '}';
@@ -1362,7 +1362,7 @@ function readRaw(key) {
   try { return localStorage.getItem(key); }
   catch (e) { const m = Store.mem[key]; return m === undefined || m === null ? null : JSON.stringify(m); }
 }
- 
+/** Keep an untouched copy of a save before it is repaired or replaced (identical copies are not duplicated). */
 function backupRaw(key, raw, suffix = 'backup') {
   if (raw === null || raw === undefined) return;
   try {
@@ -1407,7 +1407,7 @@ function sanitizeCareer(d) {
   }
   return c;
 }
- 
+/** Load the career; any repair or unreadable save leaves a backup copy first. */
 function loadCareer() {
   const raw = readRaw(CAREER.KEY);
   if (raw === null) return null;
@@ -1429,18 +1429,18 @@ function newTournament(format) {
   const c = G.career;
   const t = { id: Date.now(), number: c.history.length + 1, format, round: 0, status: 'active',
               rng: (Date.now() % 2147483646) + 1, results: {}, prize: 0, highBreak: 0, main: { qf: [null, null, null, null], sf: [null, null], f: [null] } };
-   
+  // seeding with a little variety each event; stronger players are seeded into later rounds of your path
   const order = ROSTER.map(p => ({ id: p.id, r: p.rating + (careerRand(t) - 0.5) * 1.2 })).sort((a, b) => a.r - b.r).map(x => x.id);
-  t.qual = [order[0], order[1]];                       
-  t.otherQualifier = order[2];                         
-  const S = order.slice(3).reverse();                  
-  t.draw = ['you', S[6], S[3], S[4], S[0], S[5], S[1], S[2]];   
+  t.qual = [order[0], order[1]];                      // your two qualifying opponents (weakest)
+  t.otherQualifier = order[2];                        // eliminated in the other qualifying section
+  const S = order.slice(3).reverse();                 // seeds S1 (strongest) … S7
+  t.draw = ['you', S[6], S[3], S[4], S[0], S[5], S[1], S[2]];  // QF: you v S7 | S4 v S5 | S1 v S6 | S2 v S3
   ensureVenues(t);
   c.tournament = t;
   saveCareer();
   return t;
 }
- 
+/** Q1–SF at four different international venues; the final at the featured championship venue (China). */
 function ensureVenues(t) {
   if (t.venues && t.venues.length === CAREER.ROUNDS.length) return;
   const pool = VENUES.filter(v => v.id !== FEATURED_VENUE).map(v => v.id);
@@ -1459,7 +1459,7 @@ function currentOpponent(t) {
   const pair = mainPairs(t, r.id).find(p => p.includes('you'));
   return pair[0] === 'you' ? pair[1] : pair[0];
 }
- 
+/** Matches not involving you are simulated from ratings (only your own matches are played on the table). */
 function simMatch(t, a, b, bestOf) {
   const ra = rosterById(a).rating, rb = rosterById(b).rating, toWin = Math.ceil(bestOf / 2);
   const p = 1 / (1 + Math.exp(-(ra - rb) * 0.35));
@@ -1472,7 +1472,7 @@ function simulateRound(t, rid) {
   mainPairs(t, rid).forEach((p, i) => { if (!t.main[rid][i] && p[0] && p[1] && !p.includes('you')) t.main[rid][i] = simMatch(t, p[0], p[1], bestOf); });
 }
 function finishBracket(t) {
-  if (t.round < 2) {                                   
+  if (t.round < 2) {                                  // you went out in qualifying: the qualifier who got through takes your slot
     const adv = t.round === 0 ? simMatch(t, t.qual[0], t.qual[1], CAREER.FORMATS[t.format].frames[1]).winner : t.qual[1];
     t.draw[0] = adv; t.qualifiedInstead = adv;
   }
@@ -1488,7 +1488,7 @@ function startCareerMatch() {
   ensureVenues(t);
   const venue = resolveVenue(careerVenuePick || t.venues[t.round]);
   careerVenuePick = '';
-  t.venues[t.round] = venue;                           
+  t.venues[t.round] = venue;                          // record where this round was actually played
   saveCareer();
   G.careerMatch = { round: t.round, oppId, bestOf, venue };
   startMatch({ career: true, mode: 'ai', opponent: oppId, names: [c.name, opp.name], bestOf, venue });
@@ -1540,7 +1540,7 @@ function careerMatchOver(winnerIdx, reason) {
   } else { t.round++; outcome = 'advance'; }
   const earned = lines.reduce((s2, l) => s2 + l[1], 0);
   t.prize += earned; c.money += earned;
-  const pg = c.progression;                            
+  const pg = c.progression;                           // data only for now (future popularity / unlocks)
   pg.fans += won ? 100 * (cm.round + 1) : 10;
   pg.popularity = Math.min(100, pg.popularity + (won ? 1 + cm.round : 0) + (outcome === 'champion' ? 10 : 0));
   if (t.status !== 'active') {
@@ -1552,7 +1552,7 @@ function careerMatchOver(winnerIdx, reason) {
   saveCareer();
   const rw = profileMatchEnd({ mode: 'ai', career: { round: cm.round, title: outcome === 'champion' }, won, level: cm.oppId,
                                highBreak: ms.highBreak, frames: f, bestOf: cm.bestOf });
-  pg.popularity = rw.total;                            
+  pg.popularity = rw.total;                           // keep the career copy in step with the profile
 
   const nextR = CAREER.ROUNDS[t.round];
   const head = outcome === 'champion' ? `🏆 ${esc(c.name)} is the ${esc(CAREER.EVENT)} champion!`
@@ -1579,7 +1579,7 @@ function careerWithdraw() {
   const r = CAREER.ROUNDS[t.round];
   t.status = 'eliminated'; t.withdrew = true;
   c.records.streak = 0;
-  if (t.round >= 2) {                                  
+  if (t.round >= 2) {                                 // opponent receives a walkover
     const pairs = mainPairs(t, r.id), i = pairs.findIndex(p => p.includes('you')), pr = pairs[i];
     t.main[r.id][i] = { a: pr[0], b: pr[1], winner: pr[0] === 'you' ? pr[1] : pr[0], score: [0, 0], walkover: true };
     simulateRound(t, r.id);
@@ -1590,14 +1590,14 @@ function careerWithdraw() {
   saveCareer();
 }
 
- 
+/* ---- career screens ---- */
 let careerView = 'hub', careerFormat = 'standard', careerConfirm = '', careerVenuePick = '';
 function showCareer(view) {
   G.career = G.career || loadCareer();
   G.careerMatch = null;
   G.state = 'career';
   careerView = view || 'hub';
-   
+  // neutral scoreboard: you vs your next opponent (no stale match data)
   const t = G.career && G.career.tournament, active = t && t.status === 'active';
   const opp = active ? rosterById(currentOpponent(t)) : null;
   G.mode = 'ai';
@@ -1724,7 +1724,7 @@ function renderCareer() {
   $('card').className = 'card career';
 }
 
- 
+/* ball-in-hand placement inside the D */
 function clampToD(x, y) {
   if (x > CFG.BAULK_X) x = CFG.BAULK_X;
   const dx = x - BROWN.x, dy = y - BROWN.y, d = Math.hypot(dx, dy);
@@ -1752,9 +1752,9 @@ function pickUpCue() {
   updateHUD();
 }
 
-
-
-
+/* =========================================================================
+   AIM GUIDE — ray cast against balls and cushions
+   ========================================================================= */
 function rayCircle(px, py, dx, dy, cx, cy, r) {
   const fx = px - cx, fy = py - cy;
   const b = fx * dx + fy * dy, c = fx * fx + fy * fy - r * r;
@@ -1796,19 +1796,19 @@ function castAim() {
   return { t: best, x: c.x + dx * best, y: c.y + dy * best, ball: hitBall, seg: hitSeg, dx, dy };
 }
 
-
-
-
-
+/* =========================================================================
+   AI — plans by trial-simulating shots with the same physics + rules,
+   then plays them through the normal shoot() with skill-based error.
+   ========================================================================= */
 const AI_LEVELS = {
-   
+  //          aim error  power err  tip err   pot shots  variants  pot if P≥   safety sims  position  miss cost  sloppy pick  snooker bonus
   easy:   { sigma: 0.0030, pSigma: 0.10, sSigma: 0.30, potCands: 3, variants: 2, potThreshold: 0.15, safety: 6,  posWeight: 0,   risk: 0.4, sloppy: 0.35, snookerBonus: 0,   robust: 0, refine: false, gamble: true,  putBack: 'never',     colourBias: 'normal' },
   medium: { sigma: 0.0013, pSigma: 0.05, sSigma: 0.15, potCands: 5, variants: 4, potThreshold: 0.30, safety: 14, posWeight: 0.6, risk: 1.0, sloppy: 0.08, snookerBonus: 1.5, robust: 1, refine: false, gamble: false, putBack: 'sometimes', colourBias: 'normal' },
   hard:   { sigma: 0.00045, pSigma: 0.02, sSigma: 0.05, potCands: 7, variants: 10, potThreshold: 0.40, safety: 26, posWeight: 1.0, risk: 1.6, sloppy: 0,    snookerBonus: 2.5, robust: 3, refine: true,  gamble: false, putBack: 'always',    colourBias: 'high' },
 };
-
-
-
+/* =========================================================================
+   ROSTER — 10 fictional players. Ratings 1–10; traits shape their AI.
+   ========================================================================= */
 const ROSTER = [
   { id: 'liam', name: "Liam O'Rourke", age: 22, gender: 'Male', nat: 'Ireland', code: 'IRL', rating: 2, colour: '#3fb950',
     style: 'Eager rookie', strengths: ['Fearless long pots', 'Quick tempo'], weaknesses: ['Loose safety', 'Poor cue-ball control'],
@@ -1842,7 +1842,7 @@ const ROSTER = [
     traits: { aim: 0.4, safety: 0.3, position: 0.8, risk: 0 } },
 ];
 const rosterById = id => ROSTER.find(c => c.id === id);
- 
+/** Turn a character's rating and traits into AI parameters (same planner as Easy/Medium/Hard). */
 function profileLevel(c) {
   const t = c.traits, k = (c.rating - 1) / 9;
   const base = k < 0.3 ? AI_LEVELS.easy : k < 0.7 ? AI_LEVELS.medium : AI_LEVELS.hard;
@@ -1863,7 +1863,7 @@ for (const c of ROSTER) AI_LEVELS[c.id] = profileLevel(c);
 function aiLabel(ai) { const c = rosterById(ai); return c ? `${c.code} · ${c.rating}/10` : LEVEL_NAMES[ai] || ai; }
 
 const AI = { POCKET_K: 1.8, SIM_DT: 0.001, SIM_MAX: 25, MIN_THINK: 0.55, AIM_TIME: 0.55, DECIDE_TIME: 0.9, SLICE_MS: 10, REF_SIGMA: 0.0013 };
- 
+// [power multiplier, tip] tried for each pot, best first
 const VARIANTS = [[1, 0], [1.35, 0], [1, -0.6], [1.3, 0.5], [0.85, -0.3], [1.75, -0.9], [1.6, 0.8], [1.15, -0.25], [0.75, 0.3], [2.1, 0]];
 const MOUTHS = (() => {
   const a = CFG.CORNER_CUT, m = CFG.MIDDLE_HALF, s = Math.SQRT1_2;
@@ -1885,7 +1885,7 @@ function erf(x) {
 }
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
- 
+/* geometry helpers */
 function pointSegDist(px, py, ax, ay, bx, by) { const [qx, qy] = closestOnSeg(px, py, [ax, ay, bx, by]); return Math.hypot(px - qx, py - qy); }
 function segSegDist(ax, ay, bx, by, cx, cy, dx, dy) {
   const o = (px, py, qx, qy, rx, ry) => (qx - px) * (ry - py) - (qy - py) * (rx - px);
@@ -1907,7 +1907,7 @@ function ballsBlock(ax, ay, bx, by, balls, ex1, ex2) {
   return false;
 }
 
- 
+/** Straight pot of ball t into a pocket mouth from cue position (cx,cy); null if impossible. */
 function potLine(cx, cy, t, mouth, balls, cueObj) {
   let best = null;
   for (let k = 0.12; k <= 0.881; k += 0.095) {
@@ -1927,13 +1927,13 @@ function potLine(cx, cy, t, mouth, balls, cueObj) {
   const vx = gx - cx, vy = gy - cy, d1 = Math.hypot(vx, vy);
   if (d1 < 5) return null;
   const cosCut = (vx * best.ux + vy * best.uy) / d1;
-  if (cosCut < 0.22) return null;                         
+  if (cosCut < 0.22) return null;                        // thinner than ~77° is not a pot
   if (ballsBlock(cx, cy, gx, gy, balls, t, cueObj)) return null;
   if (cushionClearance(cx, cy, gx, gy) < R - 0.5) return null;
-  const tolObj = Math.min(0.3, AI.POCKET_K * (best.clr - R) / best.d2);    
+  const tolObj = Math.min(0.3, AI.POCKET_K * (best.clr - R) / best.d2);   // jaws accept a little more than the clean path
   return { target: t, angle: Math.atan2(vy, vx), d1, d2: best.d2, cosCut, tolCue: tolObj * TWO_R * cosCut / d1 };
 }
- 
+/** Probability the shot is struck accurately enough, given aim error sigma (power widens error). */
 function potChance(o, sigma, power) { return erf(o.tolCue / (sigma * (1 + 0.6 * power) * Math.SQRT2)); }
 function potPower(o) {
   const aEff = 420;
@@ -1941,7 +1941,7 @@ function potPower(o) {
   const vContact = vObj / (0.975 * o.cosCut);
   return clamp(Math.sqrt(vContact * vContact + 2 * aEff * o.d1) / CFG.MAX_SPEED, 0.06, 1);
 }
- 
+/** Best pot chance from (cx,cy) over targets; with multi=true adds 30% of the best chance on a different ball. */
 function bestChance(balls, cx, cy, targets, sigma, weight, multi) {
   let best = 0, second = 0;
   const cueObj = balls[0];
@@ -1957,7 +1957,7 @@ function bestChance(balls, cx, cy, targets, sigma, weight, multi) {
   return multi ? best + 0.3 * second : best;
 }
 
- 
+/* simulation on a private copy of the table */
 const cloneBalls = balls => balls.map(b => ({ ...b }));
 function withBalls(balls, fn) { const keep = G.balls; G.balls = balls; try { return fn(); } finally { G.balls = keep; } }
 function simulate(balls, angle, power, spin, on, freeBall) {
@@ -1980,7 +1980,7 @@ function simulate(balls, angle, power, spin, on, freeBall) {
 function lowestColour(balls) {
   return balls.filter(b => b.onTable && b.kind === 'colour').sort((a, b) => a.value - b.value)[0];
 }
- 
+/** Next ball(s) on for the same player after a successful pot. */
 function nextTargets(balls, on) {
   if (on.type === 'odd' || on.type === 'even') {
     const other = balls.filter(b => b.onTable && b.kind !== 'cue' && parityOf(b) !== on.type);
@@ -1992,7 +1992,7 @@ function nextTargets(balls, on) {
   const c = lowestColour(balls);
   return { targets: c ? [c] : [], colour: false };
 }
- 
+/** Balls the opponent will be on if the turn passes. */
 function opponentTargets(balls) {
   if (isEvenOdd()) {
     const odd = balls.filter(b => b.onTable && b.kind !== 'cue' && parityOf(b) === 'odd');
@@ -2007,7 +2007,7 @@ function positionValue(balls, on, lv) {
   const cue = balls[0];
   if (!cue.onTable) return 0;
   const nt = nextTargets(balls, on);
-  if (!nt.targets.length) return 1;                        
+  if (!nt.targets.length) return 1;                       // nothing left: frame won
   const hard = lv.colourBias === 'high';
   const weight = nt.colour ? (t => hard ? 0.3 + 0.7 * t.value / 7 : 0.6 + 0.4 * t.value / 7) : null;
   return bestChance(balls, cue.x, cue.y, nt.targets, lv.sigma, weight, hard);
@@ -2042,7 +2042,7 @@ function* aiChoosePlacement(world, on, freeBall, lv) {
     }
     yield;
   }
-  if (bestP < 0.2) {                                       
+  if (bestP < 0.2) {                                      // no good pot: standard safety / break-off spot
     for (const [x, y] of [[CFG.BAULK_X, CY + 190], [CFG.BAULK_X, CY - 190], [CFG.BAULK_X - 60, CY + 120]]) {
       if (withBalls(world, () => placementValid(x, y))) return { x, y };
     }
@@ -2052,7 +2052,7 @@ function* aiChoosePlacement(world, on, freeBall, lv) {
 
 function* aiSafety(world, cue, targets, on, freeBall, lv) {
   const cands = [];
-  const blockers = world.filter(b => b.onTable && b !== cue && !targets.includes(b));    
+  const blockers = world.filter(b => b.onTable && b !== cue && !targets.includes(b));   // hitting another ball on first is legal
   const visible = targets.filter(t => !ballsBlock(cue.x, cue.y, t.x, t.y, blockers, t, cue));
   for (const t of (visible.length ? visible : [])) {
     const d = Math.hypot(t.x - cue.x, t.y - cue.y), base = Math.atan2(t.y - cue.y, t.x - cue.x);
@@ -2061,7 +2061,7 @@ function* aiSafety(world, cue, targets, on, freeBall, lv) {
       for (const pw of [0.14, 0.22, 0.32, 0.45]) cands.push({ angle: base + off, power: pw, spin: f === 0 ? -0.3 : 0 });
     }
   }
-  if (!visible.length) {                                   
+  if (!visible.length) {                                  // snookered: look for an escape off the cushions
     for (let i = 0; i < 72; i++) for (const pw of [0.3, 0.5]) cands.push({ angle: i * Math.PI / 36, power: pw, spin: 0 });
   }
   for (let i = cands.length - 1; i > 0; i--) { const j = Math.floor(aiRand() * (i + 1)); [cands[i], cands[j]] = [cands[j], cands[i]]; }
@@ -2076,7 +2076,7 @@ function* aiSafety(world, cue, targets, on, freeBall, lv) {
   return best;
 }
 
- 
+/** Plans one shot for the current (AI) player. Yields between simulations so the UI never stalls. */
 function* aiPlan(level) {
   const lv = AI_LEVELS[level];
   const on = ballOn(), freeBall = G.freeBall;
@@ -2112,7 +2112,7 @@ function* aiPlan(level) {
     }
   }
   pots.sort((a, b) => b.score - a.score);
-  if (lv.refine && pots.length) {                          
+  if (lv.refine && pots.length) {                         // fine-tune pace and tip around the best shot
     const top = pots[0];
     for (const [dp, ds] of [[1.12, 0], [0.9, 0], [1, 0.35], [1, -0.35]]) {
       const power = clamp(top.power * dp, 0.06, 1), spin = clamp(top.spin + ds, -1, 1);
@@ -2122,7 +2122,7 @@ function* aiPlan(level) {
     }
     pots.sort((a, b) => b.score - a.score);
   }
-  for (const c of pots.slice(0, lv.robust)) {              
+  for (const c of pots.slice(0, lv.robust)) {             // does it still work with a slightly imperfect cue action?
     let ok = 0;
     for (const sg of [-1, 1]) {
       const sim = simulate(world, c.angle + sg * lv.sigma, c.power * (1 + sg * lv.pSigma), c.spin, on, freeBall);
@@ -2141,7 +2141,7 @@ function* aiPlan(level) {
     const safe = yield* aiSafety(world, cue, targets, on, freeBall, lv);
     if (safe && (!choice || safe.score > -5)) choice = safe;
   }
-  if (!choice) {                                           
+  if (!choice) {                                          // last resort: roll up to the nearest ball on
     const t = targets.sort((a, b) => Math.hypot(a.x - cue.x, a.y - cue.y) - Math.hypot(b.x - cue.x, b.y - cue.y))[0];
     choice = { kind: 'safety', angle: t ? Math.atan2(t.y - cue.y, t.x - cue.x) : 0, power: 0.3, spin: 0, p: 0, score: -99 };
   }
@@ -2153,10 +2153,10 @@ function scorePot(o, idx, power, spin, sim, on, lv) {
   const gain = sim.res.points + lv.posWeight * 4 * pos;
   return { kind: 'pot', angle: o.angle, power, spin, p, pos, gain, o, idx, target: o.target.id, score: p * gain - (1 - p) * lv.risk };
 }
- 
+/** Run a plan to completion synchronously (tests / fallback). */
 function aiPlanNow(level) { const g = aiPlan(level); let r; do { r = g.next(); } while (!r.done); return r.value; }
 
- 
+/** Execute a plan through the same controls a human uses, with the level's execution error. */
 function aiExecute(plan, level) {
   const lv = AI_LEVELS[level];
   if (G.state === 'place') {
@@ -2180,7 +2180,7 @@ function aiWantsPutBack(level) {
   return mine < 0.12 && (lv.putBack === 'always' || aiRand() < 0.5);
 }
 
- 
+/* live controller: think (time-sliced) → place → swing the cue → shoot */
 const AIRUN = { phase: 'idle', gen: null, plan: null, t: 0, turnId: -1, from: 0 };
 const isAI = i => !!(G.players[i] && G.players[i].ai);
 const currentIsAI = () => isAI(G.current);
@@ -2230,9 +2230,9 @@ function aiPlaceOnly(plan) {
   for (let i = 0; i < 40 && G.state === 'place'; i++) placeCue(BROWN.x - 30 - i * 5, BROWN.y + 60 - i * 3);
 }
 
-
-
-
+/* =========================================================================
+   AUDIO — tiny synthesized effects (no assets)
+   ========================================================================= */
 const SETTINGS_KEY = 'wsc.settings.v1';
 const VOLUMES = [{ id: 'high', label: 'High', v: 1 }, { id: 'med', label: 'Med', v: 0.55 }, { id: 'low', label: 'Low', v: 0.25 }, { id: 'off', label: 'Off', v: 0 }];
 const SFX = {
@@ -2290,12 +2290,12 @@ const SFX = {
 };
 SFX.loadSettings();
 
-
-
-
-
-
-
+/* =========================================================================
+   VENUES — 10 original canvas scenes (no images). Each scene is drawn once
+   into a cached full-screen background layer, only when the venue or the
+   window size changes, so gameplay rendering cost is unchanged.
+   Venue names are fictional arenas in real cities.
+   ========================================================================= */
 const VENUES = [
   { id: 'china', country: 'China', city: 'Nanjing', venue: 'Nanjing Riverside Arena', featured: true,
     pal: { sky: ['#14081a', '#4a1225', '#b23a2a', '#e8893a'], accent: '#f2c14e', ink: '#1b0a10', glow: '#ff5a36' } },
@@ -2321,7 +2321,7 @@ const VENUES = [
 const venueById = id => VENUES.find(v => v.id === id) || VENUES[0];
 const FEATURED_VENUE = 'china';
 
- 
+/* ---- drawing helpers ---- */
 function vRand(seed) { let s = seed >>> 0 || 1; return () => { s ^= s << 13; s >>>= 0; s ^= s >> 17; s ^= s << 5; s >>>= 0; return s / 4294967296; }; }
 const VD = {
   sky(c, w, h, cols) { const g = c.createLinearGradient(0, 0, 0, h * 0.9); cols.forEach((col, i) => g.addColorStop(i / (cols.length - 1), col)); c.fillStyle = g; c.fillRect(0, 0, w, h); },
@@ -2351,7 +2351,7 @@ const VD = {
   },
   neonBox(c, x, y, w, h, col) { c.save(); c.shadowColor = col; c.shadowBlur = 14; c.strokeStyle = col; c.lineWidth = 2.5; c.strokeRect(x, y, w, h); c.restore(); },
   arena(c, w, h, pal, r) {
-     
+    // spotlight over the table, crowd silhouettes along the bottom, vignette
     const sp = c.createRadialGradient(w / 2, h * 0.5, h * 0.1, w / 2, h * 0.5, h * 0.75);
     sp.addColorStop(0, 'rgba(255,240,210,0.10)'); sp.addColorStop(1, 'rgba(0,0,0,0)');
     c.fillStyle = sp; c.fillRect(0, 0, w, h);
@@ -2371,7 +2371,7 @@ const VD = {
   },
 };
 
- 
+/* ---- landmarks (all original simplified silhouettes) ---- */
 const LM = {
   pagoda(c, x, base, H, body, roof, accent) {
     const tiers = 5, th = H / (tiers + 1.2);
@@ -2422,7 +2422,7 @@ const LM = {
   },
   mansards(c, x0, x1, base, r, col, win, h) {
     let x = x0;
-    const u = h / 100;                                   
+    const u = h / 100;                                  // sizes follow the scene height
     while (x < x1) {
       const bw = u * (5 + r() * 4), bh = u * (9 + r() * 6), roofH = u * 2.2;
       c.fillStyle = col; c.fillRect(x, base - bh, bw, bh);
@@ -2492,11 +2492,11 @@ const LM = {
       c.fillStyle = i % 2 ? b : a; c.beginPath();
       c.moveTo(x - w0, base - H * t0 * 0.92); c.lineTo(x - w1, base - H * t1); c.lineTo(x + w1, base - H * t1); c.lineTo(x + w0, base - H * t0 * 0.92); c.fill();
     }
-    c.fillStyle = '#2a1030';                              
+    c.fillStyle = '#2a1030';                             // lattice gaps
     for (let i = 1; i < 12; i++) { const t = i / 13 * 0.6, ww = B / 2 * (1 - t * 0.92); c.fillRect(x - ww * 0.55, base - H * t - 1, ww * 1.1, 1.2); }
-    c.fillStyle = '#f4f4f4'; c.fillRect(x - B * 0.22, base - H * 0.44, B * 0.44, H * 0.05);    
+    c.fillStyle = '#f4f4f4'; c.fillRect(x - B * 0.22, base - H * 0.44, B * 0.44, H * 0.05);   // main deck
     c.fillStyle = '#ffe6a8'; c.fillRect(x - B * 0.18, base - H * 0.425, B * 0.36, H * 0.015);
-    c.fillStyle = '#f4f4f4'; c.fillRect(x - B * 0.1, base - H * 0.72, B * 0.2, H * 0.03);      
+    c.fillStyle = '#f4f4f4'; c.fillRect(x - B * 0.1, base - H * 0.72, B * 0.2, H * 0.03);     // top deck
     c.fillStyle = b; c.fillRect(x - 1.5, base - H, 3, H * 0.1);
   },
   operaHouse(c, x, base, H, shell, edge) {
@@ -2574,7 +2574,7 @@ const LM = {
   },
 };
 
- 
+/* ---- scenes: landmarks sit in the left/right margins around the table ---- */
 const SCENES = {
   china(c, w, h, p, r) {
     VD.sky(c, w, h, p.sky); VD.stars(c, w, h, r, 60); VD.disc(c, w * 0.8, h * 0.16, h * 0.035, '#ffe2b0', '#ffb070');
@@ -2591,7 +2591,7 @@ const SCENES = {
     VD.sky(c, w, h, p.sky); VD.stars(c, w, h, r, 50);
     LM.mansards(c, 0, w, h * 0.86, r, '#1c1a38', '#ffd27a', h);
     c.save(); c.shadowColor = '#ffb347'; c.shadowBlur = h * 0.03;
-    LM.eiffel(c, w * 0.915, h * 0.86, h * 0.82, '#b9844a', '#fff1b8');    
+    LM.eiffel(c, w * 0.915, h * 0.86, h * 0.82, '#b9844a', '#fff1b8');   // illuminated tower
     c.restore();
     LM.eiffel(c, w * 0.085, h * 0.86, h * 0.4, '#8a6238', 'rgba(255,230,160,0.8)');
     c.fillStyle = 'rgba(255,214,140,0.10)'; c.beginPath(); c.moveTo(w * 0.915, h * 0.05); c.lineTo(w * 0.6, h * 0.3); c.lineTo(w * 0.62, h * 0.36); c.fill();
@@ -2670,7 +2670,7 @@ const SCENES = {
   },
 };
 
- 
+/* ---- background layer + flag + scene preview ---- */
 const venueCanvas = document.getElementById('venueBg');
 let venueDrawn = '', venueDraws = 0;
 function drawVenueScene(c, w, h, id) {
@@ -2699,7 +2699,7 @@ function setVenue(id) {
   document.documentElement.style.setProperty('--venue', v.pal.accent);
   venueCanvas.classList.remove('show');
   renderVenueBackground(true);
-  void venueCanvas.offsetWidth;                  
+  void venueCanvas.offsetWidth;                 // restart the fade-in transition
   venueCanvas.classList.add('show');
   updateHUD();
 }
@@ -2724,16 +2724,16 @@ function drawFlag(c, id, w, h) {
   }
 }
 
-
-
-
-
-
-
+/* =========================================================================
+   CUSTOMIZATION — profile, popularity, achievements, cues, cloth.
+   Separate from core gameplay: the only hooks are cueStats() (human cue
+   strike + aim guide) and clothColours() (table drawing).
+   All numbers here are game design and can be tuned freely.
+   ========================================================================= */
 const PROFILE_KEY = 'wsc.profile.v1';
 const CUE_NEUTRAL = { power: 1, precision: 1, spin: 1, reach: 1 };
-const GUIDE_REACH = 3000;                       
- 
+const GUIDE_REACH = 3000;                      // mm of aim guide with a reach 1.0 cue
+// stats: power = top cue speed ×, precision = aim-guide length / fine-aim steadiness ×, spin = tip offset effect ×, reach = guide range ×
 const CUES = [
   { id: 'club', name: 'Club Ash', weight: 18, length: 57, butt: '#5b3018', accent: '#c9a25a', shaft: '#ead7ab', pattern: 'plain',
     stats: { power: 1, precision: 1, spin: 1, reach: 1 }, desc: 'The balanced house cue. No strengths, no weaknesses.', req: null },
@@ -2754,7 +2754,7 @@ const CUES = [
   { id: 'gold', name: "Champion's Gold", weight: 18.5, length: 58, butt: '#3b2a12', accent: '#ffd700', shaft: '#f0e2c0', pattern: 'splice',
     stats: { power: 1.03, precision: 1.04, spin: 1.02, reach: 0.94 }, desc: 'The title-winner’s cue: small all-round gains, but a shorter guide.', req: { type: 'achievement', id: 'champion' } },
 ];
- 
+// cloth colours chosen for contrast with every ball (checked by the tests)
 const CLOTHS = [
   { id: 'green',    name: 'Championship Green', centre: '#1f8a46', edge: '#13663a', cushion: '#0f5a2e', nose: '#2aa35a88', req: null },
   { id: 'slate',    name: 'Slate Blue',         centre: '#4f7396', edge: '#38597a', cushion: '#2c4864', nose: '#6f97bd88', req: null },
@@ -2800,7 +2800,7 @@ function sanitizeProfile(d) {
   p.equipped.cloth = p.unlocked.cloths.includes(eq.cloth) ? eq.cloth : 'green';
   return p;
 }
- 
+/** Load (or create) the profile: salvage valid fields, back up anything that had to change, migrate earlier career progress. */
 function loadProfile() {
   if (PROFILE) return PROFILE;
   const raw = readRaw(PROFILE_KEY);
@@ -2811,9 +2811,9 @@ function loadProfile() {
     p = sanitizeProfile(d);
     if (canon(p) !== canon(d)) { backupRaw(PROFILE_KEY, raw); SAVE_NOTES.add('profile'); }
   } else {
-    if (raw !== null && d !== null) { backupRaw(PROFILE_KEY, raw, 'corrupt'); SAVE_NOTES.add('profile'); }    
+    if (raw !== null && d !== null) { backupRaw(PROFILE_KEY, raw, 'corrupt'); SAVE_NOTES.add('profile'); }   // keep the damaged copy
     p = newProfile();
-    const c = loadCareer();                            
+    const c = loadCareer();                           // first run (or unreadable profile): carry over career progress
     if (c) {
       p.popularity = Math.max(p.popularity, c.progression.popularity || 0);
       p.stats.won = c.stats.won; p.stats.played = c.stats.played; p.stats.highBreak = c.stats.highBreak; p.stats.titles = c.titles;
@@ -2829,10 +2829,10 @@ function saveProfile() {
   if (!PROFILE) return;
   let stored = null;
   try { stored = JSON.parse(readRaw(PROFILE_KEY)); } catch (e) { stored = null; }
-  if (isObj(stored) && typeof stored.popularity === 'number' && stored.popularity > PROFILE.popularity) PROFILE.popularity = stored.popularity;    
+  if (isObj(stored) && typeof stored.popularity === 'number' && stored.popularity > PROFILE.popularity) PROFILE.popularity = stored.popularity;   // never move backwards
   Store.set(PROFILE_KEY, PROFILE);
 }
- 
+/** Award newly met achievements once each; returns the new ones. */
 function checkAchievements() {
   const p = PROFILE, fresh = [];
   for (const a of ACHIEVEMENTS) {
@@ -2867,7 +2867,7 @@ function itemStatus(kind, item) {
 function unlockItem(kind, id) {
   const p = loadProfile(), items = kind === 'cues' ? CUES : CLOTHS, item = items.find(i => i.id === id);
   if (!item || !reqMet(item.req)) return false;
-  if (!p.unlocked[kind].includes(id)) p.unlocked[kind].push(id);    
+  if (!p.unlocked[kind].includes(id)) p.unlocked[kind].push(id);   // no duplicates
   saveProfile();
   return true;
 }
@@ -2880,7 +2880,7 @@ function equipItem(kind, id) {
 }
 function readyCount() { return CUES.filter(c => itemStatus('cues', c) === 'ready').length + CLOTHS.filter(c => itemStatus('cloths', c) === 'ready').length; }
 const equippedCue = () => CUES.find(c => c.id === loadProfile().equipped.cue) || CUES[0];
- 
+/** Gameplay hook: stats of the cue in the current human player's hands (AI always uses a neutral house cue). */
 function cueStats() { return isAI(G.current) ? CUE_NEUTRAL : equippedCue().stats; }
 function clothColours() { return CLOTHS.find(c => c.id === loadProfile().equipped.cloth) || CLOTHS[0]; }
 
@@ -2897,10 +2897,10 @@ function recordBreak(hb) {
   saveProfile();
   return fresh;
 }
- 
+/** Popularity and stats after a finished match. ctx: { mode, won, level, career:{round,title}, highBreak, frames:[a,b], bestOf }. */
 function profileMatchEnd(ctx) {
   const p = loadProfile(), lines = [];
-  const counts = ctx.mode === 'ai' || ctx.career;    
+  const counts = ctx.mode === 'ai' || ctx.career;   // 2-player and practice never earn popularity
   if (counts) {
     p.stats.played++;
     if (ctx.won) {
@@ -2939,20 +2939,20 @@ function updateCollectionBadge() {
   if (b) b.innerHTML = `Collection${n ? ` <span class="badge">${n}</span>` : ''}`;
 }
 
- 
- 
+/* ---- cue drawing (used in play and in the collection) ---- */
+/** Draw a cue in local coordinates: tip at (0,0) pointing to +x, butt towards -len. */
 function drawCueLocal(c, len, design, tipW, buttW) {
-  const body = (x0, x1, col) => {                      
+  const body = (x0, x1, col) => {                     // tapered segment between x0 and x1 (negative values)
     const w0 = tipW + (buttW - tipW) * (-x0 / len), w1 = tipW + (buttW - tipW) * (-x1 / len);
     c.fillStyle = col; c.beginPath(); c.moveTo(x0, -w0); c.lineTo(x1, -w1); c.lineTo(x1, w1); c.lineTo(x0, w0); c.closePath(); c.fill();
   };
-  body(0, -len * 0.012, '#2e6fa8');                  
-  body(-len * 0.012, -len * 0.03, '#f4f1e6');        
+  body(0, -len * 0.012, '#2e6fa8');                 // chalked tip
+  body(-len * 0.012, -len * 0.03, '#f4f1e6');       // ferrule
   const g = c.createLinearGradient(0, -buttW, 0, buttW);
   g.addColorStop(0, design.shaft); g.addColorStop(0.5, shadeHex(design.shaft, 0.15)); g.addColorStop(1, shadeHex(design.shaft, -0.25));
-  body(-len * 0.03, -len * 0.6, g);                  
-  body(-len * 0.6, -len * 0.615, design.accent);     
-  body(-len * 0.615, -len, design.butt);             
+  body(-len * 0.03, -len * 0.6, g);                 // shaft
+  body(-len * 0.6, -len * 0.615, design.accent);    // joint ring
+  body(-len * 0.615, -len, design.butt);            // butt
   const wAt = x => tipW + (buttW - tipW) * (-x / len);
   c.save();
   if (design.pattern === 'points' || design.pattern === 'splice') {
@@ -2970,13 +2970,13 @@ function drawCueLocal(c, len, design, tipW, buttW) {
       c.fillStyle = design.pattern === 'neon' && i % 2 ? '#22e3ff' : design.accent; c.fillRect(x - len * 0.006, -w, len * 0.012, w * 2); }
   }
   c.restore();
-  body(-len * 0.985, -len, '#1a1a1a');                
+  body(-len * 0.985, -len, '#1a1a1a');               // bumper
   c.strokeStyle = 'rgba(0,0,0,0.35)'; c.lineWidth = Math.max(0.5, tipW * 0.15);
   c.beginPath(); c.moveTo(0, -tipW); c.lineTo(-len, -buttW); c.moveTo(0, tipW); c.lineTo(-len, buttW); c.stroke();
 }
 function shadeHex(hex, amt) { return shade(hex, amt); }
 
- 
+/* ---- collection screen ---- */
 let collectionTab = 'cues', collectionFrom = 'setup';
 function showCollection(tab, from) {
   loadProfile();
@@ -3061,9 +3061,9 @@ function drawClothPreview(cv, cl) {
   balls.forEach((f, i) => drawBall(c, 34 + i * 30, h / 2 + (i % 2 ? 14 : -14), { fill: f }, 1, 11));
 }
 
-
-
-
+/* =========================================================================
+   RENDERING
+   ========================================================================= */
 const canvas = document.getElementById('table');
 const ctx = canvas.getContext('2d');
 let scale = 0.3, dpr = 1, staticLayer = null;
@@ -3097,13 +3097,13 @@ function roundRect(c, x, y, w, h, r) {
 function drawStatic(c) {
   worldTransform(c);
   const cw = CFG.CUSHION_W;
-   
+  // wooden frame
   const wood = c.createLinearGradient(0, -MARGIN, 0, W + MARGIN);
   wood.addColorStop(0, '#5a2f17'); wood.addColorStop(0.5, '#3f1f0e'); wood.addColorStop(1, '#5a2f17');
   roundRect(c, -MARGIN, -MARGIN, TW, TH, 70); c.fillStyle = wood; c.fill();
   c.lineWidth = 6; c.strokeStyle = '#7a4524'; roundRect(c, -MARGIN + 12, -MARGIN + 12, TW - 24, TH - 24, 60); c.stroke();
   c.lineWidth = 3; c.strokeStyle = '#2a1408'; c.strokeRect(-cw - 4, -cw - 4, L + 2 * cw + 8, W + 2 * cw + 8);
-   
+  // pocket throats + holes
   for (const p of TABLE.pockets) {
     poly(c, p.throat); c.fillStyle = '#050806'; c.fill();
     c.beginPath(); c.arc(p.x, p.y, p.r + 10, 0, Math.PI * 2); c.fillStyle = '#1c1008'; c.fill();
@@ -3111,24 +3111,24 @@ function drawStatic(c) {
     g.addColorStop(0, '#000'); g.addColorStop(1, '#0b0b0b');
     c.beginPath(); c.arc(p.x, p.y, p.r, 0, Math.PI * 2); c.fillStyle = g; c.fill();
   }
-   
+  // cloth
   const cloth = c.createRadialGradient(L / 2, CY, 100, L / 2, CY, L * 0.62);
   const cc = clothColours();
   cloth.addColorStop(0, cc.centre); cloth.addColorStop(1, cc.edge);
   poly(c, TABLE.cloth); c.fillStyle = cloth; c.fill();
-   
+  // cushions
   for (const r of TABLE.rails) {
     poly(c, r); c.fillStyle = cc.cushion; c.fill();
     c.beginPath(); c.moveTo(r[0].x, r[0].y); c.lineTo(r[1].x, r[1].y);
     c.lineWidth = 4; c.strokeStyle = cc.nose; c.stroke();
   }
-   
+  // markings
   c.strokeStyle = 'rgba(255,255,255,0.55)'; c.lineWidth = 3;
   c.beginPath(); c.moveTo(CFG.BAULK_X, 0); c.lineTo(CFG.BAULK_X, W); c.stroke();
   c.beginPath(); c.arc(BROWN.x, BROWN.y, CFG.D_R, Math.PI / 2, Math.PI * 1.5); c.stroke();
   c.fillStyle = 'rgba(255,255,255,0.6)';
   for (const k in SPOTS) { c.beginPath(); c.arc(SPOTS[k].x, SPOTS[k].y, 5, 0, Math.PI * 2); c.fill(); }
-   
+  // nameplate
   c.fillStyle = '#c9a25a'; c.font = '600 44px Georgia, serif'; c.textAlign = 'center'; c.textBaseline = 'middle';
   c.fillText('WORLD SNOOKER CHAMPIONSHIP', L / 2, W + cw + CFG.RAIL_W / 2 + 2);
 }
@@ -3156,25 +3156,25 @@ function render() {
   if (staticLayer) ctx.drawImage(staticLayer, 0, 0);
   worldTransform(ctx);
 
-   
+  // D highlight while placing
   if (G.state === 'place') {
     ctx.beginPath(); ctx.moveTo(BROWN.x, BROWN.y - CFG.D_R);
     ctx.arc(BROWN.x, BROWN.y, CFG.D_R, -Math.PI / 2, -Math.PI * 1.5, true); ctx.closePath();
     ctx.fillStyle = 'rgba(227,179,65,0.10)'; ctx.fill();
   }
-   
+  // shadows
   ctx.fillStyle = 'rgba(0,0,0,0.28)';
   for (const b of G.balls) {
     if (!b.onTable) continue;
     ctx.beginPath(); ctx.ellipse(b.x + 7, b.y + 9, R * 1.02, R * 0.9, 0, 0, Math.PI * 2); ctx.fill();
   }
-   
+  // sinking balls
   for (const s of G.sinking) {
     const k = Math.min(1, s.t / CFG.SINK_TIME);
     drawBall(ctx, s.x + (s.tx - s.x) * k, s.y + (s.ty - s.y) * k, s.ball, 1 - k * 0.8, R * (1 - 0.35 * k));
   }
   for (const b of G.balls) if (b.onTable) drawBall(ctx, b.x, b.y, b);
-  if (isEvenOdd()) {                                   
+  if (isEvenOdd()) {                                  // mark EVEN balls (yellow, brown, pink)
     ctx.strokeStyle = '#ffd24a'; ctx.lineWidth = 4;
     for (const b of G.balls) if (b.onTable && b.kind !== 'cue' && parityOf(b) === 'even') { ctx.beginPath(); ctx.arc(b.x, b.y, R + 6, 0, Math.PI * 2); ctx.stroke(); }
   }
@@ -3199,7 +3199,7 @@ function drawAim() {
   const endT = Math.min(hit.t, reach);
   ctx.beginPath(); ctx.moveTo(c.x, c.y); ctx.lineTo(c.x + hit.dx * endT, c.y + hit.dy * endT); ctx.stroke();
   ctx.setLineDash([]);
-  if (!inReach) {                                      
+  if (!inReach) {                                     // beyond this cue's guide reach: no ghost ball
   } else if (hit.ball) {
     const legal = isOn(hit.ball, on) || (G.freeBall && hit.ball.kind === 'colour');
     ctx.strokeStyle = legal ? 'rgba(90,209,138,0.95)' : 'rgba(255,107,90,0.95)';
@@ -3209,7 +3209,7 @@ function drawAim() {
     const ux = nx / nl, uy = ny / nl;
     ctx.strokeStyle = 'rgba(255,255,255,0.8)'; ctx.lineWidth = 3;
     ctx.beginPath(); ctx.moveTo(hit.ball.x, hit.ball.y); ctx.lineTo(hit.ball.x + ux * 380 * cs.precision, hit.ball.y + uy * 380 * cs.precision); ctx.stroke();
-     
+    // cue ball deflection (stun line), along the tangent
     const dot = hit.dx * ux + hit.dy * uy;
     let tx = hit.dx - dot * ux, ty = hit.dy - dot * uy;
     const tl = Math.hypot(tx, ty);
@@ -3223,7 +3223,7 @@ function drawAim() {
     ctx.strokeStyle = 'rgba(255,255,255,0.6)'; ctx.lineWidth = 2;
     ctx.beginPath(); ctx.arc(hit.x, hit.y, R, 0, Math.PI * 2); ctx.stroke();
   }
-   
+  // cue stick
   const back = 30 + G.power * 220;
   const dx = Math.cos(G.aim), dy = Math.sin(G.aim);
   const sx = c.x - dx * (R + back), sy = c.y - dy * (R + back);
@@ -3233,9 +3233,9 @@ function drawAim() {
   ctx.restore();
 }
 
-
-
-
+/* =========================================================================
+   HUD
+   ========================================================================= */
 const $ = id => document.getElementById(id);
 function pName(i) { return G.players[i].name; }
 function name(b) { return b.kind === 'red' ? 'a red' : b.kind === 'cue' ? 'the cue ball' : 'the ' + b.id; }
@@ -3243,12 +3243,12 @@ function cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
 function esc(s) { return String(s).replace(/[&<>"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch])); }
 function setMessage(text, type) { G.message = text; G.msgType = type; }
 
-
-
-
-
+/* =========================================================================
+   NEXT BALL indicator — derived only from the rules engine (ballOn, free
+   ball, pending foul decision, shot in progress), never guessed separately.
+   ========================================================================= */
 const colourOf = v => COLOURS.find(c => c.value === v);
- 
+/** Short NEXT label derived from the rules engine (ballOn, free ball, foul decision, shot in progress). */
 function nextBallInfo() {
   const st = G.state;
   if (st === 'frameover') return { label: 'FRAME OVER', fills: [], tag: '' };
@@ -3352,9 +3352,9 @@ function drawSpinWidget() {
   sctx.fillStyle = '#2e6fa8'; sctx.fill(); sctx.strokeStyle = '#fff'; sctx.stroke();
 }
 
-
-
-
+/* =========================================================================
+   INPUT
+   ========================================================================= */
 function toWorld(e) {
   const r = canvas.getBoundingClientRect();
   return { x: (e.clientX - r.left) / scale - MARGIN, y: (e.clientY - r.top) / scale - MARGIN };
@@ -3490,11 +3490,11 @@ if (window.ResizeObserver) new ResizeObserver(() => {
   if (k !== lastWrap) { lastWrap = k; resize(); }
 }).observe(document.getElementById('tableWrap'));
 
-
-
-
+/* =========================================================================
+   MAIN LOOP
+   ========================================================================= */
 function update(dt) {
-  if (G.paused) return;                                
+  if (G.paused) return;                               // rules card open: physics and AI wait
   for (const s of G.sinking) s.t += dt;
   G.sinking = G.sinking.filter(s => s.t < CFG.SINK_TIME);
   if (G.state === 'intro') { updateIntro(dt); return; }
@@ -3519,7 +3519,7 @@ function frame(t) {
   requestAnimationFrame(frame);
 }
 
- 
+/* Test/debug hooks (used by the automated rule & physics tests) */
 window.WSC = {
   G, CFG, SPOTS, TABLE, SFX, VOLUMES, renderStats: () => ({ lastRender, needRender }),
   ballOn, evaluateShot, isSnookered, respot, remainingPoints, castAim, placementValid,

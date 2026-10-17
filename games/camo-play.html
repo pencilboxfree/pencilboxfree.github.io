@@ -1,24 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<script>
-window.CreatorDNA = Object.freeze({
-  creator: "Coolbros1418",
-  game: "Camo Play",
-  gameId: "camo-play",
-  originId: "CDNA-O-B8SHD-CSWRR",
-  conceptId: "CDNA-C-ZVQBZ-JVTM7",
-  version: null,
-  conceptDate: "2026-09-12T23:26:48Z",
-  released: "2026-09-16",
-  fingerprint: "77084a9302de22706ffabf325b20e41aa3466d86664ba9f481f58f12659adee3",
-  signature: "pMZu3CigF0CWLhSFTqRH8XJH0WN7AxVslN7U52C+gmebEoi2fKvltT7loFPH8kdZwS/HobABUew5ZeE3TI/2Dg==",
-  publicKeyId: "f4e07b5fe705eb901a670d5d3845f0b61f2b1ff6aa73145eeb18404aa2f664f0",
-  algorithm: "Ed25519 over the canonical record JSON; SHA-256 for the fingerprint",
-  verify: "Ed25519 signature over the canonical Creator DNA record; check it with the Coolbros1418 public key."
-});
-</script>
-
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="description" content="Camo Play — disguise yourself as the scenery and survive the seekers. A free browser game from Pencilbox Games.">
@@ -47,7 +29,7 @@ body{
 canvas{display:block;image-rendering:auto}
 .hidden{display:none !important}
 
- 
+/* ---------- screens ---------- */
 .screen{
   position:fixed;inset:0;z-index:40;overflow-y:auto;overflow-x:hidden;
   background:
@@ -91,7 +73,7 @@ h3{font-size:.82rem;letter-spacing:.14em;text-transform:uppercase;color:var(--di
 .panel{background:var(--panel);border:3px solid var(--edge);padding:clamp(12px,2.4vw,18px);width:100%}
 .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:12px;width:100%}
 
- 
+/* ---------- setup ---------- */
 .countRow{display:flex;align-items:center;gap:14px;flex-wrap:wrap;justify-content:center}
 input[type=range]{-webkit-appearance:none;appearance:none;height:8px;background:var(--bg2);border:2px solid var(--edge);flex:1 1 200px;min-width:160px}
 input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:22px;background:var(--camo);border:2px solid #0a0912;cursor:pointer}
@@ -108,7 +90,7 @@ input[type=range]::-moz-range-thumb{width:18px;height:20px;background:var(--camo
 .mapCard .bl{font-size:.68rem;color:var(--dim);line-height:1.45;margin-top:3px}
 .mapCard .cu{font-size:.6rem;color:var(--cyan);letter-spacing:.1em}
 
- 
+/* ---------- disguise ---------- */
 .dz{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;width:100%}
 @media(min-width:760px){.dz{grid-template-columns:300px minmax(0,1fr)}}
 .preview{background:#0a0912;border:3px solid var(--edge);display:flex;align-items:center;justify-content:center;padding:10px}
@@ -128,7 +110,7 @@ input[type=range]::-moz-range-thumb{width:18px;height:20px;background:var(--camo
 .fieldRow label{font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);min-width:72px}
 .hint{font-size:.7rem;color:var(--dim);line-height:1.6}
 
- 
+/* ---------- hud ---------- */
 #hud{position:fixed;inset:0;z-index:20;pointer-events:none;font-size:.78rem}
 .hudBar{position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:flex-start;gap:8px;padding:10px 12px;
   background:linear-gradient(rgba(10,9,18,.78),transparent)}
@@ -151,28 +133,7 @@ input[type=range]::-moz-range-thumb{width:18px;height:20px;background:var(--camo
 #coolWrap{position:absolute;left:50%;bottom:clamp(26px,5vh,44px);transform:translateX(-50%);width:132px;height:8px;background:rgba(10,9,18,.7);border:2px solid var(--edge)}
 #coolBar{height:100%;width:100%;background:var(--red);transform-origin:left;transition:none}
 
- 
-#prompt{position:absolute;left:50%;bottom:clamp(48px,8vh,78px);transform:translateX(-50%);
-  background:rgba(20,17,32,.88);border:2px solid var(--yellow);color:var(--yellow);
-  padding:5px 14px;letter-spacing:.06em;font-size:.76rem;white-space:nowrap;max-width:92vw;overflow:hidden;text-overflow:ellipsis}
-#taskWrap{position:absolute;left:50%;top:52px;transform:translateX(-50%);width:min(420px,60vw);height:16px;
-  background:rgba(10,9,18,.8);border:2px solid var(--edge);display:flex;align-items:center}
-#taskFill{height:100%;width:0;background:linear-gradient(90deg,#5dff8f,#8fbf5d);transition:width .2s}
-#taskTxt{position:absolute;left:50%;transform:translateX(-50%);font-size:.64rem;letter-spacing:.1em;color:var(--text)}
-.voteGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,168px),1fr));gap:9px;width:100%}
-.voteBtn{display:flex;align-items:center;gap:9px;background:var(--panel);border:3px solid var(--edge);
-  padding:9px 11px;cursor:pointer;font-family:inherit;color:var(--text);font-size:.8rem;transition:border-color .1s,transform .1s}
-.voteBtn:hover{transform:translateY(-2px);border-color:var(--edge2)}
-.voteBtn.sel{border-color:var(--yellow)}
-.voteBtn .dot{width:20px;height:20px;border:2px solid rgba(0,0,0,.6);border-radius:50%;flex:none}
-.voteBtn .vn{flex:1;text-align:left;letter-spacing:.04em}
-.voteBtn .vc{color:var(--dim);font-size:.7rem}
-.meetLine{padding:5px 2px;border-bottom:1px dashed var(--edge);font-size:.82rem;line-height:1.5}
-.meetLine b{color:var(--cyan)}
-.meetLine.wit b{color:var(--red)}
-.dead{opacity:.45}
-
- 
+/* ---------- touch ---------- */
 #touch{position:absolute;inset:0;pointer-events:none;z-index:21}
 #stick{position:absolute;left:16px;bottom:16px;width:132px;height:132px;border-radius:50%;
   background:rgba(20,17,32,.52);border:3px solid var(--edge);pointer-events:auto;touch-action:none}
@@ -192,7 +153,7 @@ input[type=range]::-moz-range-thumb{width:18px;height:20px;background:var(--camo
   #chatLog{max-height:96px}
 }
 
- 
+/* ---------- chat ---------- */
 #chat{position:absolute;left:12px;bottom:12px;width:min(330px,52vw);pointer-events:none;z-index:22}
 #chatLog{display:flex;flex-direction:column;gap:3px;margin-bottom:6px;max-height:158px;overflow:hidden;justify-content:flex-end}
 .msg{background:rgba(10,9,18,.72);border-left:3px solid var(--edge);padding:3px 7px;font-size:.72rem;line-height:1.4;word-break:break-word}
@@ -205,7 +166,7 @@ input[type=range]::-moz-range-thumb{width:18px;height:20px;background:var(--camo
 #chatInput{flex:1;font-family:inherit;font-size:.78rem;background:rgba(10,9,18,.92);color:var(--text);border:2px solid var(--camo);padding:6px 8px;min-width:0}
 #chatInput:focus{outline:none;border-color:var(--green)}
 
- 
+/* ---------- editor ---------- */
 #s-editor{padding:0;display:block;overflow:hidden}
 .edWrap{position:fixed;inset:0;display:flex;flex-direction:column}
 .edTop{display:flex;gap:7px;align-items:center;flex-wrap:wrap;padding:7px 9px;background:var(--bg2);border-bottom:3px solid var(--edge)}
@@ -226,7 +187,7 @@ input[type=range]::-moz-range-thumb{width:18px;height:20px;background:var(--camo
 .lvRow .lvName{flex:1 1 150px;font-size:.86rem;color:var(--yellow);letter-spacing:.06em;text-transform:uppercase;word-break:break-word}
 .lvRow .lvMeta{font-size:.66rem;color:var(--dim);flex:1 1 110px}
 
- 
+/* ---------- results / lockout ---------- */
 .resRow{display:flex;justify-content:space-between;gap:12px;border-bottom:1px dashed var(--edge);padding:8px 2px;font-size:.84rem}
 .resRow span:last-child{color:var(--yellow)}
 .big{font-size:clamp(1.3rem,5.6vw,2.2rem);letter-spacing:.14em;text-transform:uppercase;text-align:center}
@@ -249,20 +210,18 @@ input[type=range]::-moz-range-thumb{width:18px;height:20px;background:var(--camo
   <div class="hudBar">
     <div class="row" style="justify-content:flex-start;gap:8px">
       <div class="pill role" id="hRole">Hider</div>
-      <div class="pill"><span id="hAliveLbl">Hiders</span> <b id="hAlive">0</b>/<b id="hTotal">0</b></div>
-      <div class="pill"><span id="hSeekLbl">Seekers</span> <b id="hSeek">0</b></div>
+      <div class="pill">Hiders <b id="hAlive">0</b>/<b id="hTotal">0</b></div>
+      <div class="pill">Seekers <b id="hSeek">0</b></div>
     </div>
     <div class="pill" id="hPhaseWrap"><span id="hPhase">Prep</span> <span id="hTimer">0:00</span></div>
     <div class="row" style="justify-content:flex-end;gap:8px">
       <div class="pill hidden" id="hBlendWrap">Blend <b id="hBlend">0%</b></div>
-      <div class="pill" id="hScoreWrap"><span id="hScoreLbl">Score</span> <b id="hScore">0</b></div>
+      <div class="pill" id="hScoreWrap">Score <b id="hScore">0</b></div>
       <button class="btn sm" id="btnPause" style="pointer-events:auto">Menu</button>
     </div>
   </div>
   <div class="banner" id="banner"></div>
   <div id="blended">Blended In</div>
-  <div id="prompt" class="hidden"></div>
-  <div id="taskWrap" class="hidden"><div id="taskFill"></div><span id="taskTxt">Tasks 0%</span></div>
   <div id="coolWrap" class="hidden"><div id="coolBar"></div></div>
   <div class="legend" id="legend"></div>
   <div id="touch" class="hidden">
@@ -281,7 +240,6 @@ input[type=range]::-moz-range-thumb{width:18px;height:20px;background:var(--camo
     <p class="tag">Disguise yourself as the scenery. Hold still, blend in, and survive the seekers — or grab a laser and find the one barrel that is breathing.<br><span class="blink">▶ PRESS START</span></p>
     <div class="menu">
       <button class="btn primary" id="mPlay">Play Camo Tag</button>
-      <button class="btn primary" id="mPlayImp" style="border-color:var(--red);color:var(--red);background:#2a1618">Play Imposter Game</button>
       <button class="btn" id="mCreator">Level Creator</button>
       <button class="btn" id="mLevels">Custom Levels</button>
       <button class="btn" id="mSettings">Settings</button>
@@ -303,24 +261,11 @@ input[type=range]::-moz-range-thumb{width:18px;height:20px;background:var(--camo
       </div>
     </div>
     <div class="panel">
-      <h3>Game Mode</h3>
-      <div class="row">
-        <button class="btn sm" data-mode="camo">Camo Tag</button>
-        <button class="btn sm" data-mode="imposter">Imposter Game</button>
-      </div>
-      <p class="hint" id="modeHint" style="margin-top:9px"></p>
-    </div>
-    <div class="panel">
       <h3>Your Role</h3>
-      <div class="row" id="roleRowCamo">
+      <div class="row">
         <button class="btn sm" data-role="hider">Hider</button>
         <button class="btn sm" data-role="seeker">Seeker</button>
         <button class="btn sm" data-role="random">Random</button>
-      </div>
-      <div class="row hidden" id="roleRowImp">
-        <button class="btn sm" data-irole="crew">Crewmate</button>
-        <button class="btn sm" data-irole="imposter">Imposter</button>
-        <button class="btn sm" data-irole="random">Random</button>
       </div>
       <p class="hint" id="roleHint" style="margin-top:9px"></p>
     </div>
@@ -473,34 +418,6 @@ input[type=range]::-moz-range-thumb{width:18px;height:20px;background:var(--camo
         <p class="hint">A hider who has just moved leaves a faint dust puff and sways for a second. A costume standing alone with no twins nearby is a bad costume. Lasers stop at walls and tall props, so both sides can use cover.</p>
       </div>
     </div>
-
-    <h2 style="margin-top:22px">Imposter Game</h2>
-    <div class="panel grid2">
-      <div>
-        <h3>The Setup</h3>
-        <p class="hint">Everyone gets a secret role. Between one and three of you are imposters, scaled to the lobby size — you are told which you are and nobody else is. The map is the same building as Camo Tag, but you only see as far as your own torch, so you never know who is round the next corner.</p>
-      </div>
-      <div>
-        <h3>Crew</h3>
-        <p class="hint">Work through the tasks marked on your list, room by room. Stand on the ring and hold still until it fills. Finish every crew task and the crew win. Find a cap on the floor and press <b>SPACE</b> to report it — that calls everyone together.</p>
-      </div>
-      <div>
-        <h3>Imposter</h3>
-        <p class="hint">Get someone alone and press <b>SPACE</b> to poof them — they drop their cap and you go on cooldown. Stand on task rings to fake the work, split people up, and report a cap yourself if it keeps you clean. Imposters win by outnumbering the crew.</p>
-      </div>
-      <div>
-        <h3>Meetings</h3>
-        <p class="hint">A reported cap or an emergency meeting (<b>E</b>, once each per round) brings every living player together. Everyone says what they actually saw — who they were with, who was wandering, who they watched do it. Nobody is told the answer, so a confident liar works. Vote, or skip. Majority goes out and their role is revealed.</p>
-      </div>
-      <div>
-        <h3>Controls</h3>
-        <p class="hint">
-          <b>← ↑ ↓ →</b> — move<br>
-          <b>SPACE</b> — do a task or report a cap. Imposters: eliminate or report<br>
-          <b>E</b> — call an emergency meeting &nbsp; <b>T</b> — chat &nbsp; <b>ESC</b> — menu
-        </p>
-      </div>
-    </div>
     <button class="btn" id="howBack">Back</button>
   </div>
 </div>
@@ -535,21 +452,6 @@ input[type=range]::-moz-range-thumb{width:18px;height:20px;background:var(--camo
     <p class="tag">Ten blocked messages. Camo Play is paused for five minutes — the timer keeps running even if you reload.</p>
     <div id="lockTime">5:00</div>
     <p class="tag">This is a temporary cooldown, not a ban. Come back and keep it friendly.</p>
-  </div>
-</div>
-
-<div class="screen sheet hidden" id="s-meeting">
-  <div class="wrap" style="max-width:900px">
-    <h2 id="meetTitle">Emergency Meeting</h2>
-    <p class="tag" id="meetSub"></p>
-    <div class="panel" style="max-height:34vh;overflow-y:auto"><div id="meetLines"></div></div>
-    <h3 id="voteHead">Who do you think it is?</h3>
-    <div class="voteGrid" id="voteGrid"></div>
-    <div class="panel hidden" id="meetResult"></div>
-    <div class="row">
-      <button class="btn sm" id="voteSkip">Skip Vote</button>
-      <button class="btn primary hidden" id="meetContinue">Continue</button>
-    </div>
   </div>
 </div>
 
@@ -602,8 +504,8 @@ const Save = (() => {
   const KEY = 'pencilbox.camo-play.v1';
   const defaults = () => ({
     settings: { sfx: 70, music: 45, round: 90, prep: 12, hints: true, chat: true },
-    stats: { rounds: 0, hiderWins: 0, seekerWins: 0, crewWins: 0, impWins: 0, tags: 0, bestSurvive: 0, bestScore: 0 },
-    last: { count: 8, role: 'random', irole: 'random', mode: 'camo', map: 'school', disguise: null, roleHistory: [], impHistory: [] }
+    stats: { rounds: 0, hiderWins: 0, seekerWins: 0, tags: 0, bestSurvive: 0, bestScore: 0 },
+    last: { count: 8, role: 'random', map: 'neighborhood', disguise: null, roleHistory: [] }
   });
   let data = defaults(), mem = false, timer = 0;
   function merge(dst, src) {
@@ -1206,57 +1108,22 @@ const Props = (() => {
 const Maps = (() => {
   function mkRng(seed) { let s = (seed >>> 0) || 1; return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }; }
 
+  function overlaps(ax, ay, aw, ah, bx, by, bw, bh, pad) {
+    pad = pad || 0;
+    return ax - pad < bx + bw && ax + aw + pad > bx && ay - pad < by + bh && ay + ah + pad > by;
+  }
+
   function Builder(spec) {
     const m = {
-      id: spec.id, name: spec.name, blurb: spec.blurb, w: spec.w || 1800, h: spec.h || 1050,
-      floor: spec.floor, tint: spec.tint, wallC: spec.wallC || '#4a4258',
-      rooms: [], doors: [], props: [], patches: [], walls: [],
-      hiderSpawns: [], seekerSpawns: [], taskSpots: [], meeting: null,
-      seekerCorner: spec.corner || 0
+      id: spec.id, name: spec.name, blurb: spec.blurb, w: spec.w || 1600, h: spec.h || 900,
+      floor: spec.floor, tint: spec.tint, patches: [], walls: [], props: [],
+      hiderSpawns: [], seekerSpawns: [], seekerCorner: spec.corner || 0
     };
     const rng = mkRng(spec.seed);
-    const byName = {};
-
-    function add(kind, name, x, y, w, h, floor) {
-      const r = { kind, name, x, y, w, h, floor: floor || spec.floor, id: m.rooms.length };
-      m.rooms.push(r);
-      byName[name] = r;
-      return r;
-    }
-
     const api = {
-      m, rng,
-      room: (name, x, y, w, h, floor) => add('room', name, x, y, w, h, floor),
-      hall: (name, x, y, w, h, floor) => add('hall', name, x, y, w, h, floor || spec.hallC || shade(spec.floor, -0.12)),
-      get: n => byName[n],
-      connect(an, bn, t, width) {
-        const a = byName[an], b = byName[bn];
-        if (!a || !b) throw new Error('connect: missing room ' + an + '/' + bn);
-        t = t == null ? 0.5 : t;
-        width = width || 92;
-        let d = null;
-        const ox0 = Math.max(a.x, b.x), ox1 = Math.min(a.x + a.w, b.x + b.w);
-        const oy0 = Math.max(a.y, b.y), oy1 = Math.min(a.y + a.h, b.y + b.h);
-        if (ox1 - ox0 > 30 && oy1 - oy0 > 30) {
-          d = { x: ox0, y: oy0, w: ox1 - ox0, h: oy1 - oy0, a: a.id, b: b.id, cx: (ox0 + ox1) / 2, cy: (oy0 + oy1) / 2, open: true };
-          m.doors.push(d);
-          return api;
-        }
-        if (ox1 - ox0 > 40 && (b.y >= a.y + a.h - 2 || a.y >= b.y + b.h - 2)) {
-          const top = b.y >= a.y + a.h - 2 ? a : b, bot = top === a ? b : a;
-          const y0 = top.y + top.h - 6, y1 = bot.y + 6;
-          const cx = clamp(ox0 + (ox1 - ox0) * t, ox0 + width / 2 + 6, ox1 - width / 2 - 6);
-          d = { x: cx - width / 2, y: y0, w: width, h: Math.max(12, y1 - y0), a: a.id, b: b.id, cx, cy: (y0 + y1) / 2 };
-        } else if (oy1 - oy0 > 40 && (b.x >= a.x + a.w - 2 || a.x >= b.x + b.w - 2)) {
-          const lft = b.x >= a.x + a.w - 2 ? a : b, rgt = lft === a ? b : a;
-          const x0 = lft.x + lft.w - 6, x1 = rgt.x + 6;
-          const cy = clamp(oy0 + (oy1 - oy0) * t, oy0 + width / 2 + 6, oy1 - width / 2 - 6);
-          d = { x: x0, y: cy - width / 2, w: Math.max(12, x1 - x0), h: width, a: a.id, b: b.id, cx: (x0 + x1) / 2, cy };
-        }
-        if (!d) throw new Error('connect: ' + an + ' and ' + bn + ' are not adjacent');
-        m.doors.push(d);
-        return api;
-      },
+      m,
+      patch(x, y, w, h, c, r) { m.patches.push({ x, y, w, h, c, r: r || 0 }); return api; },
+      wall(x, y, w, h, c) { m.walls.push({ x, y, w, h, c: c || spec.wallC || '#3b3448' }); return api; },
       prop(t, x, y, r, c, w, h) {
         const d = Props.T[t];
         m.props.push({ t, x, y, r: r || 0, c: c || d.pal[0], w: w || d.w, h: h || d.h });
@@ -1266,389 +1133,227 @@ const Maps = (() => {
         for (let i = 0; i < n; i++) api.prop(t, x + dx * i, y + dy * i, r || 0, cols ? cols[i % cols.length] : null);
         return api;
       },
-      fill(roomName, types, n, opt) {
+      scatter(t, n, x, y, w, h, opt) {
         opt = opt || {};
-        const r = byName[roomName];
-        if (!r) throw new Error('fill: missing ' + roomName);
-        let pad = opt.pad == null ? 44 : opt.pad;
-        pad = Math.min(pad, Math.max(12, Math.min(r.w, r.h) / 2 - 30));
+        const d = Props.T[t];
         let placed = 0, guard = 0;
-        while (placed < n && guard < n * 80) {
+        while (placed < n && guard < n * 60) {
           guard++;
-          const t = types[Math.floor(rng() * types.length)];
-          const d = Props.T[t];
-          const px = r.x + pad + rng() * Math.max(1, r.w - pad * 2);
-          const py = r.y + pad + rng() * Math.max(1, r.h - pad * 2);
-          const size = Math.max(d.w, d.h) + 10;
+          const px = x + rng() * w, py = y + rng() * h;
+          const r = opt.rot === false ? 0 : rng() * TAU;
+          const bw = Math.max(d.w, d.h) + 8, bh = bw;
           let ok = true;
           for (const q of m.props) {
-            const qd = Props.T[q.t], qs = Math.max(q.w || qd.w, q.h || qd.h) + 10;
-            if (Math.abs(q.x - px) < (size + qs) / 2 && Math.abs(q.y - py) < (size + qs) / 2) { ok = false; break; }
+            const qd = Props.T[q.t], qs = Math.max(q.w || qd.w, q.h || qd.h);
+            if (overlaps(px - bw / 2, py - bh / 2, bw, bh, q.x - qs / 2, q.y - qs / 2, qs, qs, 4)) { ok = false; break; }
           }
-          if (ok) for (const dr of m.doors) {
-            if (px > dr.x - 70 && px < dr.x + dr.w + 70 && py > dr.y - 70 && py < dr.y + dr.h + 70) { ok = false; break; }
+          if (ok) for (const q of m.walls) {
+            if (overlaps(px - bw / 2, py - bh / 2, bw, bh, q.x, q.y, q.w, q.h, 14)) { ok = false; break; }
           }
           if (!ok) continue;
-          api.prop(t, px, py, opt.rot === false ? 0 : rng() * TAU, d.pal[Math.floor(rng() * d.pal.length)]);
+          api.prop(t, px, py, r, d.pal[Math.floor(rng() * d.pal.length)]);
           placed++;
         }
-        return api;
-      },
-      task(roomName, label) {
-        const r = byName[roomName];
-        if (!r) throw new Error('task: missing ' + roomName);
-        m.taskSpots.push({ room: r.id, roomName, label, x: 0, y: 0 });
-        return api;
-      },
-      meetingAt(roomName) {
-        const r = byName[roomName];
-        m.meeting = { room: r.id, roomName, x: r.x + r.w / 2, y: r.y + r.h / 2 };
         return api;
       }
     };
     spec.build(api, rng);
-    if (!m.meeting) m.meetingAt(m.rooms.find(r => r.kind === 'room').name);
     return m;
   }
 
-  const CLASS = ['desk', 'chair', 'chair', 'locker', 'bin', 'plant'];
-  const ARCADE = ['cabinet', 'cabinet', 'tv', 'bin', 'plant', 'bench'];
-  const HOUSE = ['chair', 'table', 'tv', 'shelf', 'plant', 'crate', 'bin'];
-  const SHOP = ['shelf', 'crate', 'bin', 'plant', 'bench', 'sign'];
-  const YARD = ['bush', 'tyre', 'cone', 'bin', 'bench', 'ball'];
-
   const SPECS = [
     {
-      id: 'school', name: 'Retro School', blurb: 'Classrooms, a gym and a library off two long corridors.',
-      seed: 101, floor: '#6f6757', tint: '#c9b04a', wallC: '#8a8270', hallC: '#7d7565', corner: 0,
-      build(b) {
-        b.hall('North Hall', 60, 60, 1680, 100);
-        b.hall('South Hall', 60, 890, 1680, 100);
-        b.hall('West Hall', 60, 60, 100, 930);
-        b.hall('East Hall', 1640, 60, 100, 930);
-        b.hall('Main Hall', 820, 160, 100, 730, '#7d7565');
-        b.hall('Cross Hall', 160, 480, 1480, 90, '#7d7565');
-
-        b.room('Classroom A', 180, 180, 280, 280, '#5f6b52');
-        b.room('Classroom B', 500, 180, 300, 280, '#5f6b52');
-        b.room('Library', 940, 180, 380, 280, '#6b5f52');
-        b.room("Principal's Office", 1340, 180, 280, 130, '#7a6b5f');
-        b.room('Storage North', 1340, 330, 280, 130, '#5a5a52');
-        b.room('Gym', 180, 590, 620, 280, '#7a6b4a');
-        b.room('Cafeteria', 940, 590, 400, 280, '#6b6b5a');
-        b.room('Science Lab', 1360, 590, 260, 180, '#52606b');
-        b.room('Janitor Closet', 1360, 782, 260, 100, '#4a4a44');
-
-        b.connect('North Hall', 'Classroom A', 0.5);
-        b.connect('North Hall', 'Classroom B', 0.5);
-        b.connect('North Hall', 'Library', 0.4);
-        b.connect('North Hall', "Principal's Office", 0.5, 80);
-        b.connect('West Hall', 'Classroom A', 0.5);
-        b.connect('Classroom A', 'Classroom B', 0.5, 80);
-        b.connect('Main Hall', 'Library', 0.5);
-        b.connect('East Hall', "Principal's Office", 0.4, 80);
-        b.connect('East Hall', 'Storage North', 0.5, 80);
-        b.connect('Cross Hall', 'Classroom B', 0.5);
-        b.connect('Cross Hall', 'Library', 0.6);
-        b.connect('Cross Hall', 'Storage North', 0.5, 80);
-        b.connect('Cross Hall', 'Gym', 0.3);
-        b.connect('Cross Hall', 'Cafeteria', 0.5);
-        b.connect('Cross Hall', 'Science Lab', 0.5);
-        b.connect('West Hall', 'Gym', 0.5);
-        b.connect('South Hall', 'Gym', 0.6);
-        b.connect('South Hall', 'Cafeteria', 0.5);
-        b.connect('South Hall', 'Janitor Closet', 0.5, 80);
-        b.connect('Main Hall', 'Gym', 0.7);
-        b.connect('Main Hall', 'Cafeteria', 0.6);
-        b.connect('Science Lab', 'Janitor Closet', 0.5, 80);
-
-        const lp = Props.T.locker.pal;
-        b.row('locker', 200, 92, 12, 42, 0, 0, lp);
-        b.row('locker', 1180, 958, 10, 42, 0, Math.PI, lp);
-        for (let i = 0; i < 3; i++) {
-          b.prop('desk', 240 + i * 0, 230 + i * 80, 0);
-          b.prop('chair', 340, 230 + i * 80, 0);
-        }
-        b.fill('Classroom A', CLASS, 5);
-        b.fill('Classroom B', CLASS, 9);
-        b.fill('Library', ['shelf', 'shelf', 'desk', 'chair', 'plant'], 10);
-        b.fill("Principal's Office", ['desk', 'chair', 'plant', 'bin'], 4);
-        b.fill('Storage North', ['crate', 'crate', 'barrel', 'shelf'], 6);
-        b.fill('Gym', ['bench', 'ball', 'tyre', 'cone', 'crate'], 14);
-        b.fill('Cafeteria', ['table', 'chair', 'chair', 'bin', 'plant'], 13);
-        b.fill('Science Lab', ['desk', 'chair', 'plant', 'bin'], 6);
-        b.fill('Janitor Closet', ['bin', 'crate', 'barrel'], 3);
-        b.fill('Cross Hall', ['plant', 'bin'], 6, { pad: 30 });
-        b.fill('North Hall', ['plant', 'bin', 'bench'], 5, { pad: 30 });
-        b.fill('South Hall', ['plant', 'bin', 'bench'], 5, { pad: 30 });
-
-        b.meetingAt('Cafeteria');
-        b.task('Classroom A', 'Sharpen the pencils');
-        b.task('Classroom B', 'Clean the whiteboard');
-        b.task('Library', 'Reshelve the books');
-        b.task('Gym', 'Pump up the balls');
-        b.task('Cafeteria', 'Stack the trays');
-        b.task('Science Lab', 'Label the beakers');
-        b.task('Storage North', 'Count the crates');
-        b.task("Principal's Office", 'File the paperwork');
-        b.task('Janitor Closet', 'Wring the mop');
+      id: 'neighborhood', name: 'Old-School Neighborhood', blurb: 'Front lawns, wheelie bins and a long empty street.',
+      seed: 11, floor: '#4c6138', tint: '#7fa04f', wallC: '#6b5a4a', corner: 0,
+      build(b, rng) {
+        b.patch(0, 400, 1600, 150, '#3d3d46');
+        b.patch(0, 386, 1600, 14, '#6f6f78'); b.patch(0, 550, 1600, 14, '#6f6f78');
+        for (let x = 40; x < 1600; x += 120) b.patch(x, 470, 60, 8, '#cfc76a');
+        [180, 620, 1060].forEach(x => b.patch(x, 200, 90, 186, '#5a5a62'));
+        [300, 740, 1180].forEach(x => b.patch(x, 564, 90, 200, '#5a5a62'));
+        b.wall(120, 90, 260, 110, '#7a5c48'); b.wall(560, 70, 240, 130, '#6b5470');
+        b.wall(1000, 96, 280, 104, '#7a6448'); b.wall(1400, 80, 170, 150, '#5c6b7a');
+        b.wall(180, 760, 240, 110, '#6b5470'); b.wall(620, 740, 260, 130, '#7a5c48');
+        b.wall(1060, 770, 230, 100, '#5c6b7a');
+        b.prop('fence', 470, 250, 0); b.prop('fence', 470, 730, 0);
+        b.prop('fence', 940, 250, 0); b.prop('fence', 940, 740, 0);
+        b.prop('fence', 60, 300, Math.PI / 2); b.prop('fence', 1540, 640, Math.PI / 2);
+        b.scatter('bin', 9, 60, 220, 1480, 150, { rot: false });
+        b.scatter('bin', 7, 60, 600, 1480, 170, { rot: false });
+        b.scatter('bush', 11, 60, 210, 1480, 170);
+        b.scatter('bush', 9, 60, 590, 1480, 200);
+        b.scatter('tyre', 5, 80, 230, 1400, 520, { rot: false });
+        b.scatter('cone', 7, 60, 410, 1480, 130, { rot: false });
+        b.prop('sign', 420, 370, 0); b.prop('sign', 1120, 570, 0); b.prop('sign', 760, 250, 0);
+        b.prop('ball', 520, 660, 0); b.prop('ball', 1290, 300, 0);
+        b.prop('bench', 300, 330, 0); b.prop('bench', 1180, 640, 0);
       }
     },
     {
-      id: 'arcade', name: 'Old Arcade', blurb: 'Cabinet rows, a prize room and a maintenance corridor out back.',
-      seed: 202, floor: '#2e2148', tint: '#b57bff', wallC: '#4a3a6b', hallC: '#251a3d', corner: 1,
+      id: 'arcade', name: 'Retro Arcade', blurb: 'Cabinet rows, sticky carpet and far too much neon.',
+      seed: 22, floor: '#241a36', tint: '#b57bff', wallC: '#3a2d56', corner: 1,
       build(b) {
-        b.hall('Front Walk', 60, 60, 1680, 100);
-        b.hall('Service Hall', 60, 890, 1680, 100);
-        b.hall('West Corridor', 60, 60, 100, 930);
-        b.hall('East Corridor', 1640, 60, 100, 930);
-        b.hall('Centre Aisle', 840, 160, 110, 730, '#251a3d');
-
-        b.room('Main Arcade', 180, 180, 640, 300, '#3b2a5e');
-        b.room('Game Room A', 970, 180, 340, 300, '#33245a');
-        b.room('Prize Room', 1330, 180, 290, 300, '#4a2a52');
-        b.room('Game Room B', 180, 510, 640, 360, '#33245a');
-        b.room('Back Office', 970, 510, 300, 170, '#2a2a4a');
-        b.room('Maintenance', 970, 700, 300, 170, '#243040');
-        b.room('Storage', 1290, 510, 330, 360, '#2f2540');
-
-        b.connect('Front Walk', 'Main Arcade', 0.5);
-        b.connect('Front Walk', 'Game Room A', 0.5);
-        b.connect('Front Walk', 'Prize Room', 0.5);
-        b.connect('West Corridor', 'Main Arcade', 0.5);
-        b.connect('West Corridor', 'Game Room B', 0.5);
-        b.connect('Centre Aisle', 'Main Arcade', 0.4);
-        b.connect('Centre Aisle', 'Game Room A', 0.4, 100);
-        b.connect('Centre Aisle', 'Game Room B', 0.4);
-        b.connect('Centre Aisle', 'Back Office', 0.5, 80);
-        b.connect('Centre Aisle', 'Maintenance', 0.5, 80);
-        b.connect('Main Arcade', 'Game Room B', 0.35, 100);
-        b.connect('East Corridor', 'Prize Room', 0.5);
-        b.connect('East Corridor', 'Storage', 0.5);
-        b.connect('Prize Room', 'Storage', 0.5, 90);
-        b.connect('Back Office', 'Storage', 0.5, 80);
-        b.connect('Service Hall', 'Game Room B', 0.5);
-        b.connect('Service Hall', 'Maintenance', 0.5, 80);
-        b.connect('Service Hall', 'Storage', 0.5);
-
+        b.patch(0, 0, 1600, 900, '#241a36');
+        b.patch(120, 120, 1360, 660, '#2e2148');
+        b.patch(200, 200, 480, 200, '#3b2a5e', 0);
+        b.patch(920, 500, 480, 200, '#3b2a5e', 0);
+        b.wall(0, 0, 1600, 60); b.wall(0, 840, 1600, 60);
+        b.wall(700, 380, 200, 140, '#4a3a6b');
+        b.wall(60, 380, 120, 140, '#4a3a6b'); b.wall(1420, 380, 120, 140, '#4a3a6b');
         const cp = Props.T.cabinet.pal;
-        b.row('cabinet', 230, 230, 6, 100, 0, 0, cp);
-        b.row('cabinet', 230, 430, 6, 100, 0, Math.PI, cp);
-        b.row('cabinet', 230, 570, 6, 100, 0, 0, cp);
-        b.row('cabinet', 230, 810, 6, 100, 0, Math.PI, cp);
-        b.row('cabinet', 1020, 230, 3, 100, 0, 0, cp);
-        b.row('cabinet', 1020, 420, 3, 100, 0, Math.PI, cp);
-        b.fill('Main Arcade', ['bin', 'plant', 'bench'], 6);
-        b.fill('Game Room A', ARCADE, 6);
-        b.fill('Game Room B', ['bin', 'plant', 'bench', 'table'], 7);
-        b.fill('Prize Room', ['shelf', 'bear', 'ball', 'crate', 'bear'], 13);
-        b.fill('Back Office', ['desk', 'chair', 'bin', 'plant'], 5);
-        b.fill('Maintenance', ['barrel', 'crate', 'bin', 'tyre'], 7);
-        b.fill('Storage', ['crate', 'barrel', 'shelf', 'crate'], 14);
-        b.fill('Front Walk', ['plant', 'bin', 'sign'], 5, { pad: 30 });
-        b.fill('Centre Aisle', ['plant', 'bin'], 4, { pad: 30 });
-
-        b.meetingAt('Main Arcade');
-        b.task('Main Arcade', 'Refill the token hopper');
-        b.task('Game Room A', 'Reset the high scores');
-        b.task('Game Room B', 'Wipe the screens');
-        b.task('Prize Room', 'Restock the shelf');
-        b.task('Back Office', 'Balance the till');
-        b.task('Maintenance', 'Swap the fuse');
-        b.task('Storage', 'Flatten the boxes');
-        b.task('Front Walk', 'Sweep the entrance');
+        b.row('cabinet', 240, 180, 7, 96, 0, 0, cp);
+        b.row('cabinet', 240, 700, 7, 96, 0, Math.PI, cp);
+        b.row('cabinet', 980, 180, 6, 96, 0, 0, cp);
+        b.row('cabinet', 980, 700, 6, 96, 0, Math.PI, cp);
+        b.row('cabinet', 160, 300, 3, 0, 96, Math.PI / 2, cp);
+        b.row('cabinet', 1440, 300, 3, 0, 96, -Math.PI / 2, cp);
+        b.scatter('bin', 6, 140, 300, 1320, 300, { rot: false });
+        b.scatter('plant', 7, 140, 260, 1320, 380);
+        b.prop('tv', 800, 300, 0); b.prop('tv', 800, 600, 0);
+        b.prop('bench', 430, 470, 0); b.prop('bench', 1170, 470, 0);
+        b.prop('sign', 800, 130, 0); b.prop('sign', 300, 470, 0); b.prop('sign', 1300, 470, 0);
+        b.prop('table', 600, 470, 0); b.prop('table', 1000, 470, 0);
       }
     },
     {
-      id: 'house', name: 'Old House', blurb: 'Kitchen, bedrooms, a garage and a basement nobody likes.',
-      seed: 303, floor: '#7d5f46', tint: '#ff9b47', wallC: '#6b4f3a', hallC: '#8a6a4e', corner: 3,
+      id: 'school', name: 'Classic School', blurb: 'Locker banks, a corridor and a room full of chairs.',
+      seed: 33, floor: '#6f6757', tint: '#c9b04a', wallC: '#8a8270', corner: 2,
       build(b) {
-        b.hall('Front Hall', 60, 60, 1680, 100);
-        b.hall('Back Hall', 60, 890, 1680, 100);
-        b.hall('Landing', 820, 160, 110, 730, '#8a6a4e');
-        b.hall('West Passage', 60, 60, 100, 930);
-        b.hall('East Passage', 1640, 60, 100, 930);
-
-        b.room('Living Room', 180, 180, 620, 320, '#8f4a5a');
-        b.room('Kitchen', 950, 180, 380, 320, '#6b7a6b');
-        b.room('Dining Room', 1350, 180, 270, 320, '#7a6a52');
-        b.room('Bedroom One', 180, 530, 400, 340, '#4a5a8f');
-        b.room('Bedroom Two', 600, 530, 200, 340, '#5a4a7a');
-        b.room('Bathroom', 950, 530, 200, 150, '#5a7a8f');
-        b.room('Basement Stair', 950, 700, 200, 170, '#3a3340');
-        b.room('Garage', 1170, 530, 450, 340, '#52525f');
-
-        b.connect('Front Hall', 'Living Room', 0.5);
-        b.connect('Front Hall', 'Kitchen', 0.5);
-        b.connect('Front Hall', 'Dining Room', 0.5);
-        b.connect('West Passage', 'Living Room', 0.5);
-        b.connect('West Passage', 'Bedroom One', 0.5);
-        b.connect('Landing', 'Living Room', 0.5);
-        b.connect('Landing', 'Kitchen', 0.4, 90);
-        b.connect('Landing', 'Bedroom Two', 0.5, 80);
-        b.connect('Landing', 'Bathroom', 0.5, 80);
-        b.connect('Landing', 'Basement Stair', 0.5, 80);
-        b.connect('Kitchen', 'Dining Room', 0.5, 90);
-        b.connect('Bedroom One', 'Bedroom Two', 0.5, 80);
-        b.connect('East Passage', 'Dining Room', 0.5);
-        b.connect('East Passage', 'Garage', 0.5);
-        b.connect('Back Hall', 'Bedroom One', 0.5);
-        b.connect('Back Hall', 'Basement Stair', 0.5, 80);
-        b.connect('Back Hall', 'Garage', 0.5);
-        b.connect('Garage', 'Bathroom', 0.5, 80);
-
-        b.prop('bed', 300, 700, 0); b.prop('bed', 690, 700, 0);
-        b.prop('tv', 480, 260, 0); b.prop('tv', 1450, 300, 0);
-        b.fill('Living Room', HOUSE, 12);
-        b.fill('Kitchen', ['table', 'chair', 'shelf', 'bin', 'crate'], 10);
-        b.fill('Dining Room', ['table', 'chair', 'chair', 'plant'], 7);
-        b.fill('Bedroom One', ['shelf', 'crate', 'bear', 'chair', 'ball'], 8);
-        b.fill('Bedroom Two', ['crate', 'bear', 'chair', 'shelf'], 5);
-        b.fill('Bathroom', ['bin', 'shelf'], 3);
-        b.fill('Basement Stair', ['barrel', 'crate', 'bin'], 4);
-        b.fill('Garage', ['tyre', 'barrel', 'crate', 'shelf', 'cone', 'bin'], 14);
-        b.fill('Front Hall', ['plant', 'bench', 'bin'], 5, { pad: 30 });
-        b.fill('Landing', ['plant', 'bin'], 4, { pad: 30 });
-
-        b.meetingAt('Living Room');
-        b.task('Kitchen', 'Load the dishwasher');
-        b.task('Living Room', 'Find the remote');
-        b.task('Dining Room', 'Lay the table');
-        b.task('Bedroom One', 'Make the bed');
-        b.task('Bedroom Two', 'Tidy the toys');
-        b.task('Bathroom', 'Replace the towel');
-        b.task('Garage', 'Check the tyre pressure');
-        b.task('Basement Stair', 'Reset the breaker');
+        b.patch(0, 380, 1600, 180, '#7d7565');
+        b.patch(140, 120, 560, 220, '#5f6b52'); b.patch(900, 600, 560, 220, '#5f6b52');
+        b.wall(0, 0, 1600, 56); b.wall(0, 844, 1600, 56);
+        b.wall(700, 90, 56, 260); b.wall(700, 580, 56, 260);
+        b.wall(300, 600, 40, 240); b.wall(1220, 90, 40, 240);
+        const lp = Props.T.locker.pal;
+        b.row('locker', 120, 100, 9, 40, 0, 0, lp);
+        b.row('locker', 1160, 800, 9, 40, 0, Math.PI, lp);
+        b.row('locker', 60, 440, 4, 0, 42, -Math.PI / 2, lp);
+        b.row('locker', 1540, 440, 4, 0, 42, Math.PI / 2, lp);
+        for (let i = 0; i < 4; i++) {
+          b.prop('desk', 900 + i * 150, 180, 0);
+          b.prop('chair', 900 + i * 150, 250, 0);
+          b.prop('desk', 900 + i * 150, 320, 0);
+        }
+        b.scatter('chair', 12, 160, 600, 480, 220);
+        b.scatter('chair', 8, 820, 120, 640, 180);
+        b.scatter('plant', 7, 80, 380, 1440, 180);
+        b.scatter('bin', 7, 80, 380, 1440, 180, { rot: false });
+        b.prop('sign', 480, 470, 0); b.prop('sign', 1080, 470, 0);
+        b.prop('bench', 380, 440, 0); b.prop('bench', 1220, 500, 0);
+        b.prop('table', 300, 200, 0); b.prop('table', 1300, 700, 0);
       }
     },
     {
-      id: 'mall', name: 'Retro Shopping Center', blurb: 'Storefronts on the concourse, service halls behind them.',
-      seed: 404, floor: '#8d8678', tint: '#e0b862', wallC: '#6f6a5e', hallC: '#a89f8c', corner: 2,
+      id: 'bedroom', name: '90s Bedroom', blurb: 'One bed, one small TV, and a carpet you could lose things in.',
+      seed: 44, floor: '#7d5f46', tint: '#ff9b47', wallC: '#8f6a4a', corner: 3,
       build(b) {
-        b.hall('Concourse', 60, 420, 1680, 200, '#a89f8c');
-        b.hall('North Walk', 60, 60, 1680, 90);
-        b.hall('Service Hall', 60, 900, 1680, 90, '#7a756a');
-        b.hall('West Link', 60, 60, 90, 930);
-        b.hall('East Link', 1650, 60, 90, 930);
-
-        b.room('Toy Store', 170, 170, 380, 230, '#8f6a7a');
-        b.room('Record Store', 570, 170, 380, 230, '#5f6b8f');
-        b.room('Sports Store', 970, 170, 380, 230, '#5f8f6b');
-        b.room('Food Court', 1370, 170, 370, 230, '#8f7a4a');
-        b.room('Employee Room', 170, 640, 330, 240, '#6b6b5a');
-        b.room('Back Room', 520, 640, 330, 240, '#5a5a52');
-        b.room('Stock Room', 870, 640, 400, 240, '#52525a');
-        b.room('Loading Bay', 1290, 640, 450, 240, '#4a4a52');
-
-        b.connect('North Walk', 'Toy Store', 0.5);
-        b.connect('North Walk', 'Record Store', 0.5);
-        b.connect('North Walk', 'Sports Store', 0.5);
-        b.connect('North Walk', 'Food Court', 0.5);
-        b.connect('Concourse', 'Toy Store', 0.5);
-        b.connect('Concourse', 'Record Store', 0.5);
-        b.connect('Concourse', 'Sports Store', 0.5);
-        b.connect('Concourse', 'Food Court', 0.5);
-        b.connect('Concourse', 'Employee Room', 0.5);
-        b.connect('Concourse', 'Back Room', 0.5);
-        b.connect('Concourse', 'Stock Room', 0.5);
-        b.connect('Concourse', 'Loading Bay', 0.4);
-        b.connect('West Link', 'Concourse', 0.5);
-        b.connect('East Link', 'Concourse', 0.5);
-        b.connect('Service Hall', 'Employee Room', 0.5);
-        b.connect('Service Hall', 'Back Room', 0.5);
-        b.connect('Service Hall', 'Stock Room', 0.5);
-        b.connect('Service Hall', 'Loading Bay', 0.6);
-        b.connect('Employee Room', 'Back Room', 0.5, 80);
-        b.connect('Stock Room', 'Loading Bay', 0.5, 80);
-
+        b.patch(0, 0, 1600, 900, '#7d5f46');
+        for (let x = 0; x < 1600; x += 64) b.patch(x, 0, 4, 900, '#6d5240');
+        b.patch(360, 260, 880, 420, '#8f4a5a');
+        b.patch(400, 300, 800, 340, '#a05a68');
+        b.wall(0, 0, 1600, 52); b.wall(0, 848, 1600, 52);
+        b.wall(60, 90, 210, 70, '#6b5470'); b.wall(1340, 740, 210, 70, '#6b5470');
+        b.prop('bed', 180, 300, 0); b.prop('bed', 1420, 600, Math.PI);
+        b.prop('shelf', 700, 100, 0); b.prop('shelf', 900, 800, 0);
+        b.prop('desk', 400, 800, 0); b.prop('desk', 1200, 100, 0);
+        b.prop('tv', 420, 720, 0); b.prop('tv', 1180, 180, 0); b.prop('tv', 800, 470, 0);
+        b.scatter('crate', 9, 120, 180, 1360, 560);
+        b.scatter('ball', 7, 200, 200, 1200, 520, { rot: false });
+        b.scatter('bear', 8, 200, 200, 1200, 520);
+        b.scatter('chair', 6, 140, 160, 1320, 600);
+        b.scatter('plant', 5, 100, 140, 1400, 640);
+        b.scatter('bin', 4, 100, 140, 1400, 640, { rot: false });
+      }
+    },
+    {
+      id: 'toyroom', name: 'Toy Room', blurb: 'Toy chests, bears and balls. Nobody counts the bears.',
+      seed: 55, floor: '#4f5f8f', tint: '#3fd2ff', wallC: '#3f4a6b', corner: 0,
+      build(b) {
+        b.patch(0, 0, 1600, 900, '#4f5f8f');
+        const cols = ['#5f8f6b', '#8f6b5f', '#8f8f5f', '#6b5f8f'];
+        for (let y = 0; y < 900; y += 150) for (let x = 0; x < 1600; x += 150) b.patch(x, y, 150, 150, cols[((x / 150) + (y / 150)) % 4]);
+        b.wall(0, 0, 1600, 48); b.wall(0, 852, 1600, 48);
+        b.wall(740, 160, 120, 120, '#4a5578'); b.wall(740, 620, 120, 120, '#4a5578');
+        b.prop('shelf', 300, 90, 0); b.prop('shelf', 1300, 810, 0);
+        b.prop('shelf', 90, 500, Math.PI / 2); b.prop('shelf', 1510, 400, Math.PI / 2);
+        b.scatter('crate', 13, 120, 140, 1360, 620);
+        b.scatter('bear', 13, 120, 140, 1360, 620);
+        b.scatter('ball', 11, 120, 140, 1360, 620, { rot: false });
+        b.scatter('plant', 5, 140, 160, 1320, 580);
+        b.prop('table', 480, 470, 0); b.prop('table', 1120, 470, 0);
+        b.scatter('chair', 7, 200, 200, 1200, 500);
+        b.prop('bin', 800, 470, 0);
+      }
+    },
+    {
+      id: 'mall', name: 'Old Shopping Center', blurb: 'Shelving aisles, tired benches, a lot of potted plants.',
+      seed: 66, floor: '#8d8678', tint: '#e0b862', wallC: '#6f6a5e', corner: 1,
+      build(b) {
+        b.patch(0, 0, 1600, 900, '#8d8678');
+        for (let y = 0; y < 900; y += 100) for (let x = 0; x < 1600; x += 100) if (((x / 100) + (y / 100)) % 2) b.patch(x, y, 100, 100, '#968f80');
+        b.patch(620, 0, 360, 900, '#a89f8c');
+        b.wall(0, 0, 1600, 54); b.wall(0, 846, 1600, 54);
+        b.wall(120, 120, 260, 80, '#5f6b7a'); b.wall(1220, 700, 260, 80, '#5f6b7a');
+        b.wall(120, 700, 200, 80, '#7a5f6b'); b.wall(1280, 120, 200, 80, '#7a5f6b');
         const sp = Props.T.shelf.pal;
-        b.row('shelf', 260, 230, 2, 0, 90, 0, sp);
-        b.row('shelf', 660, 230, 2, 0, 90, 0, sp);
-        b.row('shelf', 1060, 230, 2, 0, 90, 0, sp);
-        b.fill('Toy Store', ['bear', 'ball', 'crate', 'shelf'], 9);
-        b.fill('Record Store', ['shelf', 'crate', 'bin', 'sign'], 8);
-        b.fill('Sports Store', ['ball', 'tyre', 'bench', 'shelf'], 9);
-        b.fill('Food Court', ['table', 'chair', 'chair', 'bin'], 11);
-        b.fill('Employee Room', ['table', 'chair', 'bin', 'plant'], 7);
-        b.fill('Back Room', ['crate', 'barrel', 'shelf'], 8);
-        b.fill('Stock Room', ['crate', 'crate', 'barrel', 'shelf'], 11);
-        b.fill('Loading Bay', ['crate', 'barrel', 'cone', 'tyre'], 12);
-        b.fill('Concourse', ['plant', 'bench', 'bin', 'plant'], 14, { pad: 40 });
-        b.fill('North Walk', ['plant', 'bin'], 5, { pad: 28 });
-
-        b.meetingAt('Food Court');
-        b.task('Toy Store', 'Wind the music box');
-        b.task('Record Store', 'Alphabetise the crates');
-        b.task('Sports Store', 'Inflate a football');
-        b.task('Food Court', 'Wipe the tables');
-        b.task('Employee Room', 'Punch the timecard');
-        b.task('Back Room', 'Sort the returns');
-        b.task('Stock Room', 'Scan the pallets');
-        b.task('Loading Bay', 'Close the shutter');
-        b.task('Concourse', 'Water the planters');
+        b.row('shelf', 200, 300, 3, 0, 90, 0, sp);
+        b.row('shelf', 200, 620, 2, 0, 90, 0, sp);
+        b.row('shelf', 1360, 300, 3, 0, 90, 0, sp);
+        b.row('shelf', 1360, 620, 2, 0, 90, 0, sp);
+        b.row('shelf', 470, 260, 4, 0, 110, Math.PI / 2, sp);
+        b.row('shelf', 1130, 260, 4, 0, 110, Math.PI / 2, sp);
+        b.scatter('plant', 12, 620, 80, 360, 760);
+        b.scatter('bin', 8, 600, 80, 400, 760, { rot: false });
+        b.scatter('crate', 7, 100, 200, 1400, 520);
+        b.prop('bench', 700, 220, Math.PI / 2); b.prop('bench', 900, 470, Math.PI / 2); b.prop('bench', 700, 720, Math.PI / 2);
+        b.prop('sign', 800, 120, 0); b.prop('sign', 800, 780, 0);
+        b.prop('table', 800, 340, 0); b.prop('table', 800, 600, 0);
       }
     },
     {
-      id: 'neighborhood', name: 'Old Neighborhood', blurb: 'Front yards, back gardens, a garage and a shed down the lane.',
-      seed: 505, floor: '#4c6138', tint: '#7fa04f', wallC: '#6b5a4a', hallC: '#5a5a52', corner: 1,
+      id: 'playground', name: 'Retro Playground', blurb: 'Tyre stacks, hedges and cones from some forgotten sports day.',
+      seed: 77, floor: '#8a7a52', tint: '#5dff8f', wallC: '#6b7a5f', corner: 2,
       build(b) {
-        b.hall('The Street', 60, 420, 1680, 180, '#4a4a52');
-        b.hall('North Path', 60, 60, 1680, 90, '#6b6355');
-        b.hall('Back Lane', 60, 900, 1680, 90, '#6b6355');
-        b.hall('West Path', 60, 60, 90, 930, '#6b6355');
-        b.hall('East Path', 1650, 60, 90, 930, '#6b6355');
-
-        b.room('Front Yard', 170, 170, 420, 230, '#4f6b3a');
-        b.room('Side Yard', 610, 170, 300, 230, '#567038');
-        b.room('Corner Lot', 930, 170, 380, 230, '#4f6b3a');
-        b.room('Playground', 1330, 170, 410, 230, '#8a7a52');
-        b.room('Back Garden', 170, 640, 420, 240, '#4f6b3a');
-        b.room('Garage', 610, 640, 300, 240, '#52525f');
-        b.room('Shed', 930, 640, 200, 240, '#6b5a3a');
-        b.room('Car Park', 1150, 640, 590, 240, '#4a4a52');
-
-        b.connect('North Path', 'Front Yard', 0.5);
-        b.connect('North Path', 'Side Yard', 0.5);
-        b.connect('North Path', 'Corner Lot', 0.5);
-        b.connect('North Path', 'Playground', 0.5);
-        b.connect('The Street', 'Front Yard', 0.5);
-        b.connect('The Street', 'Side Yard', 0.5);
-        b.connect('The Street', 'Corner Lot', 0.5);
-        b.connect('The Street', 'Playground', 0.5);
-        b.connect('The Street', 'Back Garden', 0.5);
-        b.connect('The Street', 'Garage', 0.5);
-        b.connect('The Street', 'Shed', 0.5, 80);
-        b.connect('The Street', 'Car Park', 0.4);
-        b.connect('West Path', 'The Street', 0.5);
-        b.connect('East Path', 'The Street', 0.5);
-        b.connect('Back Lane', 'Back Garden', 0.5);
-        b.connect('Back Lane', 'Garage', 0.5);
-        b.connect('Back Lane', 'Car Park', 0.5);
-        b.connect('Front Yard', 'Side Yard', 0.5, 80);
-        b.connect('Garage', 'Shed', 0.5, 70);
-
-        for (let x = 120; x < 1740; x += 140) b.prop('sign', x, 510, 0, '#c9b04a', 70, 10);
-        b.fill('Front Yard', YARD, 9);
-        b.fill('Side Yard', ['bush', 'bin', 'fence', 'cone'], 6);
-        b.fill('Corner Lot', YARD, 8);
-        b.fill('Playground', ['tyre', 'ball', 'bench', 'cone', 'bush'], 12);
-        b.fill('Back Garden', ['bush', 'bush', 'bench', 'plant', 'bin'], 10);
-        b.fill('Garage', ['tyre', 'barrel', 'crate', 'shelf', 'cone'], 9);
-        b.fill('Shed', ['crate', 'barrel', 'bin'], 5);
-        b.fill('Car Park', ['cone', 'tyre', 'bin', 'crate'], 12);
-        b.fill('The Street', ['cone', 'bin'], 6, { pad: 40 });
-        b.fill('North Path', ['bush', 'bin'], 6, { pad: 28 });
-        b.fill('Back Lane', ['bush', 'bin'], 6, { pad: 28 });
-
-        b.meetingAt('The Street');
-        b.task('Front Yard', 'Mow the strip');
-        b.task('Side Yard', 'Drag the bins out');
-        b.task('Corner Lot', 'Rake the leaves');
-        b.task('Playground', 'Straighten the tyres');
-        b.task('Back Garden', 'Water the beds');
-        b.task('Garage', 'Find the socket set');
-        b.task('Shed', 'Coil the hose');
-        b.task('Car Park', 'Move the cones');
+        b.patch(0, 0, 1600, 900, '#8a7a52');
+        b.patch(0, 0, 1600, 220, '#4f6b3a'); b.patch(0, 680, 1600, 220, '#4f6b3a');
+        b.patch(560, 300, 480, 300, '#5a4a52');
+        b.wall(600, 340, 160, 90, '#7a6b52'); b.wall(840, 470, 160, 90, '#7a6b52');
+        b.wall(0, 0, 1600, 44); b.wall(0, 856, 1600, 44);
+        b.prop('fence', 200, 260, 0); b.prop('fence', 1400, 640, 0);
+        b.prop('fence', 60, 450, Math.PI / 2); b.prop('fence', 1540, 450, Math.PI / 2);
+        b.scatter('tyre', 15, 80, 240, 1440, 420, { rot: false });
+        b.scatter('bush', 14, 60, 60, 1480, 160);
+        b.scatter('bush', 12, 60, 700, 1480, 160);
+        b.scatter('cone', 13, 100, 240, 1400, 420, { rot: false });
+        b.scatter('ball', 8, 120, 240, 1360, 420, { rot: false });
+        b.prop('bench', 300, 300, 0); b.prop('bench', 1300, 620, 0);
+        b.prop('bench', 300, 620, 0); b.prop('bench', 1300, 300, 0);
+        b.prop('sign', 800, 240, 0); b.prop('sign', 800, 660, 0);
+        b.scatter('bin', 5, 100, 250, 1400, 400, { rot: false });
+      }
+    },
+    {
+      id: 'gameroom', name: 'Game Room', blurb: 'A basement full of screens, beanbag-adjacent chairs and one lonely plant.',
+      seed: 88, floor: '#342d44', tint: '#ff5d8f', wallC: '#443a5a', corner: 3,
+      build(b) {
+        b.patch(0, 0, 1600, 900, '#342d44');
+        b.patch(200, 200, 1200, 500, '#3e3552');
+        b.patch(300, 280, 1000, 340, '#473b60');
+        b.wall(0, 0, 1600, 50); b.wall(0, 850, 1600, 50);
+        b.wall(0, 300, 90, 300, '#443a5a'); b.wall(1510, 300, 90, 300, '#443a5a');
+        b.wall(740, 90, 120, 100, '#4a3f63'); b.wall(740, 710, 120, 100, '#4a3f63');
+        const cp = Props.T.cabinet.pal;
+        b.row('cabinet', 260, 130, 5, 110, 0, 0, cp);
+        b.row('cabinet', 1000, 780, 5, 110, 0, Math.PI, cp);
+        b.prop('tv', 400, 470, 0); b.prop('tv', 640, 470, 0); b.prop('tv', 960, 470, 0); b.prop('tv', 1200, 470, 0);
+        b.prop('tv', 800, 300, 0); b.prop('tv', 800, 640, 0);
+        b.scatter('chair', 11, 240, 240, 1120, 420);
+        b.scatter('crate', 7, 220, 220, 1160, 460);
+        b.scatter('plant', 6, 140, 160, 1320, 580);
+        b.scatter('bin', 5, 140, 160, 1320, 580, { rot: false });
+        b.prop('table', 500, 720, 0); b.prop('table', 1100, 180, 0);
+        b.prop('bench', 250, 560, Math.PI / 2); b.prop('bench', 1350, 340, Math.PI / 2);
+        b.prop('sign', 800, 120, 0);
       }
     }
   ];
@@ -1663,18 +1368,12 @@ const Maps = (() => {
   };
 })();
 const World = (() => {
-  const CELL = 15;
   const W = {
-    map: null, w: 1800, h: 1050, bg: null,
+    map: null, w: 1600, h: 900, bg: null,
     blockers: [], tall: [], patches: [], decals: [],
-    hideSpots: [], seekerAnchor: { x: 0, y: 0 },
-    rooms: [], cols: 0, rows: 0, floorGrid: null,
-    adj: [], nextHop: null, doorPt: null,
-    walk: null, fields: new Map(), fieldClock: 1
+    hideSpots: [], seekerAnchor: { x: 0, y: 0 }
   };
-  const EDGE = 8;
-
-  function inRect(x, y, r) { return x >= r.x && x <= r.x + r.w && y >= r.y && y <= r.y + r.h; }
+  const EDGE = 26;
 
   function pointFree(x, y, r) {
     if (x < EDGE + r || y < EDGE + r || x > W.w - EDGE - r || y > W.h - EDGE - r) return false;
@@ -1684,354 +1383,51 @@ const World = (() => {
     return true;
   }
 
-  function buildGeometry() {
-    const m = W.map;
-    W.cols = Math.ceil(W.w / CELL); W.rows = Math.ceil(W.h / CELL);
-    const g = new Uint8Array(W.cols * W.rows);
-    const mark = r => {
-      const x0 = Math.max(0, Math.floor(r.x / CELL)), x1 = Math.min(W.cols - 1, Math.ceil((r.x + r.w) / CELL) - 1);
-      const y0 = Math.max(0, Math.floor(r.y / CELL)), y1 = Math.min(W.rows - 1, Math.ceil((r.y + r.h) / CELL) - 1);
-      for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) g[y * W.cols + x] = 1;
-    };
-    m.rooms.forEach(mark);
-    m.doors.forEach(mark);
-    W.floorGrid = g;
-
-    const wallCell = new Uint8Array(W.cols * W.rows);
-    for (let y = 0; y < W.rows; y++) {
-      for (let x = 0; x < W.cols; x++) {
-        const i = y * W.cols + x;
-        if (g[i]) continue;
-        let near = false;
-        for (let dy = -1; dy <= 1 && !near; dy++) {
-          for (let dx = -1; dx <= 1; dx++) {
-            const nx = x + dx, ny = y + dy;
-            if (nx < 0 || ny < 0 || nx >= W.cols || ny >= W.rows) continue;
-            if (g[ny * W.cols + nx]) { near = true; break; }
-          }
-        }
-        if (near) wallCell[i] = 1;
-      }
-    }
-
-    const used = new Uint8Array(W.cols * W.rows);
-    const rects = [];
-    for (let y = 0; y < W.rows; y++) {
-      for (let x = 0; x < W.cols; x++) {
-        const i = y * W.cols + x;
-        if (!wallCell[i] || used[i]) continue;
-        let wCells = 1;
-        while (x + wCells < W.cols && wallCell[i + wCells] && !used[i + wCells]) wCells++;
-        let hCells = 1;
-        outer: while (y + hCells < W.rows) {
-          const base = (y + hCells) * W.cols + x;
-          for (let k = 0; k < wCells; k++) if (!wallCell[base + k] || used[base + k]) break outer;
-          hCells++;
-        }
-        for (let yy = 0; yy < hCells; yy++) for (let xx = 0; xx < wCells; xx++) used[(y + yy) * W.cols + x + xx] = 1;
-        rects.push({ x: x * CELL, y: y * CELL, w: wCells * CELL, h: hCells * CELL, tall: true, c: m.wallC });
-      }
-    }
-    return rects;
-  }
-
-  function buildNavGrid() {
-    const n = W.cols * W.rows;
-    W.walk = new Uint8Array(n);
-    for (let y = 0; y < W.rows; y++) {
-      for (let x = 0; x < W.cols; x++) {
-        const cx = x * CELL + CELL / 2, cy = y * CELL + CELL / 2;
-        W.walk[y * W.cols + x] = pointFree(cx, cy, 17) ? 1 : 0;
-      }
-    }
-    W.fields = new Map();
-  }
-
-  function buildNavComponents() {
-    const n = W.cols * W.rows;
-    W.comp = new Int32Array(n).fill(-1);
-    const q = new Int32Array(n);
-    let next = 0, biggest = -1, biggestN = 0;
-    for (let s = 0; s < n; s++) {
-      if (!W.walk[s] || W.comp[s] >= 0) continue;
-      const id = next++;
-      let head = 0, tail = 0, count = 0;
-      q[tail++] = s; W.comp[s] = id;
-      while (head < tail) {
-        const c = q[head++]; count++;
-        const cx = c % W.cols, cy = (c / W.cols) | 0;
-        for (let k = 0; k < 4; k++) {
-          const nx = cx + (k === 0 ? 1 : k === 1 ? -1 : 0), ny = cy + (k === 2 ? 1 : k === 3 ? -1 : 0);
-          if (nx < 0 || ny < 0 || nx >= W.cols || ny >= W.rows) continue;
-          const i = ny * W.cols + nx;
-          if (!W.walk[i] || W.comp[i] >= 0) continue;
-          W.comp[i] = id; q[tail++] = i;
-        }
-      }
-      if (count > biggestN) { biggestN = count; biggest = id; }
-    }
-    W.mainComp = biggest;
-  }
-
-  function navOk(x, y) {
-    if (!W.comp) return true;
-    const i = cellOf(x, y);
-    return W.walk[i] === 1 && W.comp[i] === W.mainComp;
-  }
-
-  function cellOf(x, y) {
-    const cx = clamp(Math.floor(x / CELL), 0, W.cols - 1);
-    const cy = clamp(Math.floor(y / CELL), 0, W.rows - 1);
-    return cy * W.cols + cx;
-  }
-
-  function nearestWalkable(idx) {
-    if (W.walk[idx]) return idx;
-    const x0 = idx % W.cols, y0 = (idx / W.cols) | 0;
-    for (let r = 1; r <= 8; r++) {
-      for (let dy = -r; dy <= r; dy++) {
-        for (let dx = -r; dx <= r; dx++) {
-          if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue;
-          const x = x0 + dx, y = y0 + dy;
-          if (x < 0 || y < 0 || x >= W.cols || y >= W.rows) continue;
-          const i = y * W.cols + x;
-          if (W.walk[i]) return i;
-        }
-      }
-    }
-    return -1;
-  }
-
-  function nearestOnField(idx, f) {
-    if (f[idx] >= 0) return idx;
-    const x0 = idx % W.cols, y0 = (idx / W.cols) | 0;
-    for (let r = 1; r <= 26; r++) {
-      let best = -1, bestD = Infinity;
-      for (let dy = -r; dy <= r; dy++) {
-        for (let dx = -r; dx <= r; dx++) {
-          if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue;
-          const x = x0 + dx, y = y0 + dy;
-          if (x < 0 || y < 0 || x >= W.cols || y >= W.rows) continue;
-          const i = y * W.cols + x;
-          if (f[i] < 0) continue;
-          if (f[i] < bestD) { bestD = f[i]; best = i; }
-        }
-      }
-      if (best >= 0) return best;
-    }
-    return -1;
-  }
-
-  function fieldFor(tx, ty) {
-    const target = nearestWalkable(cellOf(tx, ty));
-    if (target < 0) return null;
-    const hit = W.fields.get(target);
-    if (hit) { hit.used = W.fieldClock++; return hit.d; }
-    const d = new Int32Array(W.cols * W.rows).fill(-1);
-    const q = new Int32Array(W.cols * W.rows);
-    let head = 0, tail = 0;
-    d[target] = 0; q[tail++] = target;
-    while (head < tail) {
-      const cur = q[head++];
-      const cd = d[cur] + 1;
-      const cx = cur % W.cols, cy = (cur / W.cols) | 0;
-      for (let k = 0; k < 8; k++) {
-        const dx = [1, -1, 0, 0, 1, 1, -1, -1][k], dy = [0, 0, 1, -1, 1, -1, 1, -1][k];
-        const nx = cx + dx, ny = cy + dy;
-        if (nx < 0 || ny < 0 || nx >= W.cols || ny >= W.rows) continue;
-        const ni = ny * W.cols + nx;
-        if (!W.walk[ni] || d[ni] >= 0) continue;
-        if (dx && dy && (!W.walk[cy * W.cols + nx] || !W.walk[ny * W.cols + cx])) continue;
-        d[ni] = cd;
-        q[tail++] = ni;
-      }
-    }
-    if (W.fields.size > 26) {
-      let oldest = null, ov = Infinity;
-      W.fields.forEach((v, k) => { if (v.used < ov) { ov = v.used; oldest = k; } });
-      if (oldest !== null) W.fields.delete(oldest);
-    }
-    W.fields.set(target, { d, used: W.fieldClock++ });
-    return d;
-  }
-
-  function buildNav() {
-    const n = W.rooms.length;
-    W.adj = [];
-    W.doorPt = [];
-    for (let i = 0; i < n; i++) { W.adj.push([]); W.doorPt.push(new Array(n).fill(null)); }
-    for (const d of W.map.doors) {
-      if (d.a === d.b) continue;
-      const p = { x: d.cx, y: d.cy };
-      if (!W.doorPt[d.a][d.b]) { W.adj[d.a].push(d.b); W.adj[d.b].push(d.a); }
-      W.doorPt[d.a][d.b] = p; W.doorPt[d.b][d.a] = p;
-    }
-    for (let i = 0; i < n; i++) {
-      for (let j = i + 1; j < n; j++) {
-        if (W.doorPt[i][j]) continue;
-        const a = W.rooms[i], b = W.rooms[j];
-        const ox0 = Math.max(a.x, b.x), ox1 = Math.min(a.x + a.w, b.x + b.w);
-        const oy0 = Math.max(a.y, b.y), oy1 = Math.min(a.y + a.h, b.y + b.h);
-        if (ox1 - ox0 > 30 && oy1 - oy0 > 30) {
-          W.adj[i].push(j); W.adj[j].push(i);
-          const p = { x: (ox0 + ox1) / 2, y: (oy0 + oy1) / 2 };
-          W.doorPt[i][j] = p; W.doorPt[j][i] = p;
-        }
-      }
-    }
-
-    W.nextHop = [];
-    for (let s = 0; s < n; s++) {
-      const prev = new Array(n).fill(-2);
-      prev[s] = -1;
-      const q = [s];
-      for (let qi = 0; qi < q.length; qi++) {
-        const cur = q[qi];
-        for (const nx of W.adj[cur]) if (prev[nx] === -2) { prev[nx] = cur; q.push(nx); }
-      }
-      const hop = new Array(n).fill(-1);
-      for (let t = 0; t < n; t++) {
-        if (t === s || prev[t] === -2) continue;
-        let cur = t;
-        while (prev[cur] !== s && prev[cur] >= 0) cur = prev[cur];
-        hop[t] = prev[cur] === s ? cur : -1;
-      }
-      W.nextHop.push(hop);
-    }
-  }
-
-  function roomAt(x, y) {
-    for (let i = 0; i < W.rooms.length; i++) if (inRect(x, y, W.rooms[i])) return i;
-    let best = -1, bd = 90 * 90;
-    for (let i = 0; i < W.rooms.length; i++) {
-      const r = W.rooms[i];
-      const cx = clamp(x, r.x, r.x + r.w), cy = clamp(y, r.y, r.y + r.h);
-      const d = dist2(x, y, cx, cy);
-      if (d < bd) { bd = d; best = i; }
-    }
-    return best;
-  }
-
-  function freeInRoom(roomId, rad, tries) {
-    const r = W.rooms[roomId];
-    if (!r) return null;
-    for (let i = 0; i < (tries || 260); i++) {
-      const x = r.x + 24 + Math.random() * Math.max(1, r.w - 48);
-      const y = r.y + 24 + Math.random() * Math.max(1, r.h - 48);
-      if (pointFree(x, y, rad || 20)) return { x, y };
-    }
-    const cx = r.x + r.w / 2, cy = r.y + r.h / 2;
-    return pointFree(cx, cy, rad || 20) ? { x: cx, y: cy } : { x: cx, y: cy };
-  }
-
-  function placeTasks() {
-    const m = W.map;
-    (m.taskSpots || []).forEach((t, i) => {
-      const room = W.rooms[t.room] ? t.room : 0;
-      let best = null, bestScore = -1;
-      for (let k = 0; k < 120; k++) {
-        const p = freeInRoom(room, k < 80 ? 26 : 20, 40);
-        if (!p || !pointFree(p.x, p.y, 20)) continue;
-        if (!navOk(p.x, p.y)) continue;
-        let open = 0;
-        for (let a2 = 0; a2 < 8; a2++) {
-          if (pointFree(p.x + Math.cos(a2 / 8 * TAU) * 46, p.y + Math.sin(a2 / 8 * TAU) * 46, 18)) open++;
-        }
-        if (open < 5 && k < 100) continue;
-        let score = open * 40;
-        let near = 1000;
-        for (const o of m.taskSpots) if (o !== t && o.x) near = Math.min(near, dist(p.x, p.y, o.x, o.y));
-        if (m.meeting) near = Math.min(near, dist(p.x, p.y, m.meeting.x, m.meeting.y));
-        score += Math.min(260, near);
-        if (score > bestScore) { bestScore = score; best = p; }
-        if (bestScore > 480) break;
-      }
-      if (!best) {
-        for (let r2 = 0; r2 < W.rooms.length && !best; r2++) {
-          for (let k = 0; k < 60 && !best; k++) {
-            const p = freeInRoom(r2, 22, 30);
-            if (p && pointFree(p.x, p.y, 20) && navOk(p.x, p.y)) best = p;
-          }
-        }
-      }
-      if (!best) {
-        const c = { x: W.rooms[room].x + W.rooms[room].w / 2, y: W.rooms[room].y + W.rooms[room].h / 2, rad: 20 };
-        World.resolve(c); World.resolve(c);
-        best = c;
-      }
-      t.x = best.x; t.y = best.y;
-      t.id = i;
-    });
-    if (m.meeting) {
-      const p = freeInRoom(m.meeting.room, 30, 120);
-      if (p) { m.meeting.x = p.x; m.meeting.y = p.y; }
-    }
-  }
-
   function bake() {
     const c = document.createElement('canvas');
     c.width = W.w; c.height = W.h;
     const x = c.getContext('2d');
-    x.fillStyle = '#0c0a14'; x.fillRect(0, 0, W.w, W.h);
-
-    const drawFloor = r => {
-      x.fillStyle = r.floor;
-      x.fillRect(r.x, r.y, r.w, r.h);
-      x.save();
-      x.beginPath(); x.rect(r.x, r.y, r.w, r.h); x.clip();
-      x.globalAlpha = 0.06; x.strokeStyle = '#000'; x.lineWidth = 1;
-      x.beginPath();
-      for (let i = r.x - (r.x % 40); i < r.x + r.w; i += 40) { x.moveTo(i, r.y); x.lineTo(i, r.y + r.h); }
-      for (let i = r.y - (r.y % 40); i < r.y + r.h; i += 40) { x.moveTo(r.x, i); x.lineTo(r.x + r.w, i); }
-      x.stroke();
-      x.globalAlpha = 0.05;
-      for (let i = 0; i < (r.w * r.h) / 900; i++) {
-        x.fillStyle = i % 2 ? '#000' : '#fff';
-        x.fillRect(r.x + Math.random() * r.w, r.y + Math.random() * r.h, 2, 2);
-      }
-      x.restore();
-      x.globalAlpha = 1;
-    };
-    W.rooms.forEach(drawFloor);
-    W.map.doors.forEach(d => {
-      const ra = W.rooms[d.a];
-      x.fillStyle = ra ? ra.floor : W.map.floor;
-      x.fillRect(d.x, d.y, d.w, d.h);
-    });
-    for (const p of W.patches) { x.fillStyle = p.c; x.fillRect(p.x, p.y, p.w, p.h); }
-
-    for (const b of W.blockers) {
-      if (!b.isWall) continue;
-      const g = x.createLinearGradient(b.x, b.y, b.x, b.y + b.h + 1);
-      g.addColorStop(0, shade(b.c, 0.16)); g.addColorStop(1, shade(b.c, -0.22));
-      x.fillStyle = g;
-      x.fillRect(b.x, b.y, b.w, b.h);
+    x.fillStyle = W.map.floor; x.fillRect(0, 0, W.w, W.h);
+    for (const p of W.patches) {
+      x.fillStyle = p.c;
+      x.fillRect(p.x, p.y, p.w, p.h);
     }
-    x.strokeStyle = 'rgba(8,6,14,.55)'; x.lineWidth = 2;
-    for (const b of W.blockers) if (b.isWall) x.strokeRect(b.x + 1, b.y + 1, b.w - 2, b.h - 2);
+    x.globalAlpha = 0.05; x.strokeStyle = '#000'; x.lineWidth = 1;
+    x.beginPath();
+    for (let i = 0; i < W.w; i += 40) { x.moveTo(i, 0); x.lineTo(i, W.h); }
+    for (let i = 0; i < W.h; i += 40) { x.moveTo(0, i); x.lineTo(W.w, i); }
+    x.stroke();
+    x.globalAlpha = 0.045;
+    for (let i = 0; i < 2600; i++) {
+      x.fillStyle = i % 2 ? '#000' : '#fff';
+      x.fillRect(Math.random() * W.w, Math.random() * W.h, 2, 2);
+    }
+    x.globalAlpha = 1;
 
-    W.map.doors.forEach(d => {
-      if (d.open) return;
-      x.fillStyle = 'rgba(143,191,93,.16)';
-      x.fillRect(d.x, d.y, d.w, d.h);
-      x.fillStyle = 'rgba(143,191,93,.5)';
-      if (d.w > d.h) { x.fillRect(d.x, d.y - 2, d.w, 3); x.fillRect(d.x, d.y + d.h - 1, d.w, 3); }
-      else { x.fillRect(d.x - 2, d.y, 3, d.h); x.fillRect(d.x + d.w - 1, d.y, 3, d.h); }
-    });
+    for (const b of W.map.walls) {
+      x.fillStyle = 'rgba(0,0,0,.35)';
+      x.fillRect(b.x + 6, b.y + 8, b.w, b.h);
+      const g = x.createLinearGradient(b.x, b.y, b.x + b.w * 0.4, b.y + b.h);
+      g.addColorStop(0, shade(b.c, 0.2)); g.addColorStop(1, shade(b.c, -0.26));
+      x.fillStyle = g; x.fillRect(b.x, b.y, b.w, b.h);
+      x.strokeStyle = 'rgba(8,6,14,.8)'; x.lineWidth = 3;
+      x.strokeRect(b.x + 1.5, b.y + 1.5, b.w - 3, b.h - 3);
+      x.strokeStyle = 'rgba(255,255,255,.1)'; x.lineWidth = 2;
+      x.beginPath(); x.moveTo(b.x + 3, b.y + 3); x.lineTo(b.x + b.w - 3, b.y + 3); x.stroke();
+    }
+
+    x.fillStyle = 'rgba(0,0,0,.3)';
+    x.fillRect(0, 0, W.w, EDGE); x.fillRect(0, W.h - EDGE, W.w, EDGE);
+    x.fillRect(0, 0, EDGE, W.h); x.fillRect(W.w - EDGE, 0, EDGE, W.h);
+    x.strokeStyle = W.map.tint; x.globalAlpha = 0.35; x.lineWidth = 3;
+    x.strokeRect(EDGE - 1.5, EDGE - 1.5, W.w - EDGE * 2 + 3, W.h - EDGE * 2 + 3);
+    x.globalAlpha = 1;
 
     for (const p of W.map.props) Props.shadow(x, p);
     for (const p of W.map.props) Props.draw(x, p, 0);
 
-    x.textAlign = 'center';
-    W.rooms.forEach(r => {
-      if (r.kind !== 'room') return;
-      x.font = 'bold 15px "Courier New",monospace';
-      x.fillStyle = 'rgba(255,255,255,.22)';
-      x.fillText(r.name.toUpperCase(), r.x + r.w / 2, r.y + 24);
-    });
-
-    const v = x.createRadialGradient(W.w / 2, W.h / 2, Math.min(W.w, W.h) * 0.4, W.w / 2, W.h / 2, Math.max(W.w, W.h) * 0.7);
-    v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, 'rgba(0,0,0,.35)');
+    const v = x.createRadialGradient(W.w / 2, W.h / 2, Math.min(W.w, W.h) * 0.34, W.w / 2, W.h / 2, Math.max(W.w, W.h) * 0.72);
+    v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, 'rgba(0,0,0,.42)');
     x.fillStyle = v; x.fillRect(0, 0, W.w, W.h);
     W.bg = c;
   }
@@ -2045,62 +1441,37 @@ const World = (() => {
       for (let i = 0; i < 4; i++) {
         const a = i / 4 * TAU + 0.4;
         const x = p.x + Math.cos(a) * rad, y = p.y + Math.sin(a) * rad;
-        if (pointFree(x, y, 18) && navOk(x, y)) W.hideSpots.push({ x, y, t: p.t, c: p.c, dis: !!d.dis, room: roomAt(x, y) });
+        if (pointFree(x, y, 20)) W.hideSpots.push({ x, y, t: p.t, c: p.c, dis: !!d.dis });
       }
     }
-    W.rooms.forEach(r => {
-      const want = r.kind === 'hall' ? 2 : 4;
-      let got = W.hideSpots.filter(s => s.room === r.id).length;
-      for (let i = 0; got < want && i < 60; i++) {
-        const p = freeInRoom(r.id, 22, 30);
-        if (p && navOk(p.x, p.y) && !W.hideSpots.some(s => dist2(s.x, s.y, p.x, p.y) < 70 * 70)) {
-          W.hideSpots.push({ x: p.x, y: p.y, t: null, c: null, dis: false, room: r.id });
-          got++;
-        }
-      }
-    });
   }
 
   function ensureSpawns() {
     const m = W.map;
-    const halls = W.rooms.filter(r => r.kind === 'hall');
-    const anchorRoom = halls.length
-      ? halls[(m.seekerCorner || 0) % halls.length]
-      : W.rooms[0];
-    const ap = freeInRoom(anchorRoom.id, 22, 200);
-    W.seekerAnchor = ap || { x: anchorRoom.x + anchorRoom.w / 2, y: anchorRoom.y + anchorRoom.h / 2 };
-
+    const pad = 200;
+    const cx = clamp([0.14, 0.86, 0.14, 0.86][m.seekerCorner || 0] * W.w, pad, W.w - pad);
+    const cy = clamp([0.16, 0.16, 0.84, 0.84][m.seekerCorner || 0] * W.h, pad, W.h - pad);
+    W.seekerAnchor = { x: cx, y: cy };
     if (!m.seekerSpawns || !m.seekerSpawns.length) {
       m.seekerSpawns = [];
-      for (let pass = 0; pass < 3 && m.seekerSpawns.length < 8; pass++) {
-        const reach = 170 + pass * 120;
-        for (let g = 0; g < 900 && m.seekerSpawns.length < 8; g++) {
-          const a = rnd(TAU), r = rnd(reach, 20);
-          const x = W.seekerAnchor.x + Math.cos(a) * r, y = W.seekerAnchor.y + Math.sin(a) * r;
-          if (!pointFree(x, y, 22)) continue;
-          if (pass < 2 && !navOk(x, y)) continue;
-          if (m.seekerSpawns.some(s => dist2(s.x, s.y, x, y) < 34 * 34)) continue;
-          m.seekerSpawns.push({ x, y });
-        }
+      for (let g = 0; g < 600 && m.seekerSpawns.length < 8; g++) {
+        const a = rnd(TAU), r = rnd(190, 20);
+        const x = clamp(cx + Math.cos(a) * r, 60, W.w - 60), y = clamp(cy + Math.sin(a) * r, 60, W.h - 60);
+        if (pointFree(x, y, 22)) m.seekerSpawns.push({ x, y });
       }
-      for (let g = 0; g < 400 && m.seekerSpawns.length < 4; g++) {
-        const p = freeInRoom(rint(W.rooms.length), 22, 40);
-        if (p && navOk(p.x, p.y)) m.seekerSpawns.push(p);
-      }
-      if (!m.seekerSpawns.length) m.seekerSpawns.push(W.seekerAnchor);
+      if (!m.seekerSpawns.length) m.seekerSpawns.push({ x: W.w / 2, y: W.h / 2 });
+    } else {
+      const s = m.seekerSpawns[0];
+      W.seekerAnchor = { x: s.x, y: s.y };
     }
     if (!m.hiderSpawns || !m.hiderSpawns.length) {
       m.hiderSpawns = [];
-      const rooms = W.rooms.filter(r => r.kind === 'room');
-      for (const r of rooms) {
-        for (let k = 0; k < 6; k++) {
-          const p = freeInRoom(r.id, 24, 120);
-          if (p && navOk(p.x, p.y) && dist2(p.x, p.y, W.seekerAnchor.x, W.seekerAnchor.y) > 330 * 330) { m.hiderSpawns.push(p); break; }
-        }
-      }
-      for (let g = 0; g < 400 && m.hiderSpawns.length < 6; g++) {
-        const p = freeInRoom(rint(W.rooms.length), 24, 60);
-        if (p && navOk(p.x, p.y)) m.hiderSpawns.push(p);
+      for (let g = 0; g < 3000 && m.hiderSpawns.length < 16; g++) {
+        const x = rnd(W.w - 120, 60), y = rnd(W.h - 120, 60);
+        if (!pointFree(x, y, 22)) continue;
+        if (dist2(x, y, W.seekerAnchor.x, W.seekerAnchor.y) < 420 * 420) continue;
+        if (m.hiderSpawns.some(s => dist2(s.x, s.y, x, y) < 150 * 150)) continue;
+        m.hiderSpawns.push({ x, y });
       }
       if (!m.hiderSpawns.length) m.hiderSpawns.push({ x: W.w / 2, y: W.h / 2 });
     }
@@ -2115,27 +1486,17 @@ const World = (() => {
     get hideSpots() { return W.hideSpots; },
     get seekerAnchor() { return W.seekerAnchor; },
     get decals() { return W.decals; },
-    get rooms() { return W.rooms; },
-    get taskSpots() { return W.map ? W.map.taskSpots || [] : []; },
-    get meeting() { return W.map ? W.map.meeting : null; },
 
     load(map) {
       W.map = map;
       W.w = map.w; W.h = map.h;
       W.patches = map.patches || [];
       W.decals = [];
-      let authoredWalls = [];
-      if (!map.rooms || !map.rooms.length) {
-        authoredWalls = (map.walls || []).slice();
-        map.rooms = [{ kind: 'room', name: 'Level', x: 16, y: 16, w: map.w - 32, h: map.h - 32, floor: map.floor }];
-      }
-      map.doors = map.doors || [];
-      W.rooms = map.rooms.map((r, i) => Object.assign({}, r, { id: i, floor: r.floor || map.floor }));
       W.blockers = []; W.tall = [];
-      const walls = buildGeometry();
-      authoredWalls.forEach(b => walls.push({ x: b.x, y: b.y, w: b.w, h: b.h, tall: true, c: b.c || map.wallC }));
-      map.walls = walls;
-      for (const b of walls) { b.isWall = true; W.blockers.push(b); W.tall.push(b); }
+      for (const b of map.walls) {
+        const r = { x: b.x, y: b.y, w: b.w, h: b.h, tall: true };
+        W.blockers.push(r); W.tall.push(r);
+      }
       for (const p of map.props) {
         const d = Props.T[p.t];
         if (!d) continue;
@@ -2144,115 +1505,24 @@ const World = (() => {
         W.blockers.push(r);
         if (d.tall) W.tall.push(r);
       }
-      buildNavGrid();
-      buildNavComponents();
-      buildNav();
-      buildHideSpots();
-      placeTasks();
-      ensureSpawns();
       bake();
+      buildHideSpots();
+      ensureSpawns();
     },
 
     free: pointFree,
-    roomAt,
-    freeInRoom,
-    navOk,
-    roomName(i) { const r = W.rooms[i]; return r ? r.name : 'somewhere'; },
-    roomOfPoint(x, y) { return roomAt(x, y); },
-
-    flowStep(x, y, tx, ty) {
-      const f = fieldFor(tx, ty);
-      if (!f) return null;
-      let cur = cellOf(x, y);
-      if (!W.walk[cur] || f[cur] < 0) {
-        const near = nearestWalkable(cur);
-        if (near >= 0 && f[near] >= 0) cur = near;
-        else {
-          const esc = nearestOnField(cur, f);
-          if (esc < 0) return null;
-          return { x: (esc % W.cols) * CELL + CELL / 2, y: ((esc / W.cols) | 0) * CELL + CELL / 2, dist: f[esc], escape: true };
-        }
-      }
-      const cx = cur % W.cols, cy = (cur / W.cols) | 0;
-      let best = -1, bestD = f[cur];
-      for (let k = 0; k < 8; k++) {
-        const dx = [1, -1, 0, 0, 1, 1, -1, -1][k], dy = [0, 0, 1, -1, 1, -1, 1, -1][k];
-        const nx = cx + dx, ny = cy + dy;
-        if (nx < 0 || ny < 0 || nx >= W.cols || ny >= W.rows) continue;
-        const ni = ny * W.cols + nx;
-        if (f[ni] < 0) continue;
-        if (dx && dy && (!W.walk[cy * W.cols + nx] || !W.walk[ny * W.cols + cx])) continue;
-        if (f[ni] < bestD) { bestD = f[ni]; best = ni; }
-      }
-      if (best < 0) return null;
-      let step = { x: (best % W.cols) * CELL + CELL / 2, y: ((best / W.cols) | 0) * CELL + CELL / 2, dist: bestD };
-      let probe = best, guard = 0;
-      while (guard++ < 6) {
-        const px = probe % W.cols, py = (probe / W.cols) | 0;
-        let nb = -1, nbD = f[probe];
-        for (let k = 0; k < 8; k++) {
-          const dx = [1, -1, 0, 0, 1, 1, -1, -1][k], dy = [0, 0, 1, -1, 1, -1, 1, -1][k];
-          const nx = px + dx, ny = py + dy;
-          if (nx < 0 || ny < 0 || nx >= W.cols || ny >= W.rows) continue;
-          const ni = ny * W.cols + nx;
-          if (f[ni] < 0 || f[ni] >= nbD) continue;
-          if (dx && dy && (!W.walk[py * W.cols + nx] || !W.walk[ny * W.cols + px])) continue;
-          nbD = f[ni]; nb = ni;
-        }
-        if (nb < 0) break;
-        const nx2 = (nb % W.cols) * CELL + CELL / 2, ny2 = ((nb / W.cols) | 0) * CELL + CELL / 2;
-        if (!World.los(x, y, nx2, ny2)) break;
-        step = { x: nx2, y: ny2, dist: nbD };
-        probe = nb;
-      }
-      return step;
-    },
-
-    routePoints(fromX, fromY, toX, toY) {
-      const a = roomAt(fromX, fromY), b = roomAt(toX, toY);
-      if (a < 0 || b < 0 || a === b || !W.nextHop[a]) return [{ x: toX, y: toY }];
-      const pts = [];
-      let cur = a, guard = 0;
-      while (cur !== b && guard++ < 40) {
-        const hop = W.nextHop[cur][b];
-        if (hop < 0) break;
-        const d = W.doorPt[cur][hop];
-        if (d) {
-          pts.push({ x: d.x, y: d.y });
-          const nr = W.rooms[hop];
-          const cx = nr.x + nr.w / 2, cy = nr.y + nr.h / 2;
-          const vx = cx - d.x, vy = cy - d.y;
-          const len = Math.hypot(vx, vy) || 1;
-          const step = Math.min(70, len);
-          pts.push({ x: d.x + vx / len * step, y: d.y + vy / len * step });
-        }
-        cur = hop;
-      }
-      pts.push({ x: toX, y: toY });
-      return pts;
-    },
-
-    nextWaypoint(fromX, fromY, toX, toY) {
-      const a = roomAt(fromX, fromY), b = roomAt(toX, toY);
-      if (a < 0 || b < 0 || a === b || !W.nextHop[a]) return { x: toX, y: toY, final: true };
-      const hop = W.nextHop[a][b];
-      if (hop < 0) return { x: toX, y: toY, final: true };
-      const d = W.doorPt[a][hop];
-      return d ? { x: d.x, y: d.y, final: false, room: hop } : { x: toX, y: toY, final: true };
-    },
-
-    reachable(ax, ay, bx, by) {
-      const a = roomAt(ax, ay), b = roomAt(bx, by);
-      if (a < 0 || b < 0) return false;
-      return a === b || (W.nextHop[a] && W.nextHop[a][b] >= 0);
-    },
 
     floorColorAt(x, y) {
-      const i = roomAt(x, y);
-      return i >= 0 ? W.rooms[i].floor : W.map.floor;
+      for (let i = W.patches.length - 1; i >= 0; i--) {
+        const p = W.patches[i];
+        if (x >= p.x && x <= p.x + p.w && y >= p.y && y <= p.y + p.h) return p.c;
+      }
+      return W.map.floor;
     },
 
-    collide(e) { for (let p = 0; p < 2; p++) World.resolve(e); },
+    collide(e) {
+      for (let pass = 0; pass < 2; pass++) World.resolve(e);
+    },
 
     resolve(e) {
       const r = e.rad;
@@ -2297,30 +1567,13 @@ const World = (() => {
       return best;
     },
 
-    los(ax, ay, bx, by) { return !World.segHit(ax, ay, bx, by); },
-
-    fitActor(a) {
-      World.collide(a);
-      if (pointFree(a.x, a.y, a.rad)) return true;
-      for (let ring = 22; ring <= 170; ring += 16) {
-        for (let k = 0; k < 20; k++) {
-          const ang = k / 20 * TAU + Math.random() * 0.3;
-          const x = a.x + Math.cos(ang) * ring, y = a.y + Math.sin(ang) * ring;
-          if (x < 30 || y < 30 || x > W.w - 30 || y > W.h - 30) continue;
-          if (pointFree(x, y, a.rad)) { a.x = x; a.y = y; return true; }
-        }
-      }
-      const room = roomAt(a.x, a.y);
-      const p = (room >= 0 && freeInRoom(room, a.rad, 160)) || World.freeSpot(null, 0, a.rad);
-      a.x = p.x; a.y = p.y;
-      return pointFree(a.x, a.y, a.rad);
+    los(ax, ay, bx, by) {
+      return !World.segHit(ax, ay, bx, by);
     },
 
     freeSpot(minFromList, minDist, rad) {
       for (let g = 0; g < 900; g++) {
-        const r = W.rooms[rint(W.rooms.length)];
-        const x = r.x + 20 + Math.random() * Math.max(1, r.w - 40);
-        const y = r.y + 20 + Math.random() * Math.max(1, r.h - 40);
+        const x = rnd(W.w - 90, 50), y = rnd(W.h - 90, 50);
         if (!pointFree(x, y, rad || 20)) continue;
         if (minFromList && minFromList.some(p => dist2(p.x, p.y, x, y) < minDist * minDist)) continue;
         return { x, y };
@@ -2355,15 +1608,14 @@ const World = (() => {
     minimap(cv, map, size) {
       const m = map || W.map;
       const dpr = Math.min(2, devicePixelRatio || 1);
-      const w = size || 240;
-      cv.width = w * dpr; cv.height = Math.round(w * m.h / m.w) * dpr;
+      const w = size || 240, h = Math.round(w * m.h / m.w);
+      cv.width = w * dpr; cv.height = h * dpr;
       cv.style.aspectRatio = m.w + '/' + m.h;
       const x = cv.getContext('2d');
-      const k = dpr * w / m.w;
-      x.scale(k, k);
-      x.fillStyle = '#0c0a14'; x.fillRect(0, 0, m.w, m.h);
-      (m.rooms || []).forEach(r => { x.fillStyle = r.floor; x.fillRect(r.x, r.y, r.w, r.h); });
-      (m.doors || []).forEach(d => { x.fillStyle = '#8fbf5d'; x.fillRect(d.x, d.y, d.w, d.h); });
+      x.scale(dpr * w / m.w, dpr * w / m.w);
+      x.fillStyle = m.floor; x.fillRect(0, 0, m.w, m.h);
+      (m.patches || []).forEach(p => { x.fillStyle = p.c; x.fillRect(p.x, p.y, p.w, p.h); });
+      (m.walls || []).forEach(b => { x.fillStyle = shade(b.c, -0.1); x.fillRect(b.x, b.y, b.w, b.h); });
       (m.props || []).forEach(p => {
         const d = Props.T[p.t];
         if (!d) return;
@@ -2371,8 +1623,8 @@ const World = (() => {
         const pw = p.w || d.w, ph = p.h || d.h;
         x.fillRect(p.x - pw / 2, p.y - ph / 2, pw, ph);
       });
-      x.strokeStyle = m.tint || '#fff'; x.globalAlpha = 0.45; x.lineWidth = 14;
-      x.strokeRect(7, 7, m.w - 14, m.h - 14);
+      x.strokeStyle = m.tint || '#fff'; x.globalAlpha = 0.5; x.lineWidth = 10;
+      x.strokeRect(5, 5, m.w - 10, m.h - 10);
     }
   };
 })();
@@ -2627,7 +1879,7 @@ const Entities = (() => {
   };
 })();
 const AI = (() => {
-  const FAN = [0, 0.26, -0.26, 0.55, -0.55, 0.9, -0.9, 1.3, -1.3, 1.75, -1.75, 2.2, -2.2, 2.7, -2.7];
+  const FAN = [0, 0.38, -0.38, 0.8, -0.8, 1.25, -1.25, 1.8, -1.8, 2.5, -2.5];
 
   const HIDER_KINDS = {
     statue: { hold: [58, 34], flee: 0.62, look: 0.14, rove: 0.08 },
@@ -2637,14 +1889,13 @@ const AI = (() => {
     twitchy: { hold: [18, 9], flee: 1.35, look: 0.62, rove: 0.5 }
   };
   const KIND_KEYS = Object.keys(HIDER_KINDS);
+  const ZONES = 6;
 
   function headingClear(a, t, d) {
-    const r = a.rad + 3;
-    const near = Math.min(30, Math.max(10, d));
-    if (!World.free(a.x + Math.cos(t) * near, a.y + Math.sin(t) * near, r)) return false;
-    if (d < 150) return true;
-    const far = Math.min(76, d + 20);
-    return World.free(a.x + Math.cos(t) * far, a.y + Math.sin(t) * far, r);
+    const r = a.rad + 4;
+    const near = Math.min(34, Math.max(12, d)), far = Math.min(76, d + 20);
+    return World.free(a.x + Math.cos(t) * near, a.y + Math.sin(t) * near, r)
+      && World.free(a.x + Math.cos(t) * far, a.y + Math.sin(t) * far, r);
   }
 
   function escapeHeading(a, avoidAng) {
@@ -2663,44 +1914,10 @@ const AI = (() => {
     return best === null ? rnd(TAU) : best;
   }
 
-  function popOut(a) {
-    for (let pass = 0; pass < 2; pass++) {
-      for (let r = 26; r <= 220; r += 22) {
-        for (let i = 0; i < 16; i++) {
-          const t = i / 16 * TAU + r;
-          const x = a.x + Math.cos(t) * r, y = a.y + Math.sin(t) * r;
-          if (!World.free(x, y, a.rad + 3)) continue;
-          if (pass === 0 && !World.navOk(x, y)) continue;
-          a.x = x; a.y = y; a.vx = a.vy = 0; a.wp = null; a.path = null;
-          return true;
-        }
-      }
-    }
-    const room = World.roomAt(a.x, a.y);
-    const p = room >= 0 ? World.freeInRoom(room, a.rad + 3, 120) : null;
-    if (p) { a.x = p.x; a.y = p.y; a.vx = a.vy = 0; a.wp = null; a.path = null; return true; }
-    return false;
-  }
-
   function steer(a, tx, ty, dt, speed, repel) {
     const dx = tx - a.x, dy = ty - a.y;
     const d = Math.hypot(dx, dy);
-    if (d < 6) { a.vx *= 0.8; a.vy *= 0.8; a.stuckT = 0; a.stallT = 0; return true; }
-
-    if (a.stX === undefined) { a.stX = a.x; a.stY = a.y; a.stT = 0; }
-    a.stT += dt;
-    if (a.stT >= 1) {
-      const gone = dist(a.x, a.y, a.stX, a.stY);
-      a.stX = a.x; a.stY = a.y; a.stT = 0;
-      a.stallT = gone < 12 ? (a.stallT || 0) + 1 : 0;
-      if (a.stallT >= 2) {
-        a.stallT = 0;
-        a.unstickT = 0;
-        a.path = null;
-        popOut(a);
-        return false;
-      }
-    }
+    if (d < 6) { a.vx *= 0.8; a.vy *= 0.8; a.stuckT = 0; return true; }
 
     if (a.unstickT > 0) {
       a.unstickT -= dt;
@@ -2720,37 +1937,13 @@ const AI = (() => {
       const t = base + FAN[i];
       if (headingClear(a, t, d)) { ang = t; found = true; break; }
     }
-    if (!found) {
-      const r = a.rad + 3;
-      for (let i = 0; i < FAN.length; i++) {
-        const t = base + FAN[i];
-        if (World.free(a.x + Math.cos(t) * 26, a.y + Math.sin(t) * 26, r)) { ang = t; found = true; break; }
-      }
-    }
-    if (!found) {
-      const r = a.rad + 1;
-      for (let i = 0; i < FAN.length; i++) {
-        const t = base + FAN[i];
-        if (World.free(a.x + Math.cos(t) * 18, a.y + Math.sin(t) * 18, r)) { ang = t; break; }
-      }
-    }
-
-    if (a.apX !== tx || a.apY !== ty) { a.apX = tx; a.apY = ty; a.apD = d; a.apT = 0; }
-    if (d < (a.apD === undefined ? d : a.apD) - 10) { a.apD = d; a.apT = 0; } else a.apT = (a.apT || 0) + dt;
-    if (a.apT > 3.6 && d > 60) {
-      a.apT = 0; a.apD = d;
-      a.path = null; a.wp = null;
-      a.unstickT = 0;
-      popOut(a);
-      return false;
-    }
 
     if (a.pgX === undefined) { a.pgX = a.x; a.pgY = a.y; a.pgT = 0; }
     a.pgT += dt;
-    if (a.pgT >= 0.5 && d > 55) {
+    if (a.pgT >= 0.5) {
       const progress = dist(a.x, a.y, a.pgX, a.pgY);
       a.pgX = a.x; a.pgY = a.y; a.pgT = 0;
-      if (progress < 17) {
+      if (progress < 17 || !found) {
         a.unstickT = rnd(1.2, 0.7);
         a.unstickA = escapeHeading(a, base);
         if (a.team === 'seeker') a.t1 = 0;
@@ -2761,50 +1954,6 @@ const AI = (() => {
     const want = Math.min(speed, d * 4);
     a.vx = lerp(a.vx, Math.cos(ang) * want, 1 - Math.pow(0.001, dt));
     a.vy = lerp(a.vy, Math.sin(ang) * want, 1 - Math.pow(0.001, dt));
-    return false;
-  }
-
-  function viaPoint(a, tx, ty) {
-    const room = World.roomAt(tx, ty);
-    let best = null, bestC = Infinity;
-    const spots = World.hideSpots;
-    for (let i = 0; i < spots.length; i++) {
-      const c = spots[i];
-      if (c.room !== room) continue;
-      if (dist2(c.x, c.y, tx, ty) > 520 * 520) continue;
-      if (!World.los(c.x, c.y, tx, ty) || !World.los(a.x, a.y, c.x, c.y)) continue;
-      const cost = dist(a.x, a.y, c.x, c.y) + dist(c.x, c.y, tx, ty);
-      if (cost < bestC) { bestC = cost; best = c; }
-    }
-    for (let i = 0; i < 16 && !best; i++) {
-      const p = World.freeInRoom(room, a.rad + 4, 16);
-      if (!p) break;
-      if (!World.los(p.x, p.y, tx, ty) || !World.los(a.x, a.y, p.x, p.y)) continue;
-      best = p;
-    }
-    return best ? { x: best.x, y: best.y } : null;
-  }
-
-  function navStep(a, tx, ty, dt, speed, repel) {
-    const d = dist(a.x, a.y, tx, ty);
-    if (d < 34 || World.los(a.x, a.y, tx, ty)) {
-      a.path = null;
-      return steer(a, tx, ty, dt, speed, d > 90 ? repel : null);
-    }
-    a.flowT = (a.flowT || 0) - dt;
-    const moved = !a.pathGoal || dist2(a.pathGoal.x, a.pathGoal.y, tx, ty) > 1600;
-    if (moved || a.flowT <= 0 || !a.wp) {
-      const step = World.flowStep(a.x, a.y, tx, ty);
-      a.wp = step ? { x: step.x, y: step.y } : { x: tx, y: ty };
-      a.pathGoal = { x: tx, y: ty };
-      a.flowT = 0.25;
-    }
-    if (dist2(a.x, a.y, a.wp.x, a.wp.y) < 18 * 18) {
-      const step = World.flowStep(a.x, a.y, tx, ty);
-      a.wp = step ? { x: step.x, y: step.y } : { x: tx, y: ty };
-      a.flowT = 0.25;
-    }
-    steer(a, a.wp.x, a.wp.y, dt, speed, null);
     return false;
   }
 
@@ -2924,7 +2073,7 @@ const AI = (() => {
       }
       case 'RELOCATE': {
         const rep = prep ? null : seekerRepel(a, G, 260);
-        if (navStep(a, a.tx, a.ty, dt, speed, rep)) {
+        if (steer(a, a.tx, a.ty, dt, speed, rep)) {
           a.state = 'HIDE';
           a.t2 = rnd(K.hold[0], K.hold[1]);
         }
@@ -2957,7 +2106,7 @@ const AI = (() => {
       }
       case 'EVADE': {
         const rep = seekerRepel(a, G, 300);
-        const there = navStep(a, a.tx, a.ty, dt, speed * 1.06, rep);
+        const there = steer(a, a.tx, a.ty, dt, speed * 1.06, rep);
         if (a.t1 <= 0 || there) { a.state = 'HIDE'; a.t2 = rnd(K.hold[0], K.hold[1]); }
         break;
       }
@@ -2966,39 +2115,38 @@ const AI = (() => {
     }
   }
 
+  function zoneOf(x, y) {
+    const cx = Math.min(2, Math.floor(x / World.w * 3));
+    const cy = y < World.h / 2 ? 0 : 1;
+    return cy * 3 + cx;
+  }
+  function zoneCenter(z) {
+    const cx = (z % 3 + 0.5) / 3 * World.w;
+    const cy = (Math.floor(z / 3) + 0.5) / 2 * World.h;
+    return { x: cx, y: cy };
+  }
+
   function pickSearchTarget(a, G) {
-    const rooms = World.rooms;
-    if (!a.seen || a.seen.length !== rooms.length) a.seen = new Array(rooms.length).fill(0);
-    const here = World.roomAt(a.x, a.y);
+    if (!a.zones) { a.zones = new Array(ZONES).fill(0); a.zones[zoneOf(a.x, a.y)] = G.time; }
     let z = 0, oldest = Infinity;
-    for (let i = 0; i < rooms.length; i++) {
-      if (!World.reachable(a.x, a.y, rooms[i].x + rooms[i].w / 2, rooms[i].y + rooms[i].h / 2)) continue;
-      let v = a.seen[i] + rnd(6);
-      if (i === here) v += 20;
-      if (rooms[i].kind === 'hall') v += 8;
-      if (G && G.seekers) {
-        for (const o of G.seekers) {
-          if (o === a || !o.alive || o.inRoom || o.bot === false) continue;
-          if (o.zone === i) v += 26;
-          else if (o.seen && o.seen[i] > (a.seen[i] || 0)) v += 7;
-        }
-      }
+    for (let i = 0; i < ZONES; i++) {
+      const v = a.zones[i] + (i === zoneOf(a.x, a.y) ? 12 : 0) + rnd(4);
       if (v < oldest) { oldest = v; z = i; }
     }
     a.zone = z;
-    const spots = World.hideSpots.filter(s => s.room === z && World.free(s.x, s.y, a.rad + 3));
-    const s = spots.length ? pick(spots) : (World.freeInRoom(z, a.rad + 3, 80) || World.freeSpot(null, 0, a.rad));
+    const c = zoneCenter(z);
+    const spots = World.hideSpots.filter(s => zoneOf(s.x, s.y) === z && World.free(s.x, s.y, a.rad + 3));
+    const s = spots.length ? pick(spots) : World.freeSpot(null, 0, a.rad);
     a.tx = s.x; a.ty = s.y;
-    a.t1 = rnd(14, 7);
+    a.t1 = rnd(9, 4);
   }
 
   function seeker(a, dt, G) {
     if (a.inRoom) { a.vx = a.vy = 0; return; }
     if (!a.susp) a.susp = {};
     if (!a.cleared) a.cleared = {};
-    if (!a.seen || a.seen.length !== World.rooms.length) a.seen = new Array(World.rooms.length).fill(0);
-    const hereRoom = World.roomAt(a.x, a.y);
-    if (hereRoom >= 0) a.seen[hereRoom] = G.time;
+    if (!a.zones) { a.zones = new Array(ZONES).fill(0); }
+    a.zones[zoneOf(a.x, a.y)] = G.time;
 
     let lock = null, lockV = 0, hint = null, hintV = 0;
     for (const h of G.hiders) {
@@ -3036,7 +2184,7 @@ const AI = (() => {
       const lead = (1 - a.skill) * 0.35;
       const want = Math.atan2(dy + lock.vy * 0.1 * (1 - lead), dx + lock.vx * 0.1 * (1 - lead));
       a.ang += angDiff(a.ang, want) * Math.min(1, dt * (5 + a.skill * 7));
-      if (d > LASER_RANGE * 0.72 || !World.los(a.x, a.y, lock.x, lock.y)) navStep(a, lock.x, lock.y, dt, 194);
+      if (d > LASER_RANGE * 0.72) steer(a, lock.x, lock.y, dt, 194);
       else if (d < 120) { const r = { x: (a.x - lock.x) / d, y: (a.y - lock.y) / d }; steer(a, a.x + r.x * 90, a.y + r.y * 90, dt, 150); }
       else { a.vx *= 0.86; a.vy *= 0.86; }
       const err = Math.abs(angDiff(a.ang, want));
@@ -3067,7 +2215,7 @@ const AI = (() => {
         const want = Math.atan2(hint.y - a.y, hint.x - a.x);
         a.ang += angDiff(a.ang, want) * Math.min(1, dt * 4.5);
         const d = dist(a.x, a.y, hint.x, hint.y);
-        if (d > 150 || !World.los(a.x, a.y, hint.x, hint.y)) navStep(a, hint.x, hint.y, dt, 150 + a.skill * 30);
+        if (d > 150) steer(a, hint.x, hint.y, dt, 150 + a.skill * 30);
         else { a.vx *= 0.9; a.vy *= 0.9; }
         return;
       }
@@ -3085,7 +2233,7 @@ const AI = (() => {
       pickSearchTarget(a, G);
       if (a.fire <= 0 && Math.random() < 0.12 * (1 - a.skill) + 0.04) a.t2 = 0.55;
     }
-    navStep(a, a.tx, a.ty, dt, 176 + a.skill * 34);
+    steer(a, a.tx, a.ty, dt, 176 + a.skill * 34);
     const mv = Math.hypot(a.vx, a.vy);
     if (mv > 12) {
       const want = Math.atan2(a.vy, a.vx);
@@ -3098,7 +2246,7 @@ const AI = (() => {
     }
   }
 
-  return { hider, seeker, steer, navStep, bestSpot, HIDER_KINDS };
+  return { hider, seeker, steer, HIDER_KINDS };
 })();
 const Game = (() => {
   const cv = $('game'), ctx = cv.getContext('2d', { alpha: false });
@@ -3111,7 +2259,7 @@ const Game = (() => {
     actors: [], hiders: [], seekers: [], player: null, spectating: false,
     opts: { count: 8, role: 'hider', mapId: 'neighborhood', custom: null },
     startHiders: 0, blendSum: 0, blendN: 0, result: null, testLevel: null,
-    aimMode: 'key', warmup: 0, mode: 'camo'
+    aimMode: 'key', warmup: 0
   };
 
   let acc = 0, last = 0, raf = 0, toastT = 0;
@@ -3216,7 +2364,7 @@ const Game = (() => {
       a.skill = rnd(0.9, 0.25);
       a.dis = isP && G.playerDis ? Object.assign({}, G.playerDis) : randomDisguise(opts);
       Entities.applyDisguiseRadius(a);
-      World.fitActor(a);
+      World.collide(a);
       a.state = 'idle';
       G.actors.push(a); G.hiders.push(a);
       if (isP) G.player = a;
@@ -3234,7 +2382,7 @@ const Game = (() => {
       a.tx = a.x; a.ty = a.y;
       a.inRoom = true;
       a.zone = -1;
-      World.fitActor(a);
+      World.collide(a);
       G.actors.push(a); G.seekers.push(a);
       if (isP) G.player = a;
     }
@@ -3242,38 +2390,13 @@ const Game = (() => {
     G.blendSum = 0; G.blendN = 0;
   }
 
-  function buildImposter() {
-    const n = clamp(G.opts.count, 4, 15);
-    const names = Entities.BOT_NAMES.slice();
-    for (let i = names.length - 1; i > 0; i--) { const j = rint(i + 1); const t = names[i]; names[i] = names[j]; names[j] = t; }
-    G.actors = []; G.hiders = []; G.seekers = [];
-    for (let i = 0; i < n; i++) {
-      const isP = i === 0;
-      const a = Entities.newActor('crew', isP, isP ? 'You' : names[i % names.length]);
-      a.id = i + 1;
-      a.skill = rnd(0.95, 0.25);
-      a.rad = 15;
-      a.ang = rnd(TAU);
-      G.actors.push(a);
-      if (isP) G.player = a;
-    }
-    G.startHiders = n;
-  }
-
   function start(opts) {
     if (Chat.locked()) { UI.showLock(); return; }
-    if (opts) {
-      if (!('mode' in opts)) opts.mode = 'camo';
-      if (!('custom' in opts)) opts.custom = null;
-      if (!('forceRole' in opts)) opts.forceRole = null;
-      G.opts = Object.assign(G.opts, opts);
-    }
-    G.mode = G.opts.mode || 'camo';
+    if (opts) G.opts = Object.assign(G.opts, opts);
     const map = G.opts.custom ? G.opts.custom : Maps.get(G.opts.mapId);
     if (!map) { toast('Map not found'); return; }
     World.load(map);
     Entities.clearBolts(); FX.clear();
-    if (G.mode === 'imposter') { startImposter(); return; }
     build();
     resize();
     G.phase = 'prep';
@@ -3297,60 +2420,6 @@ const Game = (() => {
     syncHud(true);
     last = performance.now(); acc = 0;
     if (!raf) raf = requestAnimationFrame(frame);
-  }
-
-  function startImposter() {
-    buildImposter();
-    resize();
-    G.phase = 'hunt';
-    G.prepLeft = 0; G.roundLeft = 0;
-    G.time = 0; G.spectating = false; G.result = null;
-    G.aimMode = 'key'; G.warmup = 0;
-    G.state = 'playing';
-    WaitRoom.stop();
-    Input.clearPressed();
-    UI.showGame();
-    Imp.begin(G);
-    Chat.reset(G);
-    Audio2.unlock();
-    if (Save.s.music > 0) Audio2.music(true);
-    const p = G.player;
-    banner(p.role === 'imposter' ? 'You Are An Imposter' : 'You Are Crew',
-      p.role === 'imposter'
-        ? 'Blend in, fake the tasks, catch someone alone'
-        : 'Finish your tasks and work out who is lying', 3000);
-    $('legend')._set = false;
-    syncHud(true);
-    last = performance.now(); acc = 0;
-    if (!raf) raf = requestAnimationFrame(frame);
-  }
-
-  function finishImposter(winner, why) {
-    if (G.state === 'over') return;
-    G.state = 'over';
-    Audio2.music(false);
-    const p = G.player;
-    const won = (winner === 'crew') === (p.role === 'crew');
-    const score = Math.round((p.doneCount || 0) * 60 + (won ? 140 : 0) + (p.alive ? 60 : 0) + Imp.S.time * 0.3);
-    const st = Save.d.stats;
-    st.rounds++;
-    if (winner === 'crew') st.crewWins = (st.crewWins || 0) + 1; else st.impWins = (st.impWins || 0) + 1;
-    st.bestScore = Math.max(st.bestScore, score);
-    Save.saveNow();
-    if (won) Audio2.win(); else Audio2.lose();
-    G.result = {
-      winner, won, score, mode: 'imposter',
-      rows: [
-        ['Your role', p.role === 'imposter' ? 'Imposter' : 'Crewmate'],
-        ['Tasks finished', (p.doneCount || 0) + ' / ' + (p.tasks ? p.tasks.length : 0)],
-        ['Crew tasks', Math.round(Imp.progress * 100) + '%'],
-        ['Crew left', Imp.aliveCrew(G)],
-        ['Imposters left', Imp.aliveImps(G)],
-        ['Score', score]
-      ],
-      why
-    };
-    UI.showResults(G.result);
   }
 
   function pause() {
@@ -3540,12 +2609,6 @@ const Game = (() => {
   }
 
   function update(dt) {
-    if (G.mode === 'imposter') {
-      G.time += dt;
-      Imp.update(dt, G);
-      Chat.tick(dt, G);
-      return;
-    }
     G.time += dt;
     if (G.phase === 'prep') {
       const before = Math.ceil(G.prepLeft);
@@ -3635,46 +2698,9 @@ const Game = (() => {
     }
   }
 
-  function syncHudImposter() {
-    const p = G.player;
-    const set = (id, v) => { const n = $(id); if (n.textContent !== String(v)) n.textContent = v; };
-    const roleEl = $('hRole');
-    const txt = (p.role === 'imposter' ? 'Imposter' : 'Crew') + (p.alive ? '' : ' · Out');
-    if (roleEl.textContent !== txt) {
-      roleEl.textContent = txt;
-      roleEl.className = 'pill role' + (p.role === 'imposter' ? ' seek' : '');
-    }
-    set('hAliveLbl', 'Crew'); set('hSeekLbl', 'Imposters'); set('hScoreLbl', 'Tasks');
-    set('hAlive', Imp.aliveCrew(G)); set('hTotal', G.startHiders); set('hSeek', Imp.aliveImps(G));
-    $('hPhaseWrap').classList.add('hidden');
-    $('hBlendWrap').classList.add('hidden');
-    $('coolWrap').classList.toggle('hidden', p.role !== 'imposter' || !p.alive);
-    if (p.role === 'imposter' && p.alive) {
-      const r = clamp(1 - Math.max(0, p.kill) / 24, 0, 1);
-      $('coolBar').style.transform = 'scaleX(' + r.toFixed(3) + ')';
-      $('coolBar').style.background = r >= 1 ? '#5dff8f' : '#ff5a4d';
-    }
-    set('hScore', (p.doneCount || 0) + '/' + (p.tasks ? p.tasks.length : 0));
-    const inMeet = Imp.S.phase === 'meeting';
-    $('taskWrap').classList.toggle('hidden', inMeet);
-    const pc = Math.round(Imp.progress * 100);
-    $('taskFill').style.width = pc + '%';
-    set('taskTxt', 'CREW TASKS ' + pc + '%');
-    const pr = $('prompt');
-    pr.classList.toggle('hidden', !Imp.prompt || inMeet);
-    if (pr.textContent !== Imp.prompt) pr.textContent = Imp.prompt;
-    $('blended').classList.remove('show');
-  }
-
   function syncHud(force) {
     const p = G.player;
     if (!p) return;
-    if (G.mode === 'imposter') { syncHudImposter(); if (force || !$('legend')._set) { $('legend')._set = true; $('legend').textContent = Save.s.hints ? legendText() : ''; } return; }
-    $('hPhaseWrap').classList.remove('hidden');
-    $('taskWrap').classList.add('hidden');
-    $('prompt').classList.add('hidden');
-    const setL = (id, v) => { const n = $(id); if (n.textContent !== v) n.textContent = v; };
-    setL('hAliveLbl', 'Hiders'); setL('hSeekLbl', 'Seekers'); setL('hScoreLbl', 'Score');
     const alive = G.hiders.filter(h => h.alive).length;
     const seek = G.seekers.filter(s => s.alive).length;
     const set = (id, v) => { const n = $(id); if (n.textContent !== String(v)) n.textContent = v; };
@@ -3720,12 +2746,6 @@ const Game = (() => {
   function legendText() {
     const p = G.player;
     if (!p) return '';
-    if (G.mode === 'imposter') {
-      if (!p.alive) return 'You are out — watch the rest play it out · T chat';
-      return p.role === 'imposter'
-        ? '← ↑ ↓ → move · SPACE eliminate or report · E emergency meeting · fake a task to blend in'
-        : '← ↑ ↓ → move · SPACE do a task or report a cap · E emergency meeting · T chat';
-    }
     if (G.spectating) return 'Spectating — T to chat';
     if (p.team === 'seeker') {
       return G.phase === 'prep'
@@ -3737,22 +2757,7 @@ const Game = (() => {
       : '← ↑ ↓ → move · stand still to blend · Q/E rotate costume · no laser for hiders · T chat';
   }
 
-  function renderImposter() {
-    ctx.fillStyle = '#0a0912';
-    ctx.fillRect(0, 0, view.w, view.h);
-    const sh = FX.shakeAmt;
-    ctx.save();
-    ctx.translate(view.ox + (sh ? rnd(sh, -sh) : 0), view.oy + (sh ? rnd(sh, -sh) : 0));
-    ctx.scale(view.s, view.s);
-    ctx.drawImage(World.bg, 0, 0);
-    Imp.drawWorld(ctx, G);
-    FX.draw(ctx);
-    ctx.restore();
-    Imp.drawFog(ctx, view, G);
-  }
-
   function render() {
-    if (G.mode === 'imposter') { renderImposter(); return; }
     if (WaitRoom.active && G.phase === 'prep') {
       WaitRoom.draw(ctx, view.w, view.h, G.prepLeft);
       return;
@@ -3826,7 +2831,7 @@ const Game = (() => {
   }
 
   return {
-    G, view, start, pause, resume, quit, toast, banner, botFire, resize, toWorld, stopForLock, finishImposter,
+    G, view, start, pause, resume, quit, toast, banner, botFire, resize, toWorld, stopForLock,
     get playerDis() { return G.playerDis; },
     setPlayerDis(d) { G.playerDis = d; Save.d.last.disguise = d; Save.save(); },
     restart() { start(); },
@@ -4046,20 +3051,15 @@ const Chat = (() => {
       log = []; queue = []; ambient = rnd(9, 4);
       roster = G.actors.filter(a => !a.isPlayer).map(a => ({ a, kind: pick(KINDS) }));
       render();
-      const intro = G.mode === 'imposter'
-        ? 'Round starting — ' + G.actors.length + ' players, ' + Imp.aliveImps(G) + ' imposter(s) among them. Press T to chat.'
-        : 'Round starting — ' + G.hiders.length + ' hiders vs ' + G.seekers.length + ' seekers. Press T to chat.';
-      push('', intro, 'sys');
+      push('', 'Round starting — ' + G.hiders.length + ' hiders vs ' + G.seekers.length + ' seekers. Press T to chat.', 'sys');
     },
     release(G) {
-      if (G.mode === 'imposter') return;
       const hs = roster.filter(r => r.a.team === 'hider' && r.a.alive);
       if (hs.length) queue.push({ t: rnd(2, 0.4), who: pick(hs).a.name, text: pick(['here we go', 'nobody move', 'i am a crate i am a crate', 'good luck everyone']) });
       const ss = roster.filter(r => r.a.team === 'seeker');
       if (ss.length) queue.push({ t: rnd(3.5, 1.6), who: pick(ss).a.name, text: pick(['coming out', 'checking the left side', 'i already saw one of you', 'count the props, find the extra']) });
     },
     reactTag(target, G) {
-      if (G.mode === 'imposter') return;
       const pool = roster.filter(r => r.a.alive && r.a.id !== target.id);
       if (!pool.length || Math.random() > 0.6) return;
       const r = pick(pool);
@@ -4110,14 +3110,11 @@ const Editor = (() => {
 
   function blank(id) {
     return {
-      id: id || Levels.newId(), name: 'My Level', w: 1800, h: 1050,
-      floor: FLOORS[0], tint: '#8fbf5d', wallC: '#4a4258',
-      rooms: [], doors: [], patches: [], walls: [], props: [],
-      hiderSpawns: [], seekerSpawns: [], taskSpots: [], meeting: null, custom: true
+      id: id || Levels.newId(), name: 'My Level', w: 1600, h: 900,
+      floor: FLOORS[0], tint: '#8fbf5d', patches: [], walls: [], props: [],
+      hiderSpawns: [], seekerSpawns: [], custom: true
     };
   }
-  const TASK_LABELS = ['Check the panel', 'Sort the crates', 'Wipe the counter', 'Reset the switch',
-    'Water the plant', 'Count the stock', 'Fix the wiring', 'Empty the bin', 'Log the readings'];
 
   function snap(v, g) { return Math.round(v / g) * g; }
   function snapshot() {
@@ -4156,11 +3153,6 @@ const Editor = (() => {
   }
 
   function hitTest(p) {
-    for (let i = (lv.taskSpots || []).length - 1; i >= 0; i--) {
-      const q = lv.taskSpots[i];
-      if (dist2(p.x, p.y, q.x, q.y) < 26 * 26) return { o: q, k: 'task' };
-    }
-    if (lv.meeting && dist2(p.x, p.y, lv.meeting.x, lv.meeting.y) < 34 * 34) return { o: lv.meeting, k: 'meeting' };
     for (let i = lv.props.length - 1; i >= 0; i--) {
       const q = lv.props[i], d = Props.T[q.t];
       if (!d) continue;
@@ -4183,26 +3175,15 @@ const Editor = (() => {
       const q = lv.patches[i];
       if (p.x > q.x && p.x < q.x + q.w && p.y > q.y && p.y < q.y + q.h) return { o: q, k: 'patch' };
     }
-    for (let i = (lv.rooms || []).length - 1; i >= 0; i--) {
-      const q = lv.rooms[i];
-      if (p.x > q.x && p.x < q.x + q.w && p.y > q.y && p.y < q.y + q.h) return { o: q, k: 'room' };
-    }
     return null;
   }
 
-  function arrFor(kind) {
-    return kind === 'prop' ? lv.props : kind === 'wall' ? lv.walls : kind === 'patch' ? lv.patches
-      : kind === 'room' ? lv.rooms : kind === 'task' ? lv.taskSpots
-        : kind === 'hspawn' ? lv.hiderSpawns : kind === 'sspawn' ? lv.seekerSpawns : [];
-  }
-
-  const isRect = k => k === 'wall' || k === 'patch' || k === 'room';
-  function selCx() { return sel ? (isRect(selKind) ? sel.x + sel.w / 2 : sel.x) : 0; }
-  function selCy() { return sel ? (isRect(selKind) ? sel.y + sel.h / 2 : sel.y) : 0; }
+  function selCx() { return sel ? (selKind === 'wall' || selKind === 'patch' ? sel.x + sel.w / 2 : sel.x) : 0; }
+  function selCy() { return sel ? (selKind === 'wall' || selKind === 'patch' ? sel.y + sel.h / 2 : sel.y) : 0; }
   function selReach() {
     if (!sel) return 0;
     if (selKind === 'prop') { const d = Props.T[sel.t]; return Math.max(sel.w || d.w, sel.h || d.h) / 2; }
-    if (isRect(selKind)) return Math.max(sel.w, sel.h) / 2;
+    if (selKind === 'wall' || selKind === 'patch') return Math.max(sel.w, sel.h) / 2;
     return 20;
   }
 
@@ -4213,12 +3194,6 @@ const Editor = (() => {
       const d = Props.T[placing.t];
       const o = { t: placing.t, x: gx, y: gy, r: 0, c: color === '#f2eefb' ? d.pal[0] : color, w: d.w, h: d.h };
       lv.props.push(o); sel = o; selKind = 'prop';
-    } else if (placing.kind === 'task') {
-      const o = { x: gx, y: gy, label: pick(TASK_LABELS), room: 0 };
-      lv.taskSpots.push(o); sel = o; selKind = 'task';
-    } else if (placing.kind === 'meeting') {
-      lv.meeting = { x: gx, y: gy, room: 0, roomName: '' };
-      sel = lv.meeting; selKind = 'meeting';
     } else if (placing.kind === 'hspawn') {
       const o = { x: gx, y: gy }; lv.hiderSpawns.push(o); sel = o; selKind = 'hspawn';
     } else if (placing.kind === 'sspawn') {
@@ -4231,8 +3206,8 @@ const Editor = (() => {
   function del() {
     if (!sel) { Game.toast('Select something first'); return; }
     snapshot();
-    if (selKind === 'meeting') { lv.meeting = null; sel = null; Audio2.swap(); info(); draw(); return; }
-    const arr = arrFor(selKind);
+    const arr = selKind === 'prop' ? lv.props : selKind === 'wall' ? lv.walls : selKind === 'patch' ? lv.patches
+      : selKind === 'hspawn' ? lv.hiderSpawns : lv.seekerSpawns;
     const i = arr.indexOf(sel);
     if (i >= 0) arr.splice(i, 1);
     sel = null;
@@ -4243,12 +3218,10 @@ const Editor = (() => {
   function dup() {
     if (!sel) { Game.toast('Select something first'); return; }
     snapshot();
-    if (selKind === 'meeting') { Game.toast('Only one meeting point per level'); return; }
     const copy = JSON.parse(JSON.stringify(sel));
     copy.x += 30; copy.y += 30;
-    if (selKind === 'room') copy.name = copy.kind === 'hall' ? 'Hall ' + (lv.rooms.filter(r => r.kind === 'hall').length + 1) : 'Room ' + (lv.rooms.filter(r => r.kind === 'room').length + 1);
-    if (selKind === 'task') copy.label = pick(TASK_LABELS);
-    const arr = arrFor(selKind);
+    const arr = selKind === 'prop' ? lv.props : selKind === 'wall' ? lv.walls : selKind === 'patch' ? lv.patches
+      : selKind === 'hspawn' ? lv.hiderSpawns : lv.seekerSpawns;
     arr.push(copy);
     sel = copy;
     Audio2.ui();
@@ -4259,17 +3232,10 @@ const Editor = (() => {
     e.preventDefault();
     const p = toLv(e);
     if (p.x < 0 || p.y < 0 || p.x > lv.w || p.y > lv.h) return;
-    if (placing && (placing.kind === 'wall' || placing.kind === 'floor' || placing.kind === 'room' || placing.kind === 'hall')) {
+    if (placing && (placing.kind === 'wall' || placing.kind === 'floor')) {
       snapshot();
       const o = { x: snap(p.x, 10), y: snap(p.y, 10), w: 10, h: 10, c: placing.kind === 'wall' ? color : floorC };
-      if (placing.kind === 'wall') { lv.walls.push(o); selKind = 'wall'; }
-      else if (placing.kind === 'floor') { o.r = 0; lv.patches.push(o); selKind = 'patch'; }
-      else {
-        const kind = placing.kind === 'hall' ? 'hall' : 'room';
-        const n = lv.rooms.filter(r => r.kind === kind).length + 1;
-        Object.assign(o, { kind, name: (kind === 'hall' ? 'Hall ' : 'Room ') + n, floor: floorC });
-        lv.rooms.push(o); selKind = 'room';
-      }
+      if (placing.kind === 'wall') { lv.walls.push(o); selKind = 'wall'; } else { o.r = 0; lv.patches.push(o); selKind = 'patch'; }
       sel = o;
       drag = { mode: 'rect', o, sx: o.x, sy: o.y };
       return;
@@ -4296,9 +3262,7 @@ const Editor = (() => {
     sel = h.o; selKind = h.k;
     if (tool === 'paint') {
       snapshot();
-      if (selKind === 'patch') sel.c = floorC;
-      else if (selKind === 'room') { sel.floor = floorC; sel.c = floorC; }
-      else if (sel.c !== undefined) sel.c = color;
+      if (selKind === 'patch') sel.c = floorC; else if (sel.c !== undefined) sel.c = color;
       info(); draw(); return;
     }
     if (tool === 'rotate' && selKind === 'prop') {
@@ -4311,7 +3275,7 @@ const Editor = (() => {
       const d = Props.T[sel.t];
       drag = {
         mode: 'resize', o: sel,
-        d0: Math.max(12, dist(p.x, p.y, selCx(), selCy())),
+        d0: Math.max(12, dist(p.x, p.y, selKind === 'prop' ? sel.x : sel.x + sel.w / 2, selKind === 'prop' ? sel.y : sel.y + sel.h / 2)),
         w0: selKind === 'prop' ? (sel.w || d.w) : sel.w, h0: selKind === 'prop' ? (sel.h || d.h) : sel.h
       };
       return;
@@ -4333,7 +3297,7 @@ const Editor = (() => {
     } else if (drag.mode === 'rotate') {
       o.r = drag.r0 + (Math.atan2(p.y - o.y, p.x - o.x) - drag.a0);
     } else if (drag.mode === 'resize') {
-      const cx = isRect(selKind) ? o.x + drag.w0 / 2 : o.x, cy = isRect(selKind) ? o.y + drag.h0 / 2 : o.y;
+      const cx = selKind === 'prop' ? o.x : o.x + drag.w0 / 2, cy = selKind === 'prop' ? o.y : o.y + drag.h0 / 2;
       const k = clamp(dist(p.x, p.y, cx, cy) / drag.d0, 0.35, 3.4);
       o.w = Math.max(12, Math.round(drag.w0 * k)); o.h = Math.max(12, Math.round(drag.h0 * k));
     }
@@ -4352,18 +3316,7 @@ const Editor = (() => {
     ctx.fillStyle = '#0a0912';
     ctx.fillRect(0, 0, cv.width, cv.height);
     ctx.translate(view.ox, view.oy); ctx.scale(view.s, view.s);
-    ctx.fillStyle = '#0c0a14'; ctx.fillRect(0, 0, lv.w, lv.h);
-    (lv.rooms || []).forEach(r => {
-      ctx.fillStyle = r.floor || lv.floor;
-      ctx.fillRect(r.x, r.y, r.w, r.h);
-      ctx.strokeStyle = r.kind === 'hall' ? 'rgba(63,210,255,.5)' : 'rgba(143,191,93,.45)';
-      ctx.lineWidth = 3; ctx.setLineDash([12, 8]);
-      ctx.strokeRect(r.x + 1.5, r.y + 1.5, r.w - 3, r.h - 3);
-      ctx.setLineDash([]);
-      ctx.fillStyle = 'rgba(255,255,255,.3)';
-      ctx.font = 'bold 15px "Courier New",monospace'; ctx.textAlign = 'left';
-      ctx.fillText((r.name || '').toUpperCase(), r.x + 10, r.y + 22);
-    });
+    ctx.fillStyle = lv.floor; ctx.fillRect(0, 0, lv.w, lv.h);
     lv.patches.forEach(p => { ctx.fillStyle = p.c; ctx.fillRect(p.x, p.y, p.w, p.h); });
     ctx.globalAlpha = 0.12; ctx.strokeStyle = '#fff'; ctx.lineWidth = 1;
     ctx.beginPath();
@@ -4377,13 +3330,6 @@ const Editor = (() => {
     lv.props.forEach(p => { Props.shadow(ctx, p); Props.draw(ctx, p, 0); });
     lv.hiderSpawns.forEach(s => marker(s, '#8fbf5d', 'H'));
     lv.seekerSpawns.forEach(s => marker(s, '#ff5a4d', 'S'));
-    (lv.taskSpots || []).forEach(t => {
-      marker(t, '#ffd23f', '!');
-      ctx.fillStyle = 'rgba(255,210,63,.8)';
-      ctx.font = '12px "Courier New",monospace'; ctx.textAlign = 'center';
-      ctx.fillText(t.label, t.x, t.y + 38);
-    });
-    if (lv.meeting) marker(lv.meeting, '#3fd2ff', 'M');
     ctx.strokeStyle = '#8fbf5d'; ctx.lineWidth = 4; ctx.setLineDash([18, 12]);
     ctx.strokeRect(2, 2, lv.w - 4, lv.h - 4); ctx.setLineDash([]);
     ctx.strokeStyle = 'rgba(255,255,255,.18)'; ctx.lineWidth = 2;
@@ -4395,7 +3341,7 @@ const Editor = (() => {
         const d = Props.T[sel.t], w = sel.w || d.w, h = sel.h || d.h;
         ctx.translate(sel.x, sel.y); ctx.rotate(sel.r || 0);
         ctx.strokeRect(-w / 2 - 4, -h / 2 - 4, w + 8, h + 8);
-      } else if (isRect(selKind)) {
+      } else if (selKind === 'wall' || selKind === 'patch') {
         ctx.strokeRect(sel.x - 3, sel.y - 3, sel.w + 6, sel.h + 6);
       } else {
         ctx.beginPath(); ctx.arc(sel.x, sel.y, 26, 0, TAU); ctx.stroke();
@@ -4419,7 +3365,7 @@ const Editor = (() => {
 
   function info() {
     const tips = {
-      select: 'Click an object to select it. Rooms are the floor — overlap a Hall to link them.',
+      select: 'Click an object to select it.',
       move: 'Drag an object to move it.',
       rotate: 'Drag around a prop to spin it.',
       resize: 'Drag out from the centre to scale.',
@@ -4427,13 +3373,10 @@ const Editor = (() => {
     };
     let s = 'Tool: ' + tool.toUpperCase() + '<br>' + tips[tool];
     if (placing) s = 'Placing: ' + (placing.kind === 'prop' ? Props.T[placing.t].name : placing.kind === 'wall' ? 'Wall (drag)' : placing.kind === 'floor' ? 'Floor patch (drag)' : placing.kind === 'hspawn' ? 'Hider spawn' : 'Seeker spawn') + '<br>Click the map to place. Pick a tool to stop.';
-    s += '<br><br>' + (lv.rooms || []).filter(r => r.kind === 'room').length + ' rooms · '
-      + (lv.rooms || []).filter(r => r.kind === 'hall').length + ' halls · ' + lv.props.length + ' props'
-      + '<br>' + (lv.taskSpots || []).length + ' tasks · ' + (lv.meeting ? 'meeting set' : 'no meeting point')
+    s += '<br><br>' + lv.props.length + ' props · ' + lv.walls.length + ' walls · ' + lv.patches.length + ' floors'
       + '<br>' + lv.hiderSpawns.length + ' hider / ' + lv.seekerSpawns.length + ' seeker spawns'
       + '<br>Size ' + lv.w + '×' + lv.h;
-    if (!(lv.rooms || []).length) s += '<br><span style="color:var(--yellow)">Draw a Room first — rooms are the floor.</span>';
-    if (sel) s += '<br>Selected: ' + (selKind === 'prop' ? Props.T[sel.t].name : selKind === 'room' ? sel.name : selKind);
+    if (sel) s += '<br>Selected: ' + (selKind === 'prop' ? Props.T[sel.t].name : selKind);
     $('edInfo').innerHTML = s;
   }
 
@@ -4447,34 +3390,16 @@ const Editor = (() => {
   function toMap() {
     const m = JSON.parse(JSON.stringify(lv));
     m.tint = '#8fbf5d';
-    m.wallC = m.wallC || '#4a4258';
     if (m.seekerSpawns.length) m.seekerCorner = 0;
     m.props = m.props.filter(p => Props.T[p.t]);
-    m.rooms = (m.rooms || []).map((r, i) => Object.assign({}, r, { id: i, kind: r.kind || 'room' }));
-    m.doors = [];
-    const roomOf = (x, y) => {
-      for (let i = 0; i < m.rooms.length; i++) {
-        const r = m.rooms[i];
-        if (x >= r.x && x <= r.x + r.w && y >= r.y && y <= r.y + r.h) return i;
-      }
-      return 0;
-    };
-    m.taskSpots = (m.taskSpots || []).map(t => ({ x: t.x, y: t.y, label: t.label, room: roomOf(t.x, t.y), roomName: (m.rooms[roomOf(t.x, t.y)] || {}).name || 'the room' }));
-    if (m.meeting) { m.meeting.room = roomOf(m.meeting.x, m.meeting.y); m.meeting.roomName = (m.rooms[m.meeting.room] || {}).name || 'the room'; }
-    else if (m.rooms.length) {
-      const r = m.rooms[0];
-      m.meeting = { x: r.x + r.w / 2, y: r.y + r.h / 2, room: 0, roomName: r.name };
-    }
     return m;
   }
 
   function buildPalette() {
     const base = $('palBase'); base.textContent = '';
     const items = [
-      { kind: 'room', label: 'Room' }, { kind: 'hall', label: 'Hall' },
       { kind: 'wall', label: 'Wall' }, { kind: 'floor', label: 'Floor' },
-      { kind: 'hspawn', label: 'Hider' }, { kind: 'sspawn', label: 'Seeker' },
-      { kind: 'task', label: 'Task' }, { kind: 'meeting', label: 'Meeting' }
+      { kind: 'hspawn', label: 'Hider' }, { kind: 'sspawn', label: 'Seeker' }
     ];
     items.forEach(it => {
       const b = el('button', 'palBtn');
@@ -4484,21 +3409,6 @@ const Editor = (() => {
       const x = c.getContext('2d'); x.scale(dpr, dpr);
       if (it.kind === 'wall') { x.fillStyle = '#3b3448'; x.fillRect(6, 12, 28, 16); x.strokeStyle = '#000'; x.lineWidth = 2; x.strokeRect(6, 12, 28, 16); }
       else if (it.kind === 'floor') { x.fillStyle = '#6f6757'; x.fillRect(5, 5, 30, 30); x.strokeStyle = '#8fbf5d'; x.setLineDash([4, 3]); x.strokeRect(5, 5, 30, 30); }
-      else if (it.kind === 'room' || it.kind === 'hall') {
-        x.fillStyle = it.kind === 'hall' ? '#3a3550' : '#5f6b52';
-        x.fillRect(4, it.kind === 'hall' ? 13 : 6, 32, it.kind === 'hall' ? 14 : 28);
-        x.strokeStyle = it.kind === 'hall' ? '#3fd2ff' : '#8fbf5d'; x.lineWidth = 2; x.setLineDash([4, 3]);
-        x.strokeRect(4, it.kind === 'hall' ? 13 : 6, 32, it.kind === 'hall' ? 14 : 28);
-        x.setLineDash([]);
-      }
-      else if (it.kind === 'task' || it.kind === 'meeting') {
-        const c2 = it.kind === 'task' ? '#ffd23f' : '#3fd2ff';
-        x.fillStyle = c2; x.globalAlpha = .3;
-        x.beginPath(); x.arc(20, 20, 13, 0, TAU); x.fill(); x.globalAlpha = 1;
-        x.lineWidth = 2.4; x.strokeStyle = c2; x.stroke();
-        x.fillStyle = c2; x.font = 'bold 15px "Courier New",monospace'; x.textAlign = 'center'; x.textBaseline = 'middle';
-        x.fillText(it.kind === 'task' ? '!' : 'M', 20, 21);
-      }
       else {
         x.fillStyle = it.kind === 'hspawn' ? '#8fbf5d' : '#ff5a4d';
         x.beginPath(); x.arc(20, 20, 13, 0, TAU); x.globalAlpha = .35; x.fill(); x.globalAlpha = 1;
@@ -4578,11 +3488,7 @@ const Editor = (() => {
     $('edSave').onclick = () => { save(); };
     $('edPlay').onclick = () => {
       save(true);
-      const m = toMap();
-      if (!m.rooms.length) { Game.toast('Draw at least one Room before testing'); return; }
-      Game.start({ custom: m, count: Save.d.last.count, role: Save.d.last.role, mode: UI.setupState.mode });
-      const bad = World.rooms.filter(r => !World.reachable(World.rooms[0].x + 10, World.rooms[0].y + 10, r.x + r.w / 2, r.y + r.h / 2)).length;
-      if (bad) Game.toast(bad + ' area(s) are sealed off — overlap them with a hall');
+      Game.start({ custom: toMap(), count: Save.d.last.count, role: Save.d.last.role });
     };
     $('edExit').onclick = () => {
       if (dirty && !confirm('Leave the editor? Unsaved changes are lost.')) return;
@@ -4630,8 +3536,8 @@ const Editor = (() => {
   };
 })();
 const UI = (() => {
-  const SCREENS = ['s-menu', 's-setup', 's-disguise', 's-levels', 's-editor', 's-settings', 's-how', 's-pause', 's-results', 's-meeting', 'lockScreen'];
-  const setup = { count: 8, role: 'random', irole: 'random', mode: 'camo', mapId: 'school', custom: null };
+  const SCREENS = ['s-menu', 's-setup', 's-disguise', 's-levels', 's-editor', 's-settings', 's-how', 's-pause', 's-results', 'lockScreen'];
+  const setup = { count: 8, role: 'random', mapId: 'neighborhood', custom: null };
   let dis = { mode: 'prop', t: 'crate', c: '#b07d3e', rot: 0, body: '#5f7a4a', acc: '#3f5f3a', pat: 'blotch' };
   let inMatch = false, lockTimer = 0;
 
@@ -4717,29 +3623,13 @@ const UI = (() => {
     $('pcRange').value = setup.count;
     $('pcNum').textContent = setup.count;
     const nS = Math.floor(setup.count / 2);
-    const nI = Imp.imposterCount(setup.count);
-    $('pcSplit').textContent = setup.mode === 'imposter'
-      ? (setup.count - nI) + ' crew vs ' + nI + ' imposter' + (nI > 1 ? 's' : '') + ' (you + ' + (setup.count - 1) + ' bots)'
-      : (setup.count - nS) + ' hiders vs ' + nS + ' seekers (you + ' + (setup.count - 1) + ' bots)';
-    document.querySelectorAll('[data-mode]').forEach(b => b.classList.toggle('on', b.dataset.mode === setup.mode));
+    $('pcSplit').textContent = (setup.count - nS) + ' hiders vs ' + nS + ' seekers (you + ' + (setup.count - 1) + ' bots)';
     document.querySelectorAll('[data-role]').forEach(b => b.classList.toggle('on', b.dataset.role === setup.role));
-    document.querySelectorAll('[data-irole]').forEach(b => b.classList.toggle('on', b.dataset.irole === setup.irole));
-    $('roleRowCamo').classList.toggle('hidden', setup.mode === 'imposter');
-    $('roleRowImp').classList.toggle('hidden', setup.mode !== 'imposter');
-    $('modeHint').textContent = setup.mode === 'imposter'
-      ? 'Crewmates finish tasks around the building. Imposters quietly remove them. Call a meeting, argue, vote.'
-      : 'Hiders dress as the scenery and hold still. Seekers hunt them with a laser once the gate opens.';
-    $('roleHint').textContent = setup.mode === 'imposter'
-      ? (setup.irole === 'crew'
-        ? 'You get a task list and no idea who is lying.'
-        : setup.irole === 'imposter'
-          ? 'You get a task list you cannot finish, and a cooldown.'
-          : 'Recommended. The game deals you a secret role each round.')
-      : (setup.role === 'hider'
-        ? 'Pick a costume or paint job, then find somewhere the seekers will not look twice.'
-        : setup.role === 'seeker'
-          ? 'You get a laser and a cooldown. Touching a hider does nothing — you have to shoot the right prop.'
-          : 'Recommended. Each round draws your role at random, and never gives you the same one three times running.');
+    $('roleHint').textContent = setup.role === 'hider'
+      ? 'Pick a costume or paint job, then find somewhere the seekers will not look twice.'
+      : setup.role === 'seeker'
+        ? 'You get a laser and a cooldown. Touching a hider does nothing — you have to shoot the right prop.'
+        : 'Recommended. Each round draws your role at random, and never gives you the same one three times running.';
     const grid = $('mapGrid');
     grid.textContent = '';
     Maps.all().forEach(m => grid.appendChild(mapCard(m, false)));
@@ -4907,20 +3797,6 @@ const UI = (() => {
   }
 
   function go() {
-    if (setup.mode === 'imposter') {
-      let ir = setup.irole;
-      if (ir === 'random') {
-        const h = Save.d.last.impHistory || [];
-        const streak = h.length >= 2 && h[h.length - 1] === h[h.length - 2] ? h[h.length - 1] : null;
-        if (streak === 'imposter') ir = 'crew';
-        else ir = Math.random() < (1 / Math.max(2, Math.floor(setup.count / Imp.imposterCount(setup.count)))) + 0.16 ? 'imposter' : 'crew';
-        Save.d.last.impHistory = h.concat(ir).slice(-6);
-      }
-      Save.d.last.count = setup.count; Save.d.last.mode = 'imposter'; Save.d.last.irole = setup.irole;
-      Save.save();
-      Game.start({ mode: 'imposter', count: setup.count, mapId: setup.mapId, custom: setup.custom, forceRole: ir });
-      return;
-    }
     let role = setup.role;
     if (role === 'random') {
       const h = Save.d.last.roleHistory || [];
@@ -4931,30 +3807,24 @@ const UI = (() => {
     }
     const hist = (Save.d.last.roleHistory || []).concat(role).slice(-6);
     Save.d.last.roleHistory = hist;
-    Save.d.last.count = setup.count; Save.d.last.role = setup.role; Save.d.last.mode = 'camo';
+    Save.d.last.count = setup.count; Save.d.last.role = setup.role;
     Save.save();
     if (role === 'hider') {
       inMatch = false;
       buildDisguise();
       show('s-disguise');
     } else {
-      Game.start({ mode: 'camo', count: setup.count, role: 'seeker', mapId: setup.mapId, custom: setup.custom });
+      Game.start({ count: setup.count, role: 'seeker', mapId: setup.mapId, custom: setup.custom });
     }
   }
 
   function showResults(r) {
     const p = Game.G.player;
-    if (r.mode === 'imposter') {
-      $('resTitle').textContent = r.winner === 'crew' ? 'Crew Win' : 'Imposters Win';
-      $('resTitle').className = 'big ' + (r.won ? 'win' : 'lose');
-      $('resSub').textContent = r.why || '';
-    } else {
     $('resTitle').textContent = r.winner === 'hiders' ? 'Hiders Win' : 'Seekers Win';
     $('resTitle').className = 'big ' + (r.won ? 'win' : 'lose');
     $('resSub').textContent = r.won
       ? (p.team === 'hider' ? 'The whistle went and you were still scenery.' : 'Every hider found. Clean sweep.')
       : (p.team === 'hider' ? 'Somebody noticed you breathing.' : 'Time ran out with ' + r.alive + ' still hidden.');
-    }
     const rows = $('resRows');
     rows.textContent = '';
     r.rows.forEach(([k, v]) => {
@@ -5015,76 +3885,8 @@ const UI = (() => {
     syncToggles();
   }
 
-  let meetVote = null;
-
-  function showMeeting(meeting, living, G) {
-    meetVote = null;
-    const p = G.player;
-    $('meetTitle').textContent = meeting.body ? 'Body Reported' : 'Emergency Meeting';
-    $('meetSub').textContent = meeting.body
-      ? (meeting.caller ? meeting.caller.name : 'Someone') + ' found ' + meeting.body.name + "'s cap in the " + World.roomName(meeting.body.room) + '.'
-      : (meeting.caller ? meeting.caller.name : 'Someone') + ' called everyone together.';
-    const lines = $('meetLines');
-    lines.textContent = '';
-    meeting.lines.forEach(l => {
-      const d = el('div', 'meetLine' + (/saw it happen|It was /.test(l.text) ? ' wit' : ''));
-      const b = el('b', '', l.who + ': ');
-      d.appendChild(b);
-      d.appendChild(document.createTextNode(l.text));
-      lines.appendChild(d);
-    });
-    const grid = $('voteGrid');
-    grid.textContent = '';
-    $('meetResult').classList.add('hidden');
-    $('meetContinue').classList.add('hidden');
-    $('voteSkip').classList.remove('hidden');
-    $('voteHead').textContent = p.alive ? 'Who do you think it is?' : 'You are out — the crew votes without you';
-    living.forEach(a => {
-      const b = el('button', 'voteBtn' + (a.isPlayer ? ' sel' : ''));
-      const dot = el('span', 'dot');
-      dot.style.background = a.color;
-      b.appendChild(dot);
-      b.appendChild(el('span', 'vn', a.isPlayer ? a.name + ' (you)' : a.name));
-      b.appendChild(el('span', 'vc', World.roomName(a.mem ? a.mem.lastRoom : -1)));
-      b.disabled = !p.alive;
-      b.onclick = () => { meetVote = a.id; finishVote(G); };
-      grid.appendChild(b);
-    });
-    $('voteSkip').disabled = false;
-    show('s-meeting');
-    $('hud').classList.remove('hidden');
-    if (!p.alive) setTimeout(() => { if (Imp.S.meeting && !Imp.S.meeting.resolved) { meetVote = 'skip'; finishVote(G); } }, 2600);
-  }
-
-  function finishVote(G) {
-    const m = Imp.resolveMeeting(G, meetVote == null ? 'skip' : meetVote);
-    if (!m) return;
-    Audio2.ui();
-    const res = $('meetResult');
-    res.textContent = '';
-    const big = el('div', 'big ' + (m.ejected && m.ejected.role === 'imposter' ? 'win' : 'lose'), m.result);
-    big.style.fontSize = '1.05rem';
-    res.appendChild(big);
-    const votes = el('p', 'hint', m.cast.map(c => c.who + ' → ' + (c.vote === 'skip' ? 'skip' : (G.actors.find(a => a.id === c.vote) || {}).name)).join(' · '));
-    votes.style.marginTop = '8px';
-    res.appendChild(votes);
-    res.classList.remove('hidden');
-    $('voteGrid').querySelectorAll('button').forEach(b => b.disabled = true);
-    $('voteSkip').classList.add('hidden');
-    const cont = $('meetContinue');
-    cont.classList.remove('hidden');
-    cont.onclick = () => {
-      Imp.endMeeting(G);
-      if (Game.G.state === 'playing') { showGame(); }
-    };
-  }
-
   function wire() {
-    $('mPlay').onclick = () => { Audio2.unlock(); setup.mode = 'camo'; refreshSetup(); show('s-setup'); };
-    $('mPlayImp').onclick = () => { Audio2.unlock(); setup.mode = 'imposter'; refreshSetup(); show('s-setup'); };
-    document.querySelectorAll('[data-mode]').forEach(b => b.onclick = () => { setup.mode = b.dataset.mode; Audio2.ui(); refreshSetup(); });
-    document.querySelectorAll('[data-irole]').forEach(b => b.onclick = () => { setup.irole = b.dataset.irole; Audio2.ui(); refreshSetup(); });
-    $('voteSkip').onclick = () => { meetVote = 'skip'; finishVote(Game.G); };
+    $('mPlay').onclick = () => { Audio2.unlock(); refreshSetup(); show('s-setup'); };
     $('mCreator').onclick = () => { Audio2.unlock(); Editor.open(null); };
     $('mLevels').onclick = () => { refreshLevels(); show('s-levels'); };
     $('mSettings').onclick = () => { bindSettings(); show('s-settings'); };
@@ -5125,7 +3927,7 @@ const UI = (() => {
         const p = Game.G.player;
         p.dis = Object.assign({}, dis);
         Entities.applyDisguiseRadius(p);
-        World.fitActor(p);
+        World.collide(p);
         p.settled = false; p.still = 0; p.wobble = 1;
         FX.puff(p.x, p.y, '#f2eefb', 12);
         Audio2.swap();
@@ -5133,7 +3935,7 @@ const UI = (() => {
         Game.banner('Disguise Changed', Props.T[dis.t] && dis.mode === 'prop' ? Props.T[dis.t].name + ' costume' : 'Painted camo', 1400);
         return;
       }
-      Game.start({ mode: 'camo', count: setup.count, role: 'hider', mapId: setup.mapId, custom: setup.custom });
+      Game.start({ count: setup.count, role: 'hider', mapId: setup.mapId, custom: setup.custom });
     };
     $('lvBack').onclick = () => { show('s-menu'); refreshMenu(); };
     $('lvNew').onclick = () => Editor.open(null);
@@ -5148,7 +3950,6 @@ const UI = (() => {
     addEventListener('keydown', e => {
       if (Input.s.chatting) return;
       if (e.key !== 'Escape') return;
-      if (!$('s-meeting').classList.contains('hidden')) return;
       if (Game.G.state === 'playing') { Game.pause(); return; }
       if (Game.G.state === 'paused') { if (!$('s-disguise').classList.contains('hidden')) return; Game.resume(); return; }
       if (!$('s-setup').classList.contains('hidden') || !$('s-levels').classList.contains('hidden')
@@ -5159,7 +3960,7 @@ const UI = (() => {
   }
 
   return {
-    show, showGame, showResults, showLock, showMeeting, refreshMenu, refreshSetup, refreshLevels,
+    show, showGame, showResults, showLock, refreshMenu, refreshSetup, refreshLevels,
     reopenDisguise() {
       inMatch = true;
       Game.pause();
@@ -5175,9 +3976,7 @@ const UI = (() => {
       bindSettings();
       setup.count = Save.d.last.count || 8;
       setup.role = Save.d.last.role || 'hider';
-      setup.mapId = Maps.get(Save.d.last.map) ? Save.d.last.map : Maps.order[0];
-      setup.mode = Save.d.last.mode || 'camo';
-      setup.irole = Save.d.last.irole || 'random';
+      setup.mapId = Save.d.last.map || Maps.order[0];
       if (Save.d.last.disguise) dis = Object.assign(dis, Save.d.last.disguise);
       setTab(dis.mode === 'prop' ? 'prop' : 'paint');
       refreshMenu();
@@ -5376,741 +4175,6 @@ const WaitRoom = (() => {
     S, start, stop, flap, update, draw,
     get score() { return S.best; },
     get active() { return S.active; }
-  };
-})();
-const Imp = (() => {
-  const VISION = 420, KILL_RANGE = 58, KILL_COOL = 30, TASK_TIME = 2.6;
-  const REPORT_RANGE = 190, MEET_RANGE = 80, TASKS_EACH = 4;
-  const COLORS = ['#ff5a4d', '#4d9bff', '#5dff8f', '#ffd23f', '#ff5d8f', '#3fd2ff',
-    '#b57bff', '#ff9b47', '#8fbf5d', '#e0e0e6', '#7a5a3a', '#4a4a5f'];
-
-  const S = {
-    on: false, phase: 'play', tasks: [], bodies: [], totalDone: 0, totalNeeded: 1,
-    meeting: null, emergencyUsed: {}, kills: 0, result: null, prompt: '', lastEvent: '',
-    fog: null, time: 0
-  };
-
-  function imposterCount(n) { return n <= 6 ? 1 : n <= 9 ? 2 : 3; }
-
-  function dealRoute(a, tasks) {
-    const want = Math.min(TASKS_EACH, tasks.length);
-    if (!tasks.length) return [];
-    const load = S.load || (S.load = {});
-    let seed = null, seedV = Infinity;
-    for (const t of tasks) {
-      const v = (load[t.id] || 0) * 900 + dist(a.x, a.y, t.x, t.y) + rnd(260);
-      if (v < seedV) { seedV = v; seed = t; }
-    }
-    const route = [seed];
-    load[seed.id] = (load[seed.id] || 0) + 1;
-    while (route.length < want) {
-      const from = route[route.length - 1];
-      let nx = null, nv = Infinity;
-      for (const t of tasks) {
-        if (route.includes(t)) continue;
-        const v = dist(from.x, from.y, t.x, t.y) + (load[t.id] || 0) * 240 + rnd(200);
-        if (v < nv) { nv = v; nx = t; }
-      }
-      if (!nx) break;
-      route.push(nx);
-      load[nx.id] = (load[nx.id] || 0) + 1;
-    }
-    return route.map(t => t.id);
-  }
-
-  function crewOf(G) { return G.actors.filter(a => a.role === 'crew'); }
-  function impsOf(G) { return G.actors.filter(a => a.role === 'imposter'); }
-  const aliveOf = list => list.filter(a => a.alive);
-
-  function begin(G) {
-    S.on = true; S.phase = 'play'; S.bodies = []; S.totalDone = 0; S.meeting = null;
-    S.emergencyUsed = {}; S.kills = 0; S.result = null; S.time = 0; S.lastEvent = ''; S.load = {};
-    const spots = World.taskSpots;
-    S.tasks = spots.map((t, i) => ({ id: i, x: t.x, y: t.y, label: t.label, room: t.room, roomName: World.roomName(t.room) }));
-
-    const nImp = imposterCount(G.actors.length);
-    const idx = G.actors.map((a, i) => i);
-    for (let i = idx.length - 1; i > 0; i--) { const j = rint(i + 1); const t = idx[i]; idx[i] = idx[j]; idx[j] = t; }
-    let impSlots = idx.slice(0, nImp);
-    if (G.opts.forceRole === 'imposter') {
-      const pi = G.actors.indexOf(G.player);
-      if (!impSlots.includes(pi)) impSlots[0] = pi;
-    } else if (G.opts.forceRole === 'crew') {
-      const pi = G.actors.indexOf(G.player);
-      impSlots = impSlots.filter(k => k !== pi);
-      for (const k of idx) { if (impSlots.length >= nImp) break; if (k !== pi && !impSlots.includes(k)) impSlots.push(k); }
-    }
-
-    const need = [];
-    G.actors.forEach((a, i) => {
-      a.role = impSlots.includes(i) ? 'imposter' : 'crew';
-      a.team = a.role;
-      a.color = COLORS[i % COLORS.length];
-      a.rad = 15;
-      a.alive = true;
-      a.kill = a.role === 'imposter' ? 16 : 0;
-      a.taskT = 0; a.taskIdx = 0; a.doneCount = 0; a.curTask = null; a.curTaskT = 0;
-      a.mem = { seen: {}, sus: {}, witness: {}, lastRoom: -1, note: [] };
-      a.state = 'TASK';
-      a.t1 = 0; a.t2 = 0; a.target = null;
-      a.tasks = dealRoute(a, S.tasks);
-      a.taskDone = {};
-      if (a.role === 'crew') need.push(a.tasks.length);
-    });
-    S.totalNeeded = Math.max(1, need.reduce((n, v) => n + v, 0));
-
-    placeAtMeeting(G, G.actors);
-    S.prompt = '';
-  }
-
-  function stop() { S.on = false; S.phase = 'play'; }
-
-  function placeAtMeeting(G, list) {
-    const m = World.meeting;
-    const used = [];
-    list.forEach((a, i) => {
-      let best = null;
-      for (let ring = 0; ring < 4 && !best; ring++) {
-        for (let k = 0; k < 18; k++) {
-          const ang = (i / list.length) * TAU + k * 0.35 + ring * 0.2;
-          const r = 55 + ring * 45 + rnd(24);
-          const x = m.x + Math.cos(ang) * r, y = m.y + Math.sin(ang) * r;
-          if (!World.free(x, y, a.rad + 4)) continue;
-          if (used.some(u => dist2(u.x, u.y, x, y) < 40 * 40)) continue;
-          best = { x, y };
-          break;
-        }
-      }
-      if (!best) best = World.freeInRoom(m.room, a.rad + 3, 120) || { x: m.x, y: m.y };
-      a.x = best.x; a.y = best.y;
-      a.vx = a.vy = 0;
-      used.push(best);
-      World.collide(a);
-    });
-  }
-
-  function canSee(a, b) {
-    return dist2(a.x, a.y, b.x, b.y) < VISION * VISION && World.los(a.x, a.y, b.x, b.y);
-  }
-
-  function taskById(id) { return S.tasks[id]; }
-
-  function nearestTaskFor(a) {
-    let best = null, bd = 1e9;
-    for (const id of a.tasks) {
-      if (a.taskDone[id]) continue;
-      const t = taskById(id);
-      if (!t) continue;
-      const d = dist2(a.x, a.y, t.x, t.y);
-      if (d < bd) { bd = d; best = t; }
-    }
-    return best;
-  }
-
-  function nextTaskFor(a) {
-    if (a.curTask != null && !a.taskDone[a.curTask] && a.tasks.includes(a.curTask) && (a.curTaskT || 0) < 30) {
-      return taskById(a.curTask);
-    }
-    const t = nearestTaskFor(a);
-    a.curTask = t ? t.id : null;
-    a.curTaskT = 0;
-    return t;
-  }
-
-  function remember(G) {
-    for (const a of G.actors) {
-      if (!a.alive) continue;
-      const room = World.roomAt(a.x, a.y);
-      a.mem.lastRoom = room;
-      for (const b of G.actors) {
-        if (b === a || !b.alive) continue;
-        if (!canSee(a, b)) continue;
-        a.mem.seen[b.id] = { room: World.roomAt(b.x, b.y), t: S.time, with: room };
-      }
-    }
-  }
-
-  function doKill(killer, victim, G) {
-    if (!victim.alive) return;
-    victim.alive = false;
-    S.kills++;
-    killer.kill = KILL_COOL;
-    const room = World.roomAt(victim.x, victim.y);
-    S.bodies.push({ x: victim.x, y: victim.y, room, name: victim.name, color: victim.color, id: victim.id, found: false, t: S.time });
-    FX.pop(victim.x, victim.y, victim.color);
-    FX.puff(victim.x, victim.y, '#f2eefb', 14);
-    FX.text(victim.x, victim.y - 30, 'POOF!', '#ffd23f', 18);
-    Audio2.tagged();
-    for (const w of G.actors) {
-      if (!w.alive || w === killer || w === victim) continue;
-      if (canSee(w, victim) || canSee(w, killer)) {
-        if (w.role === 'crew') {
-          w.mem.witness[killer.id] = S.time;
-          w.mem.sus[killer.id] = (w.mem.sus[killer.id] || 0) + 6;
-        }
-      }
-    }
-    for (const w of G.actors) {
-      if (!w.alive || w.role !== 'crew') continue;
-      const seen = w.mem.seen[victim.id];
-      if (seen && S.time - seen.t < 12) {
-        for (const o of G.actors) {
-          if (o === w || o === victim || !o.alive) continue;
-          const os = w.mem.seen[o.id];
-          if (os && os.room === seen.room && S.time - os.t < 12) w.mem.sus[o.id] = (w.mem.sus[o.id] || 0) + 1.5;
-        }
-      }
-    }
-    reassignTasks(victim, G);
-    if (victim.isPlayer) {
-      G.spectating = true;
-      Game.banner('You Were Caught Out', 'Spectating — watch who does what', 2600);
-    }
-    checkWin(G);
-  }
-
-  function reassignTasks(victim, G) {
-    if (victim.role !== 'crew') return;
-    const left = (victim.tasks || []).filter(id => !victim.taskDone[id]);
-    if (!left.length) return;
-    const takers = G.actors.filter(a => a.alive && a.role === 'crew' && !a.isPlayer);
-    if (!takers.length) return;
-    for (const id of left) {
-      const t = taskById(id);
-      let best = null, bv = Infinity;
-      for (const c of takers) {
-        if (c.tasks.includes(id) && !c.taskDone[id]) { best = null; break; }
-        const pending = c.tasks.filter(q => !c.taskDone[q]).length;
-        const v = pending * 340 + (t ? dist(c.x, c.y, t.x, t.y) : 0);
-        if (v < bv) { bv = v; best = c; }
-      }
-      if (best) best.tasks.push(id);
-    }
-  }
-
-  function bodyNear(a, range) {
-    for (const b of S.bodies) {
-      if (b.found) continue;
-      if (dist2(a.x, a.y, b.x, b.y) < (range || REPORT_RANGE) ** 2 && World.los(a.x, a.y, b.x, b.y)) return b;
-    }
-    return null;
-  }
-
-  function startMeeting(G, caller, body) {
-    if (S.phase !== 'play') return;
-    S.phase = 'meeting';
-    if (body) body.found = true;
-    S.bodies.forEach(b => b.found = true);
-    const living = aliveOf(G.actors);
-    const lines = [];
-    const reporterName = caller ? caller.name : 'Someone';
-    lines.push({ who: reporterName, text: body ? 'I found ' + body.name + "'s cap in the " + World.roomName(body.room) + '.' : 'Emergency meeting — something is off.' });
-
-    for (const a of living) {
-      if (a === caller || a.isPlayer) continue;
-      if (lines.length > 6) break;
-      const t = statementFor(a, G, body);
-      if (t) lines.push({ who: a.name, text: t });
-    }
-    const heard = {};
-    lines.forEach(l => {
-      const speaker = living.find(x => x.name === l.who);
-      living.forEach(t => {
-        const nm = t.isPlayer ? 'you' : t.name;
-        if (t.name === l.who) return;
-        if (new RegExp('(^|\\W)' + nm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '(\\W|$)', 'i').test(l.text)) {
-          const strong = /saw|watched|did it|do not skip/i.test(l.text);
-          heard[t.id] = (heard[t.id] || 0) + (strong ? 2.4 : 0.9) * (speaker && speaker.role === 'imposter' ? 0.6 : 1);
-        }
-      });
-    });
-    S.meeting = {
-      body: body || null, caller: caller || null, lines, heard,
-      votes: {}, resolved: false, result: '', timer: 0
-    };
-    Audio2.release();
-    UI.showMeeting(S.meeting, living, G);
-  }
-
-  function statementFor(a, G, body) {
-    const living = aliveOf(G.actors).filter(x => x !== a);
-    const wit = Object.keys(a.mem.witness).map(Number);
-    if (a.role === 'crew' && wit.length) {
-      const w = G.actors.find(x => x.id === wit[0]);
-      if (w && w.alive) {
-        const nm = w.isPlayer ? 'you' : w.name;
-        return pick([
-          'It was ' + nm + '. I watched it happen.',
-          'I saw ' + nm + ' do it. Right in front of me.',
-          nm + ' did it, I was stood right there.',
-          'Do not skip. It is ' + nm + '.'
-        ]);
-      }
-    }
-    if (a.role === 'imposter') {
-      if (Math.random() < 0.45) {
-        const t = pick(S.tasks);
-        return 'I was doing ' + t.label.toLowerCase() + ' in the ' + t.roomName + '.';
-      }
-      const blame = living.filter(x => x.role === 'crew' && !x.isPlayer).concat(living.filter(x => x.isPlayer));
-      if (blame.length && Math.random() < 0.6) {
-        const b2 = blame[rint(blame.length)];
-        return b2.isPlayer ? 'You have been wandering about, not doing tasks.'
-          : b2.name + ' has been wandering about, not doing tasks.';
-      }
-      return 'I did not see anything useful.';
-    }
-    const sus = Object.entries(a.mem.sus).sort((x, y) => y[1] - x[1])[0];
-    if (sus && sus[1] >= 2) {
-      const s = G.actors.find(x => x.id === +sus[0]);
-      if (s && s.alive) return (s.isPlayer ? 'You were' : s.name + ' was') + ' right by there and I do not like it.';
-    }
-    const seenIds = Object.keys(a.mem.seen).map(Number).filter(id => S.time - a.mem.seen[id].t < 20);
-    if (seenIds.length) {
-      const o = G.actors.find(x => x.id === seenIds[rint(seenIds.length)]);
-      if (o) return 'I was with ' + (o.isPlayer ? 'you' : o.name) + ' in the ' + World.roomName(a.mem.seen[o.id].room) + '.';
-    }
-    if (body) return 'I was nowhere near the ' + World.roomName(body.room) + '.';
-    return 'I have been doing my tasks. Nothing to report.';
-  }
-
-  function npcVote(a, G, meeting) {
-    const living = aliveOf(G.actors).filter(x => x !== a);
-    if (!living.length) return 'skip';
-    if (a.role === 'imposter') {
-      const crew = living.filter(x => x.role === 'crew');
-      if (!crew.length) return 'skip';
-      const heard = (meeting && meeting.heard) || {};
-      const meOut = (heard[a.id] || 0) > 1.8;
-      let best = null, bestV = -1;
-      for (const c of crew) {
-        let v = rnd(1) + (heard[c.id] || 0) * 0.8;
-        if (meeting.caller && c === meeting.caller) v += 0.8;
-        if (c.isPlayer) v += 0.5;
-        if (best === null || v > bestV) { bestV = v; best = c; }
-      }
-      return (!meOut && Math.random() < 0.15) ? 'skip' : best.id;
-    }
-    const wit = Object.keys(a.mem.witness).map(Number).filter(id => {
-      const t = G.actors.find(x => x.id === id);
-      return t && t.alive;
-    });
-    if (wit.length) return wit[0];
-    const heard = (meeting && meeting.heard) || {};
-    let best = null, bestV = 1.3;
-    for (const c of living) {
-      const v = (a.mem.sus[c.id] || 0) + (heard[c.id] || 0) * (0.6 + a.skill * 0.5) + rnd(0.8);
-      if (v > bestV) { bestV = v; best = c; }
-    }
-    if (!best) return 'skip';
-    return Math.random() < 0.12 ? 'skip' : best.id;
-  }
-
-  function resolveMeeting(G, playerVote) {
-    const meeting = S.meeting;
-    if (!meeting || meeting.resolved) return null;
-    meeting.resolved = true;
-    const living = aliveOf(G.actors);
-    const tally = {};
-    const cast = [];
-    living.forEach(a => {
-      let v;
-      if (a.isPlayer) v = playerVote;
-      else v = npcVote(a, G, meeting);
-      cast.push({ who: a.name, vote: v });
-      const key = v === 'skip' ? 'skip' : v;
-      tally[key] = (tally[key] || 0) + 1;
-    });
-    let top = 'skip', topN = 0, tie = false;
-    for (const k in tally) {
-      if (k === 'skip') continue;
-      if (tally[k] > topN) { topN = tally[k]; top = k; tie = false; }
-      else if (tally[k] === topN) tie = true;
-    }
-    const skips = tally.skip || 0;
-    let ejected = null;
-    if (!tie && topN > skips && top !== 'skip') {
-      ejected = G.actors.find(a => a.id === +top);
-    }
-    let text;
-    if (ejected) {
-      ejected.alive = false;
-      text = ejected.name + ' was voted out. ' + (ejected.role === 'imposter' ? 'They were an imposter!' : 'They were not an imposter.');
-      if (ejected.isPlayer) { G.spectating = true; }
-    } else {
-      text = tie ? 'Tied vote — nobody was voted out.' : 'No majority — nobody was voted out.';
-    }
-    const impLeft = aliveOf(impsOf(G)).length;
-    meeting.result = text;
-    meeting.cast = cast;
-    meeting.ejected = ejected;
-    meeting.impLeft = impLeft;
-    S.lastEvent = text;
-    return meeting;
-  }
-
-  function endMeeting(G) {
-    S.phase = 'play';
-    S.meeting = null;
-    S.bodies = [];
-    placeAtMeeting(G, aliveOf(G.actors));
-    aliveOf(G.actors).forEach(a => { a.state = 'TASK'; a.taskT = 0; a.t1 = 0; a.mem.witness = {}; });
-    impsOf(G).forEach(a => { a.kill = Math.max(a.kill, 8); });
-    checkWin(G);
-  }
-
-  function checkWin(G) {
-    if (S.result) return;
-    const crew = aliveOf(crewOf(G)).length;
-    const imps = aliveOf(impsOf(G)).length;
-    if (imps === 0) finish(G, 'crew', 'Every imposter was voted out.');
-    else if (imps >= crew) finish(G, 'imposter', 'The imposters outnumber the crew.');
-    else if (S.totalDone >= S.totalNeeded) finish(G, 'crew', 'The crew finished every task.');
-  }
-
-  function finish(G, winner, why) {
-    S.result = { winner, why };
-    S.phase = 'over';
-    Game.finishImposter(winner, why);
-  }
-
-  function npcCrew(a, dt, G) {
-    const body = bodyNear(a, 200);
-    if (body && S.phase === 'play' && Math.random() < 0.5) { startMeeting(G, a, body); return; }
-    if (Object.keys(a.mem.witness).length && S.phase === 'play' && Math.random() < 0.02) {
-      startMeeting(G, a, null);
-      return;
-    }
-    const t = nextTaskFor(a);
-    if (!t) {
-      a.state = 'IDLE';
-      a.t1 -= dt;
-      if (a.t1 <= 0) {
-        a.t1 = rnd(7, 3);
-        const p = World.freeSpot(null, 0, a.rad);
-        a.tx = p.x; a.ty = p.y;
-      }
-      AI.navStep(a, a.tx, a.ty, dt, 170);
-      faceMotion(a, dt);
-      return;
-    }
-    a.curTaskT = (a.curTaskT || 0) + dt;
-    const d = dist(a.x, a.y, t.x, t.y);
-    if (d > 40) {
-      a.state = 'TASK';
-      AI.navStep(a, t.x, t.y, dt, 176 + a.skill * 24);
-      faceMotion(a, dt);
-    } else {
-      a.vx *= 0.8; a.vy *= 0.8;
-      a.state = 'DOING';
-      a.taskT += dt;
-      if (a.taskT >= TASK_TIME + a.skill) {
-        a.taskT = 0;
-        a.taskDone[t.id] = true;
-        a.curTask = null;
-        a.doneCount++;
-        S.totalDone++;
-        checkWin(G);
-      }
-    }
-  }
-
-  function faceMotion(a, dt) {
-    const mv = Math.hypot(a.vx, a.vy);
-    if (mv > 12) a.ang += angDiff(a.ang, Math.atan2(a.vy, a.vx)) * Math.min(1, dt * 8);
-  }
-
-  function witnessRisk(killer, victim, G) {
-    for (const w of G.actors) {
-      if (!w.alive || w === killer || w === victim || w.role === 'imposter') continue;
-      if (dist2(w.x, w.y, killer.x, killer.y) < 330 * 330 && World.los(w.x, w.y, killer.x, killer.y)) return true;
-    }
-    return false;
-  }
-
-  function npcImposter(a, dt, G) {
-    a.kill -= dt;
-    const targets = aliveOf(crewOf(G));
-    let best = null, bestV = -1e9;
-    for (const c of targets) {
-      if (!c.alive) continue;
-      const d = dist(a.x, a.y, c.x, c.y);
-      let lonely = 1e9;
-      for (const o of G.actors) {
-        if (o === c || o === a || !o.alive) continue;
-        lonely = Math.min(lonely, dist(o.x, o.y, c.x, c.y));
-      }
-      let v = 900 - d + Math.min(500, lonely) * 1.4;
-      if (World.los(a.x, a.y, c.x, c.y)) v += 80;
-      if (v > bestV) { bestV = v; best = c; }
-    }
-
-    if (a.kill <= 0 && best && dist(a.x, a.y, best.x, best.y) < KILL_RANGE && World.los(a.x, a.y, best.x, best.y) && !witnessRisk(a, best, G)) {
-      doKill(a, best, G);
-      a.state = 'FLEE';
-      a.t1 = rnd(5, 3);
-      const p = World.freeSpot(null, 0, a.rad);
-      a.tx = p.x; a.ty = p.y;
-      return;
-    }
-
-    a.t1 -= dt;
-    if (a.state === 'FLEE') {
-      AI.navStep(a, a.tx, a.ty, dt, 196);
-      faceMotion(a, dt);
-      if (a.t1 <= 0) a.state = 'STALK';
-      return;
-    }
-
-    if (a.kill <= 5 && best) {
-      a.state = 'STALK';
-      AI.navStep(a, best.x, best.y, dt, 190);
-      faceMotion(a, dt);
-      return;
-    }
-
-    a.state = 'FAKE';
-    const t = nextTaskFor(a) || S.tasks[rint(S.tasks.length)];
-    a.curTaskT = (a.curTaskT || 0) + dt;
-    const d = dist(a.x, a.y, t.x, t.y);
-    if (d > 40) {
-      AI.navStep(a, t.x, t.y, dt, 176);
-      faceMotion(a, dt);
-    } else {
-      a.vx *= 0.8; a.vy *= 0.8;
-      a.taskT += dt;
-      if (a.taskT > TASK_TIME + 1.4) { a.taskT = 0; a.taskDone[t.id] = true; a.curTask = null; }
-    }
-  }
-
-  function playerUpdate(dt, G) {
-    const p = G.player;
-    if (!p.alive) { S.prompt = 'Spectating'; return; }
-    if (p.role === 'imposter') p.kill -= dt;
-
-    const ax = Input.axis();
-    const sp = 196 * (Input.sprint() ? 1.18 : 1);
-    const k = 1 - Math.pow(0.0005, dt);
-    p.vx = lerp(p.vx, ax.x * sp, k); p.vy = lerp(p.vy, ax.y * sp, k);
-    if (ax.x || ax.y) p.ang = Math.atan2(ax.y, ax.x);
-
-    const body = bodyNear(p);
-    const task = p.role === 'crew' ? nearestTaskFor(p) : null;
-    const nearTask = task && dist(p.x, p.y, task.x, task.y) < 44 ? task : null;
-    const m = World.meeting;
-    const nearMeet = dist(p.x, p.y, m.x, m.y) < MEET_RANGE;
-    let victim = null;
-    if (p.role === 'imposter') {
-      let bd = KILL_RANGE;
-      for (const c of aliveOf(crewOf(G))) {
-        const d = dist(p.x, p.y, c.x, c.y);
-        if (d < bd && World.los(p.x, p.y, c.x, c.y)) { bd = d; victim = c; }
-      }
-    }
-
-    if (body) S.prompt = 'SPACE — report ' + body.name + "'s cap";
-    else if (victim && p.kill <= 0) S.prompt = 'SPACE — eliminate ' + victim.name;
-    else if (victim) S.prompt = 'Cooling down ' + Math.ceil(p.kill) + 's';
-    else if (nearTask) S.prompt = 'SPACE — ' + nearTask.label;
-    else if (nearMeet && !S.emergencyUsed[p.id]) S.prompt = 'E — call an emergency meeting';
-    else if (p.role === 'imposter') S.prompt = 'Blend in. Fake a task, isolate someone.';
-    else S.prompt = task ? 'Next task: ' + task.label + ' (' + task.roomName + ')' : 'Tasks done — stay alive';
-
-    const act = Input.hit('Space') || Input.takeClick();
-    if (act) {
-      if (body) { startMeeting(G, p, body); return; }
-      if (victim && p.kill <= 0) { doKill(p, victim, G); FX.shake(6); return; }
-      if (nearTask) { p.taskT = Math.max(p.taskT, 0.0001); }
-    }
-    if (nearTask && (Input.code('Space') || p.taskT > 0)) {
-      p.taskT += dt;
-      if (p.taskT >= TASK_TIME) {
-        p.taskT = 0;
-        p.taskDone[nearTask.id] = true;
-        p.doneCount++;
-        S.totalDone++;
-        Audio2.settle();
-        FX.text(p.x, p.y - 30, 'DONE', '#5dff8f', 15);
-        checkWin(G);
-      }
-    } else if (!nearTask) p.taskT = 0;
-
-    if (Input.hit('KeyE') && nearMeet && !S.emergencyUsed[p.id]) {
-      S.emergencyUsed[p.id] = true;
-      startMeeting(G, p, null);
-    }
-  }
-
-  function update(dt, G) {
-    if (!S.on || S.phase !== 'play') return;
-    S.time += dt;
-    playerUpdate(dt, G);
-    for (const a of G.actors) {
-      if (!a.alive || a.isPlayer) continue;
-      if (a.role === 'imposter') npcImposter(a, dt, G); else npcCrew(a, dt, G);
-      if (S.phase !== 'play') break;
-    }
-    for (const a of G.actors) {
-      if (!a.alive) continue;
-      a.x += a.vx * dt; a.y += a.vy * dt;
-      World.collide(a);
-    }
-    remember(G);
-    FX.update(dt);
-  }
-
-  function drawCrew(ctx, a, time, dim) {
-    ctx.save();
-    ctx.translate(a.x, a.y);
-    ctx.globalAlpha = dim ? 0.5 : 1;
-    ctx.fillStyle = 'rgba(0,0,0,.32)';
-    ctx.beginPath(); ctx.ellipse(4, 6, 15, 13, 0, 0, TAU); ctx.fill();
-    const bob = Math.hypot(a.vx, a.vy) > 20 ? Math.sin(time * 12 + a.id) * 1.6 : 0;
-    ctx.translate(0, bob);
-    ctx.rotate(a.ang + Math.PI / 2);
-    ctx.beginPath();
-    ctx.moveTo(-11, 14); ctx.lineTo(-11, -6);
-    ctx.quadraticCurveTo(-11, -18, 0, -18);
-    ctx.quadraticCurveTo(11, -18, 11, -6);
-    ctx.lineTo(11, 14);
-    ctx.quadraticCurveTo(0, 18, -11, 14);
-    ctx.closePath();
-    const g = ctx.createLinearGradient(-11, -18, 11, 16);
-    g.addColorStop(0, shade(a.color, 0.22)); g.addColorStop(1, shade(a.color, -0.3));
-    ctx.fillStyle = g; ctx.fill();
-    ctx.lineWidth = 2.4; ctx.strokeStyle = 'rgba(8,6,14,.85)'; ctx.stroke();
-    ctx.beginPath();
-    ctx.ellipse(2, -8, 8, 5.6, 0, 0, TAU);
-    const vg = ctx.createLinearGradient(-6, -12, 10, -4);
-    vg.addColorStop(0, '#cfe8ff'); vg.addColorStop(1, '#6ba4d8');
-    ctx.fillStyle = vg; ctx.fill();
-    ctx.lineWidth = 1.8; ctx.strokeStyle = 'rgba(8,6,14,.7)'; ctx.stroke();
-    ctx.restore();
-  }
-
-  function drawWorld(ctx, G) {
-    const p = G.player;
-    S.tasks.forEach(t => {
-      const mine = p.role === 'crew' && p.tasks.includes(t.id);
-      const done = p.taskDone && p.taskDone[t.id];
-      ctx.save();
-      ctx.translate(t.x, t.y);
-      ctx.globalAlpha = mine && !done ? 0.95 : 0.28;
-      ctx.strokeStyle = mine && !done ? '#ffd23f' : '#8fbf5d';
-      ctx.lineWidth = 3;
-      ctx.setLineDash([6, 5]);
-      ctx.lineDashOffset = -S.time * 16;
-      ctx.beginPath(); ctx.arc(0, 0, 22, 0, TAU); ctx.stroke();
-      ctx.setLineDash([]);
-      ctx.fillStyle = mine && !done ? 'rgba(255,210,63,.18)' : 'rgba(143,191,93,.1)';
-      ctx.beginPath(); ctx.arc(0, 0, 22, 0, TAU); ctx.fill();
-      if (mine && !done) {
-        ctx.fillStyle = '#ffd23f';
-        ctx.font = 'bold 15px "Courier New",monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText('!', 0, 6);
-      }
-      ctx.restore();
-    });
-
-    const m = World.meeting;
-    ctx.save();
-    ctx.translate(m.x, m.y);
-    ctx.fillStyle = 'rgba(255,90,77,.16)';
-    ctx.beginPath(); ctx.arc(0, 0, MEET_RANGE, 0, TAU); ctx.fill();
-    ctx.strokeStyle = 'rgba(255,90,77,.6)'; ctx.lineWidth = 3;
-    ctx.beginPath(); ctx.arc(0, 0, 34, 0, TAU); ctx.stroke();
-    ctx.fillStyle = '#ff5a4d';
-    ctx.font = 'bold 13px "Courier New",monospace'; ctx.textAlign = 'center';
-    ctx.fillText('MEETING', 0, 5);
-    ctx.restore();
-
-    S.bodies.forEach(b => {
-      ctx.save();
-      ctx.translate(b.x, b.y);
-      ctx.fillStyle = 'rgba(0,0,0,.3)';
-      ctx.beginPath(); ctx.ellipse(3, 5, 14, 8, 0, 0, TAU); ctx.fill();
-      ctx.fillStyle = b.color;
-      ctx.beginPath(); ctx.ellipse(0, 0, 15, 9, 0.2, 0, TAU); ctx.fill();
-      ctx.lineWidth = 2.2; ctx.strokeStyle = 'rgba(8,6,14,.85)'; ctx.stroke();
-      ctx.fillStyle = shade(b.color, -0.3);
-      ctx.fillRect(-16, 1, 32, 4);
-      ctx.fillStyle = 'rgba(255,255,255,.5)';
-      ctx.beginPath(); ctx.arc(-4, -3, 3, 0, TAU); ctx.fill();
-      ctx.restore();
-    });
-
-    const p2 = G.player;
-    for (const a of G.actors) {
-      if (!a.alive) continue;
-      const vis = a.isPlayer || (p2.alive ? canSee(p2, a) : true);
-      if (!vis) continue;
-      drawCrew(ctx, a, S.time, !p2.alive && !a.isPlayer ? false : false);
-      ctx.save();
-      ctx.font = 'bold 12px "Courier New",monospace';
-      ctx.textAlign = 'center';
-      ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(0,0,0,.7)';
-      const label = a.isPlayer ? 'YOU' : a.name;
-      ctx.strokeText(label, a.x, a.y - 26);
-      ctx.fillStyle = a.isPlayer ? '#ffd23f' : 'rgba(242,238,251,.85)';
-      ctx.fillText(label, a.x, a.y - 26);
-      ctx.restore();
-      if (a.state === 'DOING' && a.taskT > 0 && (a.isPlayer || vis)) {
-        ctx.save();
-        ctx.strokeStyle = '#5dff8f'; ctx.lineWidth = 4;
-        ctx.beginPath();
-        ctx.arc(a.x, a.y, 24, -Math.PI / 2, -Math.PI / 2 + TAU * clamp(a.taskT / (TASK_TIME + a.skill), 0, 1));
-        ctx.stroke();
-        ctx.restore();
-      }
-    }
-    if (p2.alive && p2.taskT > 0) {
-      ctx.save();
-      ctx.strokeStyle = '#ffd23f'; ctx.lineWidth = 5;
-      ctx.beginPath();
-      ctx.arc(p2.x, p2.y, 26, -Math.PI / 2, -Math.PI / 2 + TAU * clamp(p2.taskT / TASK_TIME, 0, 1));
-      ctx.stroke();
-      ctx.restore();
-    }
-    if (p2.alive) {
-      ctx.save();
-      ctx.translate(p2.x, p2.y);
-      ctx.strokeStyle = p2.role === 'imposter' ? 'rgba(255,90,77,.9)' : 'rgba(143,191,93,.9)';
-      ctx.lineWidth = 2.4; ctx.setLineDash([5, 5]); ctx.lineDashOffset = -S.time * 20;
-      ctx.beginPath(); ctx.arc(0, 0, 24, 0, TAU); ctx.stroke();
-      ctx.restore();
-    }
-  }
-
-  function drawFog(ctx, view, G) {
-    const p = G.player;
-    if (!p.alive) return;
-    if (!S.fog) S.fog = document.createElement('canvas');
-    const f = S.fog;
-    if (f.width !== view.w || f.height !== view.h) { f.width = view.w; f.height = view.h; }
-    const fx = f.getContext('2d');
-    fx.globalCompositeOperation = 'source-over';
-    fx.fillStyle = 'rgba(6,5,12,.82)';
-    fx.fillRect(0, 0, f.width, f.height);
-    const sx = view.ox + p.x * view.s, sy = view.oy + p.y * view.s;
-    const r = VISION * view.s;
-    const g = fx.createRadialGradient(sx, sy, r * 0.45, sx, sy, r);
-    g.addColorStop(0, 'rgba(0,0,0,1)');
-    g.addColorStop(1, 'rgba(0,0,0,0)');
-    fx.globalCompositeOperation = 'destination-out';
-    fx.fillStyle = g;
-    fx.beginPath(); fx.arc(sx, sy, r, 0, TAU); fx.fill();
-    ctx.drawImage(f, 0, 0);
-  }
-
-  return {
-    S, begin, stop, update, drawWorld, drawFog, startMeeting, resolveMeeting, endMeeting,
-    imposterCount, doKill, canSee, VISION, TASK_TIME,
-    get progress() { return S.totalDone / S.totalNeeded; },
-    get prompt() { return S.prompt; },
-    aliveCrew: G => aliveOf(crewOf(G)).length,
-    aliveImps: G => aliveOf(impsOf(G)).length,
-    tasksOf: a => a.tasks.map(id => ({ t: S.tasks[id], done: !!a.taskDone[id] }))
   };
 })();
 (function boot() {
